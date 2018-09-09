@@ -120,6 +120,7 @@ public:
 	// setters
 	void reset_c(){ int i; for (i=0; i<NC; i++) c[i]=0; }
 	void set_alpha0(double val) {alpha0 = val;};
+	void set_alpha(double val) {alpha = val;};
 	void set_finc(double val) {finc = val;};
 	void set_fdec(double val) {fdec = val;};
 	void set_falpha(double val) {falpha = val;};
