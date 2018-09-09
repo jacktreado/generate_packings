@@ -7,7 +7,7 @@ Compile/run `residue_main_test.cpp` with the following commands. From the direct
 
 `$ cd examples/test_main_files`
 
-`$ g++ -I ../../src/ residue_pack_test.cpp rigidbody.cpp packing*.cpp Quaternion.cpp -o -test.o`
+`$ g++ -I ../../src/ residue_pack_test.cpp ../../src/rigidbody.cpp ../../src/packing*.cpp ../../src/Quaternion.cpp -o -test.o`
 
 `$ ./test.o`
 
