@@ -10,7 +10,7 @@ using namespace std;
 
 int main(){
 	// local variables for packing
-  	string fstr = "../test_input_files/residue_input_test.dat"
+  string fstr = "../test_input_files/residue_input_test.dat";
 	string cfgstr = "residue_cfg_test.dat";
 	string statstr = "residue_stat_test.dat";
 	string enstr = "residue_test_Energy.dat";
