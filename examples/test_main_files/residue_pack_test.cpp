@@ -10,11 +10,11 @@ using namespace std;
 
 int main(){
 	// local variables for packing
-	string fstr = "/Users/JackTreado/_pv/cluster/res/io/res_input_N12_seed1.dat";
-	string cfgstr = "/Users/JackTreado/_pv/sim/output/res_cfg_test.dat";
-	string statstr = "/Users/JackTreado/_pv/sim/output/res_stat_test.dat";
-	string enstr = "/Users/JackTreado/_pv/sim/output/res_test_E.dat";
-	string xyzstr = "/Users/JackTreado/_pv/sim/xyz/res_test.xyz";
+  	string fstr = "../test_input_files/residue_input_test.dat"
+	string cfgstr = "residue_cfg_test.dat";
+	string statstr = "residue_stat_test.dat";
+	string enstr = "residue_test_Energy.dat";
+	string xyzstr = "residue_test.xyz";
 	int N = 12;
 	int dof = 6;
 	int nc = -1;
