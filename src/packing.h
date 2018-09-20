@@ -7,33 +7,36 @@
 #include <string>
 #include <vector>
 
-class packing{
+/// This is the packing base class. The rigidbody class inherits from it.
+/**  This class contains embodies a packing experiement. */
+
+class packing {
 protected:
 	// system information
-	int N; 							// number of particles
-	int NDIM; 						// dimension of space
-	int DOF;						// degree of freedom per particle
-	int NC;							// number of possible interparticle contacts
-	double dt;						// time step
-	double* L;						// array of box lengths (rectangular)	
-	int seed;						// initial seed
+	int N; 							//!< The number of particles in the experiment.
+	int NDIM; 						//!< The physical dimension of the space. This can be an integer value of 1, 2, or 3
+	int DOF;						//!< The number of degrees of freedom per particle
+	int NC;							//!< The number of possible interparticle contacts
+	double dt;						//!< The length of the time step
+	double* L;						//!< Pointer to array of box lengths (rectangular)
+	int seed;						//!< The initial seed
 
 	// particle information
-	double** x;						// particle positions
-	double** v;						// particle velocities
-	double** F;						// forces on particles
-	double** aold;					// particle acceleration from previous time step (for velocity verlet)
-	double* r;						// particle radii
-	double* m; 						// particle masses
-	double* c;						// contact matrix (stored in 1d array)
-	int* pc; 						// particle contact list
+	double** x;						//!< Pointer to two-dimensional array containing particle positions
+	double** v;						//!< Pointer to two-dimensional array containing particle velocties
+	double** F;						//!< Pointer to two-dimensional array containing forces on particles
+	double** aold;					//!< Pointer to two-dimensional array containing particle acceleration from previous time step (for velocity verlet)
+	double* r;						//!< Particle radii
+	double* m; 						//!< Particle masses
+	double* c;						//!< Pointer to contact matrix (stored in 1d array)
+	int* pc; 						//!< Pointer to particle contact list
 
 	// packing information
-	double phi;						// packing fraction
-	double ep; 						// energy scale for forces
-	double U;						// total potential energy
-	double K;						// total kinetic energy	
-	int nr;							// number of rattler particles
+	double phi;						//!< Packing fraction. Values range between 0 and 1
+	double ep; 						//!< The energy scale for forces
+	double U;						//!< The total potential energy
+	double K;						//!< The total kinetic energy
+	int nr;							//!< The number of rattler particles
 
 	// neighbor list/cell list information
 	double rcut; 					// multiple of radius that you check for neighbors
@@ -43,7 +46,7 @@ protected:
 	int nnupdate;					// number of time steps to skip before updating neighbor list
 	double* g;						// array of cell dimensions
 	int* celln;						// number of particles in each cell
-	int** cellneighbors;			// neighboring cells 
+	int** cellneighbors;			// neighboring cells
 	int* clabel;					// cell label for each particle
 	double** cellpos;				// cell center positions
 	std::vector<int>* cell;			// array of vectors: indices of atoms in each cell m
@@ -71,12 +74,12 @@ public:
 	packing(int n, int dof, int nc, int s);											// N spheres, use by rigidbody class
 	packing(std::string &str, int ndim, int s);										// N spheres, read from file
 	packing(int n, int ndim, double alpha, double phi0, int seed);					// N spheres, no neighbor list
-	packing(int n, int ndim, double alpha, double phi0, 
-		int nc, int nnu, double rc, int seed);										// N spheres w/ neighbor list
-	~packing();	
+	packing(int n, int ndim, double alpha, double phi0,
+	        int nc, int nnu, double rc, int seed);										// N spheres w/ neighbor list
+	~packing();
 
 	// initialization
-	void initialize_NC(){NC = (N*(N-1))/2;}
+	void initialize_NC() {NC = (N * (N - 1)) / 2;}
 	void initialize_box(double val);
 	void initialize_particles();
 	void initialize_nlcl();
@@ -86,7 +89,7 @@ public:
 	void setup_std_sim();
 	void mc_pos_init();
 	void mxwl_vel_init(double t);
-	void rand_vel_init(double tmp0);	
+	void rand_vel_init(double tmp0);
 
 	// file IO
 	void read_spheres(std::string &str);
@@ -118,13 +121,13 @@ public:
 
 
 	// setters
-	void reset_c(){ int i; for (i=0; i<NC; i++) c[i]=0; }
+	void reset_c() { int i; for (i = 0; i < NC; i++) c[i] = 0; }
 	void set_alpha0(double val) {alpha0 = val;};
 	void set_alpha(double val) {alpha = val;};
 	void set_finc(double val) {finc = val;};
 	void set_fdec(double val) {fdec = val;};
 	void set_falpha(double val) {falpha = val;};
-	void set_dtmax(double val) {dtmax = val*dt;};
+	void set_dtmax(double val) {dtmax = val * dt;};
 	void set_plotskip(int val) {plotskip = val;};
 	void set_plotit(int val) {plotit = val;};
 	void set_dt(double val) {dt = val;};
@@ -132,51 +135,51 @@ public:
 	void set_rcut(double val) {rcut = val;};
 	void set_phi(double val) {
 		int i;
-		double g = pow( val/phi, (1/(double)NDIM) );
-		for (i=0; i<N; i++){
+		double g = pow( val / phi, (1 / (double)NDIM) );
+		for (i = 0; i < N; i++) {
 			r[i] *= g;
-			m[i] *= pow(g,NDIM);
+			m[i] *= pow(g, NDIM);
 		}
 	};
 	void set_md_time(double dt0);
 	void set_rand_c(double p);
-	void update_cell_g(){int i; for (i=0; i<NDIM; i++) g[i]=L[i]/NCL; };
+	void update_cell_g() {int i; for (i = 0; i < NDIM; i++) g[i] = L[i] / NCL; };
 
 	// file openers
-	void open_xyz(std::string str){
+	void open_xyz(std::string str) {
 		xyzobj.open(str.c_str());
-		if (!xyzobj.is_open()){
+		if (!xyzobj.is_open()) {
 			std::cout << "ERROR: xyzobj could not open..." << std::endl;
 			std::cout << "ERROR: file str = " << str;
 			throw "obj not open";
 		}
 	};
-	void open_config(std::string str){
+	void open_config(std::string str) {
 		configobj.open(str.c_str());
-		if (!configobj.is_open()){
+		if (!configobj.is_open()) {
 			std::cout << "ERROR: configobj could not open..." << std::endl;
 			std::cout << "ERROR: file str = " << str;
 			throw "obj not open";
 		}
 	};
-	void open_stat(std::string str){
+	void open_stat(std::string str) {
 		statobj.open(str.c_str());
-		if (!statobj.is_open()){
+		if (!statobj.is_open()) {
 			std::cout << "ERROR: statobj could not open..." << std::endl;
 			std::cout << "ERROR: file str = " << str;
 			throw "obj not open";
 		}
 	};
-	void open_en(std::string str){
+	void open_en(std::string str) {
 		enobj.open(str.c_str());
-		if (!enobj.is_open()){
+		if (!enobj.is_open()) {
 			std::cout << "ERROR: enobj could not open..." << std::endl;
 			std::cout << "ERROR: file str = " << str;
 			throw "obj not open";
 		}
 	};
 
-	// MD		
+	// MD
 	void pos_update();
 	double hs(double sij, double xij);
 	void hs_force();
@@ -191,13 +194,13 @@ public:
 	void jamming_finder_nn(double tend, double dphi, double Utol, double Ktol);
 	void fire();
 	void root_search(double& phiH, double& phiL, int& check_ratterls, int epconst,
-		int nr, double dphi0, double Ktol, double Utol, int t);
+	                 int nr, double dphi0, double Ktol, double Utol, int t);
 
 	// neighbor list/cell list
 	void print_cell();
 	void print_neighborlist();
 	void print_cell_neighbors();
-	void print_nl_xyz();	
+	void print_nl_xyz();
 	void print_cell_pos();
 	void print_clabel();
 	void print_celln();
@@ -212,7 +215,7 @@ public:
 	void update_cell();
 	void update_neighborlist();
 
-	// growth 
+	// growth
 	void scale_sys(double dphi);
 
 	// measurements

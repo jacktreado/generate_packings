@@ -24,6 +24,10 @@ for the JavaScript code in this file
 var NAVTREE =
 [
   [ "generate_packings", "index.html", [
+    [ "Quickstart Guide", "index.html", [
+      [ "Getting the code", "index.html#getting_code", null ],
+      [ "Running your own simulations", "index.html#writing_sims", null ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],

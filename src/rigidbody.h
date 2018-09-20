@@ -9,41 +9,45 @@
 #include <string>
 #include <vector>
 
+/**
+ * The rigidbody class inherits from the packing class and contains
+ * functionality to simulate a packing experiement consisting of rigidbodies.
+ */
 
 class rigidbody : public packing{
 private:
-	// rotational kinetic energy, local angular momentum
-	double Krot;
-	double LCON;
+
+	double Krot; //!< rotational kinetic energy
+	double LCON; //!< local angular momentum
 
 	// rigid body info (quaternion, angles)
-	double*** xW;								// atomic World frame position
-	double*** xM;								// atomic Molecule frame position									
-	Quaternion* q;								// main quaternion
-	Quaternion* qhalf;							// half step quaternion
-	Quaternion* qnew;							// update quaternion
-	Quaternion* qdot;							// quaternion derivative
-	double* eulang1;							// 1st euler angle: azimuth (phi)
-	double* eulang2;							// 2nd euler angle: polar (theta)
-	double* eulang3;							// 3rd euler angle: spin (psi)
-	double** Inn;								// Moment of inertia tensor (diagnolized)
+	double*** xW;							//!< atomic World frame position
+	double*** xM;							//!< atomic Molecule frame position									
+	Quaternion* q;							//!< main quaternion
+	Quaternion* qhalf;						//!< half step quaternion
+	Quaternion* qnew;						//!< update quaternion
+	Quaternion* qdot;						//!< quaternion derivative
+	double* eulang1;						//!< 1st euler angle: azimuth (phi)
+	double* eulang2;						//!< 2nd euler angle: polar (theta)
+	double* eulang3;						//!< 3rd euler angle: spin (psi)
+	double** Inn;							//!< Moment of inertia tensor (diagnolized)
 
 	// velocity-verlet rigid body dynamics		
-	double** wW;								// world frame angular velocity vector
-	double** wM;								// molecule frame angular velocity vector	
-	double** TqW;								// World frame torque
-	double** TqM;								// Molecule frame torque
-	double** LW;								// World frame angular momentum
-	double** LWhalf;							// half step World frame angular momentum
-	double** LM;								// Molecule frame angular momentum
-	double** LMhalf;							// half step Molecule frame angular momentum
-	double** LMdot;								// Molecule frame angular momenum time derivative
+	double** wW;								//!< world frame angular velocity vector
+	double** wM;								//!< molecule frame angular velocity vector	
+	double** TqW;								//!< World frame torque
+	double** TqM;								//!< Molecule frame torque
+	double** LW;								//!< World frame angular momentum
+	double** LWhalf;							//!< half step World frame angular momentum
+	double** LM;								//!< Molecule frame angular momentum
+	double** LMhalf;							//!< half step Molecule frame angular momentum
+	double** LMdot;								//!< Molecule frame angular momenum time derivative
 
 	// per-atom info
-	int* Na;									// number of atoms per particle
-	int* ac;									// atomic contact array, counting bump-bump contacts
-	int* cm;									// contact multiplicity matrix
-	double** ar;								// radii of each atom	
+	int* Na;									//!< number of atoms per particle
+	int* ac;									//!< atomic contact array, counting bump-bump contacts
+	int* cm;									//!< contact multiplicity matrix
+	double** ar;								//!< radii of each atom	
 public:
 	rigidbody(string &rbstr, int n, int dof, int nc, int s);
 	~rigidbody();

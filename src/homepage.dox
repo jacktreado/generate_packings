@@ -1,0 +1,56 @@
+/*! \mainpage Quickstart Guide
+     
+\section getting_code Getting the code
+
+Getting started with generate_packings is easy. Make sure you have a system 
+capable of compiling C++ (g++ or clang) and obtain the repo via:
+```
+$ git clone https://github.com/jacktreado/generate_packings
+$ cd generate_packings
+```
+Once you have a local copy, to test it do the following:
+
+```
+$ cd examples/test_main_files
+$ g++ -I ../../src/ residue_pack_test.cpp ../../src/rigidbody.cpp ../../src/packing*.cpp ../../src/Quaternion.cpp -o test.o
+$ ./test.o
+```
+
+Once the simulation is complete, you should see something like this, indicative of success:
+
+```
+Contact Matrix:
+     0     0     0     1     1     1     1     0     1     0     0     1
+     0     0     0     1     0     0     1     1     0     1     1     0
+     0     0     0     0     1     0     1     0     0     1     1     1
+     1     1     0     0     0     1     0     0     1     1     1     0
+     1     0     1     0     0     1     0     1     0     0     1     1
+     1     0     0     1     1     0     1     1     1     0     0     0
+     1     1     1     0     0     1     0     0     1     1     0     1
+     0     1     0     0     1     1     0     0     1     1     1     1
+     1     0     0     1     0     1     1     1     0     0     1     1
+     0     1     1     1     0     0     1     1     0     0     1     0
+     0     1     1     1     1     0     0     1     1     1     0     1
+     1     0     1     0     1     0     1     1     1     0     1     0
+
+
+~entering rigidbody destructor
+```
+
+\section writing_sims Running your own simulations
+
+If you open up `residue_pack_test.cpp` you can take a look at some key areas of the code that should be modified if you are to run your own simulation.
+
+Along with all the other imports at the top of the file, be sure to include `rigidbody.h`
+
+```
+#include "rigidbody.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstdlib>
+```
+
+
+
+*/

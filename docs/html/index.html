@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>generate_packings: Main Page</title>
+<title>generate_packings: Quickstart Guide</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -32,7 +32,7 @@
    <div id="projectname">generate_packings
    &#160;<span id="projectnumber">1.0.0</span>
    </div>
-   <div id="projectbrief">Used for protein packing analysis</div>
+   <div id="projectbrief">A Tool for Simulating Rigid-Body Packing in Proteins</div>
   </td>
  </tr>
  </tbody>
@@ -88,10 +88,18 @@ $(document).ready(function(){initNavTree('index.html','');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">generate_packings Documentation</div>  </div>
+<div class="title">Quickstart Guide </div>  </div>
 </div><!--header-->
 <div class="contents">
-</div><!-- contents -->
+<div class="textblock"><h1><a class="anchor" id="getting_code"></a>
+Getting the code</h1>
+<p>Getting started with generate_packings is easy. Make sure you have a system capable of compiling C++ (g++ or clang) and obtain the repo via: </p><div class="fragment"><div class="line">$ git clone https:<span class="comment">//github.com/jacktreado/generate_packings</span></div><div class="line">$ cd generate_packings</div></div><!-- fragment --><p> Once you have a local copy, to test it do the following:</p>
+<div class="fragment"><div class="line">$ cd examples/test_main_files</div><div class="line">$ g++ -I ../../src/ residue_pack_test.cpp ../../src/<a class="code" href="classrigidbody.html">rigidbody</a>.cpp ../../src/<a class="code" href="classpacking.html">packing</a>*.cpp ../../src/<a class="code" href="class_quaternion.html">Quaternion</a>.cpp -o test.o</div><div class="line">$ ./test.o</div></div><!-- fragment --><p>Once the simulation is complete, you should see something like this, indicative of success:</p>
+<div class="fragment"><div class="line">Contact Matrix:</div><div class="line">     0     0     0     1     1     1     1     0     1     0     0     1</div><div class="line">     0     0     0     1     0     0     1     1     0     1     1     0</div><div class="line">     0     0     0     0     1     0     1     0     0     1     1     1</div><div class="line">     1     1     0     0     0     1     0     0     1     1     1     0</div><div class="line">     1     0     1     0     0     1     0     1     0     0     1     1</div><div class="line">     1     0     0     1     1     0     1     1     1     0     0     0</div><div class="line">     1     1     1     0     0     1     0     0     1     1     0     1</div><div class="line">     0     1     0     0     1     1     0     0     1     1     1     1</div><div class="line">     1     0     0     1     0     1     1     1     0     0     1     1</div><div class="line">     0     1     1     1     0     0     1     1     0     0     1     0</div><div class="line">     0     1     1     1     1     0     0     1     1     1     0     1</div><div class="line">     1     0     1     0     1     0     1     1     1     0     1     0</div><div class="line"></div><div class="line"></div><div class="line">~entering <a class="code" href="classrigidbody.html">rigidbody</a> destructor</div></div><!-- fragment --><h1><a class="anchor" id="writing_sims"></a>
+Running your own simulations</h1>
+<p>If you open up <code>residue_pack_test.cpp</code> you can take a look at some key areas of the code that should be modified if you are to run your own simulation.</p>
+<p>Along with all the other imports at the top of the file, be sure to include <code><a class="el" href="rigidbody_8h.html">rigidbody.h</a></code></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;<a class="code" href="rigidbody_8h.html">rigidbody.h</a>&quot;</span></div><div class="line"><span class="preprocessor">#include &lt;iostream&gt;</span></div><div class="line"><span class="preprocessor">#include &lt;fstream&gt;</span></div><div class="line"><span class="preprocessor">#include &lt;string&gt;</span></div><div class="line"><span class="preprocessor">#include &lt;cstdlib&gt;</span></div></div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

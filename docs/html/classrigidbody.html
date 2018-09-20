@@ -32,7 +32,7 @@
    <div id="projectname">generate_packings
    &#160;<span id="projectnumber">1.0.0</span>
    </div>
-   <div id="projectbrief">Used for protein packing analysis</div>
+   <div id="projectbrief">A Tool for Simulating Rigid-Body Packing in Proteins</div>
   </td>
  </tr>
  </tbody>
@@ -102,7 +102,7 @@ Inheritance diagram for rigidbody:</div>
  <div class="center">
   <img src="classrigidbody.png" usemap="#rigidbody_map" alt=""/>
   <map id="rigidbody_map" name="rigidbody_map">
-<area href="classpacking.html" alt="packing" shape="rect" coords="0,0,65,24"/>
+<area href="classpacking.html" title="This is the packing base class. The rigidbody class inherits from it. " alt="packing" shape="rect" coords="0,0,65,24"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -406,44 +406,64 @@ Public Member Functions</h2></td></tr>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_attribs_classpacking"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classpacking')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classpacking.html">packing</a></td></tr>
 <tr class="memitem:a282fd04f2195ce1535ef9a1eb0c3af40 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a282fd04f2195ce1535ef9a1eb0c3af40">N</a></td></tr>
+<tr class="memdesc:a282fd04f2195ce1535ef9a1eb0c3af40 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of particles in the experiment.  <a href="classpacking.html#a282fd04f2195ce1535ef9a1eb0c3af40">More...</a><br /></td></tr>
 <tr class="separator:a282fd04f2195ce1535ef9a1eb0c3af40 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43d0d9d087ec30c847e89b5002e422d4 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a43d0d9d087ec30c847e89b5002e422d4">NDIM</a></td></tr>
+<tr class="memdesc:a43d0d9d087ec30c847e89b5002e422d4 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The physical dimension of the space. This can be an integer value of 1, 2, or 3.  <a href="classpacking.html#a43d0d9d087ec30c847e89b5002e422d4">More...</a><br /></td></tr>
 <tr class="separator:a43d0d9d087ec30c847e89b5002e422d4 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a154fee4288694b65d28f5d904b1784b6 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a154fee4288694b65d28f5d904b1784b6">DOF</a></td></tr>
+<tr class="memdesc:a154fee4288694b65d28f5d904b1784b6 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of degrees of freedom per particle.  <a href="classpacking.html#a154fee4288694b65d28f5d904b1784b6">More...</a><br /></td></tr>
 <tr class="separator:a154fee4288694b65d28f5d904b1784b6 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad09604fb221c69596a95083c1c8c7d47 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#ad09604fb221c69596a95083c1c8c7d47">NC</a></td></tr>
+<tr class="memdesc:ad09604fb221c69596a95083c1c8c7d47 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of possible interparticle contacts.  <a href="classpacking.html#ad09604fb221c69596a95083c1c8c7d47">More...</a><br /></td></tr>
 <tr class="separator:ad09604fb221c69596a95083c1c8c7d47 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61dd57ff727cdffa0573189b14a372d3 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a61dd57ff727cdffa0573189b14a372d3">dt</a></td></tr>
+<tr class="memdesc:a61dd57ff727cdffa0573189b14a372d3 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The length of the time step.  <a href="classpacking.html#a61dd57ff727cdffa0573189b14a372d3">More...</a><br /></td></tr>
 <tr class="separator:a61dd57ff727cdffa0573189b14a372d3 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4a6707ea8b2af01eda36ea9d230259e inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#ae4a6707ea8b2af01eda36ea9d230259e">L</a></td></tr>
+<tr class="memdesc:ae4a6707ea8b2af01eda36ea9d230259e inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to array of box lengths (rectangular)  <a href="classpacking.html#ae4a6707ea8b2af01eda36ea9d230259e">More...</a><br /></td></tr>
 <tr class="separator:ae4a6707ea8b2af01eda36ea9d230259e inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5a588c50b2c22b3c2917a2da12f33e5 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#aa5a588c50b2c22b3c2917a2da12f33e5">seed</a></td></tr>
+<tr class="memdesc:aa5a588c50b2c22b3c2917a2da12f33e5 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial seed.  <a href="classpacking.html#aa5a588c50b2c22b3c2917a2da12f33e5">More...</a><br /></td></tr>
 <tr class="separator:aa5a588c50b2c22b3c2917a2da12f33e5 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b56d5b429817628d1cd764f4a62827d inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a3b56d5b429817628d1cd764f4a62827d">x</a></td></tr>
+<tr class="memdesc:a3b56d5b429817628d1cd764f4a62827d inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to two-dimensional array containing particle positions.  <a href="classpacking.html#a3b56d5b429817628d1cd764f4a62827d">More...</a><br /></td></tr>
 <tr class="separator:a3b56d5b429817628d1cd764f4a62827d inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25a8813f1efa77beae413fe335bec3a7 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a25a8813f1efa77beae413fe335bec3a7">v</a></td></tr>
+<tr class="memdesc:a25a8813f1efa77beae413fe335bec3a7 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to two-dimensional array containing particle velocties.  <a href="classpacking.html#a25a8813f1efa77beae413fe335bec3a7">More...</a><br /></td></tr>
 <tr class="separator:a25a8813f1efa77beae413fe335bec3a7 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39113604e4ffe9563e79e8289e6eed61 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a39113604e4ffe9563e79e8289e6eed61">F</a></td></tr>
+<tr class="memdesc:a39113604e4ffe9563e79e8289e6eed61 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to two-dimensional array containing forces on particles.  <a href="classpacking.html#a39113604e4ffe9563e79e8289e6eed61">More...</a><br /></td></tr>
 <tr class="separator:a39113604e4ffe9563e79e8289e6eed61 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16ab3555506f30e4848ca52ae1136444 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a16ab3555506f30e4848ca52ae1136444">aold</a></td></tr>
+<tr class="memdesc:a16ab3555506f30e4848ca52ae1136444 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to two-dimensional array containing particle acceleration from previous time step (for velocity verlet)  <a href="classpacking.html#a16ab3555506f30e4848ca52ae1136444">More...</a><br /></td></tr>
 <tr class="separator:a16ab3555506f30e4848ca52ae1136444 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e301d8084ada7f0258b80639fa83c88 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a3e301d8084ada7f0258b80639fa83c88">r</a></td></tr>
+<tr class="memdesc:a3e301d8084ada7f0258b80639fa83c88 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Particle radii.  <a href="classpacking.html#a3e301d8084ada7f0258b80639fa83c88">More...</a><br /></td></tr>
 <tr class="separator:a3e301d8084ada7f0258b80639fa83c88 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab06bef3feef42f5c48c39fa1ae297e23 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#ab06bef3feef42f5c48c39fa1ae297e23">m</a></td></tr>
+<tr class="memdesc:ab06bef3feef42f5c48c39fa1ae297e23 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Particle masses.  <a href="classpacking.html#ab06bef3feef42f5c48c39fa1ae297e23">More...</a><br /></td></tr>
 <tr class="separator:ab06bef3feef42f5c48c39fa1ae297e23 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01db0c365f0f66bbc2de30fed7e1881a inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a01db0c365f0f66bbc2de30fed7e1881a">c</a></td></tr>
+<tr class="memdesc:a01db0c365f0f66bbc2de30fed7e1881a inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to contact matrix (stored in 1d array)  <a href="classpacking.html#a01db0c365f0f66bbc2de30fed7e1881a">More...</a><br /></td></tr>
 <tr class="separator:a01db0c365f0f66bbc2de30fed7e1881a inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbc23675b258dfad02a53e578c1e4589 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#abbc23675b258dfad02a53e578c1e4589">pc</a></td></tr>
+<tr class="memdesc:abbc23675b258dfad02a53e578c1e4589 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to particle contact list.  <a href="classpacking.html#abbc23675b258dfad02a53e578c1e4589">More...</a><br /></td></tr>
 <tr class="separator:abbc23675b258dfad02a53e578c1e4589 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a951a89b6ca12a40cb60344752bd8d817 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a951a89b6ca12a40cb60344752bd8d817">phi</a></td></tr>
+<tr class="memdesc:a951a89b6ca12a40cb60344752bd8d817 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">Packing fraction. Values range between 0 and 1.  <a href="classpacking.html#a951a89b6ca12a40cb60344752bd8d817">More...</a><br /></td></tr>
 <tr class="separator:a951a89b6ca12a40cb60344752bd8d817 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c04efa5180dbc7100daa11b1b0728f7 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a1c04efa5180dbc7100daa11b1b0728f7">ep</a></td></tr>
+<tr class="memdesc:a1c04efa5180dbc7100daa11b1b0728f7 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The energy scale for forces.  <a href="classpacking.html#a1c04efa5180dbc7100daa11b1b0728f7">More...</a><br /></td></tr>
 <tr class="separator:a1c04efa5180dbc7100daa11b1b0728f7 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4412ad37535700fcf62fb9e3d87c2c49 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a4412ad37535700fcf62fb9e3d87c2c49">U</a></td></tr>
+<tr class="memdesc:a4412ad37535700fcf62fb9e3d87c2c49 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The total potential energy.  <a href="classpacking.html#a4412ad37535700fcf62fb9e3d87c2c49">More...</a><br /></td></tr>
 <tr class="separator:a4412ad37535700fcf62fb9e3d87c2c49 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf38ce991d03baddda7344ec7e979f6c inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#acf38ce991d03baddda7344ec7e979f6c">K</a></td></tr>
+<tr class="memdesc:acf38ce991d03baddda7344ec7e979f6c inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The total kinetic energy.  <a href="classpacking.html#acf38ce991d03baddda7344ec7e979f6c">More...</a><br /></td></tr>
 <tr class="separator:acf38ce991d03baddda7344ec7e979f6c inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31eede3d604c45fef6021170ee506c77 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#a31eede3d604c45fef6021170ee506c77">nr</a></td></tr>
+<tr class="memdesc:a31eede3d604c45fef6021170ee506c77 inherit pro_attribs_classpacking"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of rattler particles.  <a href="classpacking.html#a31eede3d604c45fef6021170ee506c77">More...</a><br /></td></tr>
 <tr class="separator:a31eede3d604c45fef6021170ee506c77 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aefd159c50069573f1f2a3a6f0ff50984 inherit pro_attribs_classpacking"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpacking.html#aefd159c50069573f1f2a3a6f0ff50984">rcut</a></td></tr>
 <tr class="separator:aefd159c50069573f1f2a3a6f0ff50984 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -499,8 +519,9 @@ Additional Inherited Members</h2></td></tr>
 <tr class="separator:acc65e17d00c4ae7ed3efee0da9693144 inherit pro_attribs_classpacking"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock">
-<p class="definition">Definition at line <a class="el" href="rigidbody_8h_source.html#l00013">13</a> of file <a class="el" href="rigidbody_8h_source.html">rigidbody.h</a>.</p>
+<div class="textblock"><p>The rigidbody class inherits from the packing class and contains functionality to simulate a packing experiement consisting of rigidbodies. </p>
+
+<p class="definition">Definition at line <a class="el" href="rigidbody_8h_source.html#l00017">17</a> of file <a class="el" href="rigidbody_8h_source.html">rigidbody.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a2d1f12365075606f81a18c3ce9454246"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2d1f12365075606f81a18c3ce9454246">&#9670;&nbsp;</a></span>rigidbody()</h2>

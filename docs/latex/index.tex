@@ -1,0 +1,52 @@
+\hypertarget{index_getting_code}{}\section{Getting the code}\label{index_getting_code}
+Getting started with generate\+\_\+packings is easy. Make sure you have a system capable of compiling C++ (g++ or clang) and obtain the repo via\+: 
+\begin{DoxyCode}
+$ git clone https:\textcolor{comment}{//github.com/jacktreado/generate\_packings}
+$ cd generate\_packings
+\end{DoxyCode}
+ Once you have a local copy, to test it do the following\+:
+
+
+\begin{DoxyCode}
+$ cd examples/test\_main\_files
+$ g++ -I ../../src/ residue\_pack\_test.cpp ../../src/\mbox{\hyperlink{classrigidbody}{rigidbody}}.cpp ../../src/
+      \mbox{\hyperlink{classpacking}{packing}}*.cpp ../../src/\mbox{\hyperlink{class_quaternion}{Quaternion}}.cpp -o test.o
+$ ./test.o
+\end{DoxyCode}
+
+
+Once the simulation is complete, you should see something like this, indicative of success\+:
+
+
+\begin{DoxyCode}
+Contact Matrix:
+     0     0     0     1     1     1     1     0     1     0     0     1
+     0     0     0     1     0     0     1     1     0     1     1     0
+     0     0     0     0     1     0     1     0     0     1     1     1
+     1     1     0     0     0     1     0     0     1     1     1     0
+     1     0     1     0     0     1     0     1     0     0     1     1
+     1     0     0     1     1     0     1     1     1     0     0     0
+     1     1     1     0     0     1     0     0     1     1     0     1
+     0     1     0     0     1     1     0     0     1     1     1     1
+     1     0     0     1     0     1     1     1     0     0     1     1
+     0     1     1     1     0     0     1     1     0     0     1     0
+     0     1     1     1     1     0     0     1     1     1     0     1
+     1     0     1     0     1     0     1     1     1     0     1     0
+
+
+~entering \mbox{\hyperlink{classrigidbody}{rigidbody}} destructor
+\end{DoxyCode}
+\hypertarget{index_writing_sims}{}\section{Running your own simulations}\label{index_writing_sims}
+If you open up {\ttfamily residue\+\_\+pack\+\_\+test.\+cpp} you can take a look at some key areas of the code that should be modified if you are to run your own simulation.
+
+Along with all the other imports at the top of the file, be sure to include {\ttfamily \mbox{\hyperlink{rigidbody_8h}{rigidbody.\+h}}}
+
+
+\begin{DoxyCode}
+\textcolor{preprocessor}{#include "\mbox{\hyperlink{rigidbody_8h}{rigidbody.h}}"}
+\textcolor{preprocessor}{#include <iostream>}
+\textcolor{preprocessor}{#include <fstream>}
+\textcolor{preprocessor}{#include <string>}
+\textcolor{preprocessor}{#include <cstdlib>}
+\end{DoxyCode}
+ 

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['rigidbody_2ecpp',['rigidbody.cpp',['../rigidbody_8cpp.html',1,'']]],
-  ['rigidbody_2eh',['rigidbody.h',['../rigidbody_8h.html',1,'']]]
+  ['quaternion_2ecpp',['Quaternion.cpp',['../_quaternion_8cpp.html',1,'']]],
+  ['quaternion_2eh',['Quaternion.h',['../_quaternion_8h.html',1,'']]]
 ];

@@ -2,6 +2,11 @@
 \label{classpacking}\index{packing@{packing}}
 
 
+This is the packing base class. The rigidbody class inherits from it.  
+
+
+
+
 {\ttfamily \#include $<$packing.\+h$>$}
 
 Inheritance diagram for packing\+:\begin{figure}[H]
@@ -231,45 +236,45 @@ void \mbox{\hyperlink{classpacking_a5567ef97dc24a25a5466dcbd8af82737}{monitor\+\
 \begin{DoxyCompactItemize}
 \item 
 int \mbox{\hyperlink{classpacking_a282fd04f2195ce1535ef9a1eb0c3af40}{N}}
-\item 
+\begin{DoxyCompactList}\small\item\em The number of particles in the experiment. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{classpacking_a43d0d9d087ec30c847e89b5002e422d4}{N\+D\+IM}}
-\item 
+\begin{DoxyCompactList}\small\item\em The physical dimension of the space. This can be an integer value of 1, 2, or 3. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{classpacking_a154fee4288694b65d28f5d904b1784b6}{D\+OF}}
-\item 
+\begin{DoxyCompactList}\small\item\em The number of degrees of freedom per particle. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{classpacking_ad09604fb221c69596a95083c1c8c7d47}{NC}}
-\item 
+\begin{DoxyCompactList}\small\item\em The number of possible interparticle contacts. \end{DoxyCompactList}\item 
 double \mbox{\hyperlink{classpacking_a61dd57ff727cdffa0573189b14a372d3}{dt}}
-\item 
+\begin{DoxyCompactList}\small\item\em The length of the time step. \end{DoxyCompactList}\item 
 double $\ast$ \mbox{\hyperlink{classpacking_ae4a6707ea8b2af01eda36ea9d230259e}{L}}
-\item 
+\begin{DoxyCompactList}\small\item\em Pointer to array of box lengths (rectangular) \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{classpacking_aa5a588c50b2c22b3c2917a2da12f33e5}{seed}}
-\item 
+\begin{DoxyCompactList}\small\item\em The initial seed. \end{DoxyCompactList}\item 
 double $\ast$$\ast$ \mbox{\hyperlink{classpacking_a3b56d5b429817628d1cd764f4a62827d}{x}}
-\item 
+\begin{DoxyCompactList}\small\item\em Pointer to two-\/dimensional array containing particle positions. \end{DoxyCompactList}\item 
 double $\ast$$\ast$ \mbox{\hyperlink{classpacking_a25a8813f1efa77beae413fe335bec3a7}{v}}
-\item 
+\begin{DoxyCompactList}\small\item\em Pointer to two-\/dimensional array containing particle velocties. \end{DoxyCompactList}\item 
 double $\ast$$\ast$ \mbox{\hyperlink{classpacking_a39113604e4ffe9563e79e8289e6eed61}{F}}
-\item 
+\begin{DoxyCompactList}\small\item\em Pointer to two-\/dimensional array containing forces on particles. \end{DoxyCompactList}\item 
 double $\ast$$\ast$ \mbox{\hyperlink{classpacking_a16ab3555506f30e4848ca52ae1136444}{aold}}
-\item 
+\begin{DoxyCompactList}\small\item\em Pointer to two-\/dimensional array containing particle acceleration from previous time step (for velocity verlet) \end{DoxyCompactList}\item 
 double $\ast$ \mbox{\hyperlink{classpacking_a3e301d8084ada7f0258b80639fa83c88}{r}}
-\item 
+\begin{DoxyCompactList}\small\item\em Particle radii. \end{DoxyCompactList}\item 
 double $\ast$ \mbox{\hyperlink{classpacking_ab06bef3feef42f5c48c39fa1ae297e23}{m}}
-\item 
+\begin{DoxyCompactList}\small\item\em Particle masses. \end{DoxyCompactList}\item 
 double $\ast$ \mbox{\hyperlink{classpacking_a01db0c365f0f66bbc2de30fed7e1881a}{c}}
-\item 
+\begin{DoxyCompactList}\small\item\em Pointer to contact matrix (stored in 1d array) \end{DoxyCompactList}\item 
 int $\ast$ \mbox{\hyperlink{classpacking_abbc23675b258dfad02a53e578c1e4589}{pc}}
-\item 
+\begin{DoxyCompactList}\small\item\em Pointer to particle contact list. \end{DoxyCompactList}\item 
 double \mbox{\hyperlink{classpacking_a951a89b6ca12a40cb60344752bd8d817}{phi}}
-\item 
+\begin{DoxyCompactList}\small\item\em Packing fraction. Values range between 0 and 1. \end{DoxyCompactList}\item 
 double \mbox{\hyperlink{classpacking_a1c04efa5180dbc7100daa11b1b0728f7}{ep}}
-\item 
+\begin{DoxyCompactList}\small\item\em The energy scale for forces. \end{DoxyCompactList}\item 
 double \mbox{\hyperlink{classpacking_a4412ad37535700fcf62fb9e3d87c2c49}{U}}
-\item 
+\begin{DoxyCompactList}\small\item\em The total potential energy. \end{DoxyCompactList}\item 
 double \mbox{\hyperlink{classpacking_acf38ce991d03baddda7344ec7e979f6c}{K}}
-\item 
+\begin{DoxyCompactList}\small\item\em The total kinetic energy. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{classpacking_a31eede3d604c45fef6021170ee506c77}{nr}}
-\item 
+\begin{DoxyCompactList}\small\item\em The number of rattler particles. \end{DoxyCompactList}\item 
 double \mbox{\hyperlink{classpacking_aefd159c50069573f1f2a3a6f0ff50984}{rcut}}
 \item 
 int \mbox{\hyperlink{classpacking_a9a8d986ed98d37a87ea3f3785c0ffe61}{N\+CL}}
@@ -325,9 +330,11 @@ std\+::ofstream \mbox{\hyperlink{classpacking_acc65e17d00c4ae7ed3efee0da9693144}
 
 
 \subsection{Detailed Description}
+This is the packing base class. The rigidbody class inherits from it. 
 
+This class contains embodies a packing experiement. 
 
-Definition at line 10 of file packing.\+h.
+Definition at line 13 of file packing.\+h.
 
 
 
@@ -469,7 +476,7 @@ Definition at line 486 of file packing.\+cpp.
 
 
 
-Definition at line 104 of file packing.\+h.
+Definition at line 107 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a357aeeeac709d7926cbbaa9312cf3649}\label{classpacking_a357aeeeac709d7926cbbaa9312cf3649}} 
 \index{packing@{packing}!get\+\_\+alpha0@{get\+\_\+alpha0}}
@@ -479,7 +486,7 @@ Definition at line 104 of file packing.\+h.
 
 
 
-Definition at line 105 of file packing.\+h.
+Definition at line 108 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a23fc5018721f5022318addbe87b33d47}\label{classpacking_a23fc5018721f5022318addbe87b33d47}} 
 \index{packing@{packing}!get\+\_\+c\+\_\+sum@{get\+\_\+c\+\_\+sum}}
@@ -549,7 +556,7 @@ Definition at line 676 of file packing.\+cpp.
 
 
 
-Definition at line 97 of file packing.\+h.
+Definition at line 100 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a778812fa17eb4daa96adc03f1ce5128c}\label{classpacking_a778812fa17eb4daa96adc03f1ce5128c}} 
 \index{packing@{packing}!get\+\_\+dt@{get\+\_\+dt}}
@@ -559,7 +566,7 @@ Definition at line 97 of file packing.\+h.
 
 
 
-Definition at line 99 of file packing.\+h.
+Definition at line 102 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a36de243c3a970bbf0840a17bf9758e61}\label{classpacking_a36de243c3a970bbf0840a17bf9758e61}} 
 \index{packing@{packing}!get\+\_\+dtmax@{get\+\_\+dtmax}}
@@ -569,7 +576,7 @@ Definition at line 99 of file packing.\+h.
 
 
 
-Definition at line 109 of file packing.\+h.
+Definition at line 112 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_abe5e5105ed2b581e64f0ba5608e2ccb6}\label{classpacking_abe5e5105ed2b581e64f0ba5608e2ccb6}} 
 \index{packing@{packing}!get\+\_\+ep@{get\+\_\+ep}}
@@ -579,7 +586,7 @@ Definition at line 109 of file packing.\+h.
 
 
 
-Definition at line 101 of file packing.\+h.
+Definition at line 104 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a0c8cad7afd9da1c30856b1201be15535}\label{classpacking_a0c8cad7afd9da1c30856b1201be15535}} 
 \index{packing@{packing}!get\+\_\+falpha@{get\+\_\+falpha}}
@@ -589,7 +596,7 @@ Definition at line 101 of file packing.\+h.
 
 
 
-Definition at line 108 of file packing.\+h.
+Definition at line 111 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a2b4e47ab0671d9ee9892495df465be17}\label{classpacking_a2b4e47ab0671d9ee9892495df465be17}} 
 \index{packing@{packing}!get\+\_\+fdec@{get\+\_\+fdec}}
@@ -599,7 +606,7 @@ Definition at line 108 of file packing.\+h.
 
 
 
-Definition at line 107 of file packing.\+h.
+Definition at line 110 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a58b555de4a9902399b3ab82dabfefd12}\label{classpacking_a58b555de4a9902399b3ab82dabfefd12}} 
 \index{packing@{packing}!get\+\_\+finc@{get\+\_\+finc}}
@@ -609,7 +616,7 @@ Definition at line 107 of file packing.\+h.
 
 
 
-Definition at line 106 of file packing.\+h.
+Definition at line 109 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ab484a3d36c45db72614267af5a203f76}\label{classpacking_ab484a3d36c45db72614267af5a203f76}} 
 \index{packing@{packing}!get\+\_\+K@{get\+\_\+K}}
@@ -619,7 +626,7 @@ Definition at line 106 of file packing.\+h.
 
 
 
-Definition at line 103 of file packing.\+h.
+Definition at line 106 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_aed06b7bd33506e2e26fd4b95749873a8}\label{classpacking_aed06b7bd33506e2e26fd4b95749873a8}} 
 \index{packing@{packing}!get\+\_\+mean\+\_\+mass@{get\+\_\+mean\+\_\+mass}}
@@ -659,7 +666,7 @@ Definition at line 693 of file packing.\+cpp.
 
 
 
-Definition at line 95 of file packing.\+h.
+Definition at line 98 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a09b1231993da19d68581f630365d0c3a}\label{classpacking_a09b1231993da19d68581f630365d0c3a}} 
 \index{packing@{packing}!get\+\_\+\+N\+D\+IM@{get\+\_\+\+N\+D\+IM}}
@@ -669,7 +676,7 @@ Definition at line 95 of file packing.\+h.
 
 
 
-Definition at line 96 of file packing.\+h.
+Definition at line 99 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ac1311816bef393e5fccbbf61acefcb89}\label{classpacking_ac1311816bef393e5fccbbf61acefcb89}} 
 \index{packing@{packing}!get\+\_\+new\+\_\+cell@{get\+\_\+new\+\_\+cell}}
@@ -689,7 +696,7 @@ Definition at line 1233 of file packing\+\_\+sim.\+cpp.
 
 
 
-Definition at line 100 of file packing.\+h.
+Definition at line 103 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a9485b9495dbedd5d954bade26a3033b7}\label{classpacking_a9485b9495dbedd5d954bade26a3033b7}} 
 \index{packing@{packing}!get\+\_\+rcut@{get\+\_\+rcut}}
@@ -699,7 +706,7 @@ Definition at line 100 of file packing.\+h.
 
 
 
-Definition at line 112 of file packing.\+h.
+Definition at line 115 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ac99ab03b903298da3ac29dde9fdd4ad1}\label{classpacking_ac99ab03b903298da3ac29dde9fdd4ad1}} 
 \index{packing@{packing}!get\+\_\+seed@{get\+\_\+seed}}
@@ -709,7 +716,7 @@ Definition at line 112 of file packing.\+h.
 
 
 
-Definition at line 98 of file packing.\+h.
+Definition at line 101 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ac2544dd44e1dd8bfb08315f94d543bc3}\label{classpacking_ac2544dd44e1dd8bfb08315f94d543bc3}} 
 \index{packing@{packing}!get\+\_\+U@{get\+\_\+U}}
@@ -719,7 +726,7 @@ Definition at line 98 of file packing.\+h.
 
 
 
-Definition at line 102 of file packing.\+h.
+Definition at line 105 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ab91f79587ed1579f6754e956e7939597}\label{classpacking_ab91f79587ed1579f6754e956e7939597}} 
 \index{packing@{packing}!get\+\_\+vacf@{get\+\_\+vacf}}
@@ -779,7 +786,7 @@ Definition at line 575 of file packing.\+cpp.
 
 
 
-Definition at line 79 of file packing.\+h.
+Definition at line 82 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_af1514931993a8ea4fd14ff53f7d38b70}\label{classpacking_af1514931993a8ea4fd14ff53f7d38b70}} 
 \index{packing@{packing}!initialize\+\_\+nlcl@{initialize\+\_\+nlcl}}
@@ -875,7 +882,7 @@ Definition at line 37 of file packing\+\_\+sim.\+cpp.
 
 
 
-Definition at line 154 of file packing.\+h.
+Definition at line 157 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a8afd538218a84fa24e14d58ecbd8066b}\label{classpacking_a8afd538218a84fa24e14d58ecbd8066b}} 
 \index{packing@{packing}!open\+\_\+en@{open\+\_\+en}}
@@ -885,7 +892,7 @@ Definition at line 154 of file packing.\+h.
 
 
 
-Definition at line 170 of file packing.\+h.
+Definition at line 173 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_aafe0cb05420e66caa923930222ff1bb0}\label{classpacking_aafe0cb05420e66caa923930222ff1bb0}} 
 \index{packing@{packing}!open\+\_\+stat@{open\+\_\+stat}}
@@ -895,7 +902,7 @@ Definition at line 170 of file packing.\+h.
 
 
 
-Definition at line 162 of file packing.\+h.
+Definition at line 165 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a0c837c1a1a49e78d98e3caa99452ba48}\label{classpacking_a0c837c1a1a49e78d98e3caa99452ba48}} 
 \index{packing@{packing}!open\+\_\+xyz@{open\+\_\+xyz}}
@@ -905,7 +912,7 @@ Definition at line 162 of file packing.\+h.
 
 
 
-Definition at line 146 of file packing.\+h.
+Definition at line 149 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a9e94b699c2cc7d52a74cd2e4a8642371}\label{classpacking_a9e94b699c2cc7d52a74cd2e4a8642371}} 
 \index{packing@{packing}!perturb\+\_\+single\+\_\+particle@{perturb\+\_\+single\+\_\+particle}}
@@ -1121,7 +1128,7 @@ Definition at line 761 of file packing.\+cpp.
 
 
 
-Definition at line 121 of file packing.\+h.
+Definition at line 124 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a7f866169806cadb74aaed38e246d11e5}\label{classpacking_a7f866169806cadb74aaed38e246d11e5}} 
 \index{packing@{packing}!reset\+\_\+cells@{reset\+\_\+cells}}
@@ -1181,7 +1188,7 @@ Definition at line 1024 of file packing\+\_\+sim.\+cpp.
 
 
 
-Definition at line 123 of file packing.\+h.
+Definition at line 126 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a33a628e0d2d7bcaa72f6a205a3244e76}\label{classpacking_a33a628e0d2d7bcaa72f6a205a3244e76}} 
 \index{packing@{packing}!set\+\_\+alpha0@{set\+\_\+alpha0}}
@@ -1191,7 +1198,7 @@ Definition at line 123 of file packing.\+h.
 
 
 
-Definition at line 122 of file packing.\+h.
+Definition at line 125 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a2d86b4b1188bd7d3c9b13dacbb0ca2fb}\label{classpacking_a2d86b4b1188bd7d3c9b13dacbb0ca2fb}} 
 \index{packing@{packing}!set\+\_\+dt@{set\+\_\+dt}}
@@ -1201,7 +1208,7 @@ Definition at line 122 of file packing.\+h.
 
 
 
-Definition at line 130 of file packing.\+h.
+Definition at line 133 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a5dc1a61832b80ca41be310784cec6008}\label{classpacking_a5dc1a61832b80ca41be310784cec6008}} 
 \index{packing@{packing}!set\+\_\+dtmax@{set\+\_\+dtmax}}
@@ -1211,7 +1218,7 @@ Definition at line 130 of file packing.\+h.
 
 
 
-Definition at line 127 of file packing.\+h.
+Definition at line 130 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a3371ec250e3165eae9231914a7e7fa88}\label{classpacking_a3371ec250e3165eae9231914a7e7fa88}} 
 \index{packing@{packing}!set\+\_\+ep@{set\+\_\+ep}}
@@ -1221,7 +1228,7 @@ Definition at line 127 of file packing.\+h.
 
 
 
-Definition at line 131 of file packing.\+h.
+Definition at line 134 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_af80acfd978be8d09fed22d40459bb3fc}\label{classpacking_af80acfd978be8d09fed22d40459bb3fc}} 
 \index{packing@{packing}!set\+\_\+falpha@{set\+\_\+falpha}}
@@ -1231,7 +1238,7 @@ Definition at line 131 of file packing.\+h.
 
 
 
-Definition at line 126 of file packing.\+h.
+Definition at line 129 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_aaa7a1eb80bdf6f80a8d91415e4e03e69}\label{classpacking_aaa7a1eb80bdf6f80a8d91415e4e03e69}} 
 \index{packing@{packing}!set\+\_\+fdec@{set\+\_\+fdec}}
@@ -1241,7 +1248,7 @@ Definition at line 126 of file packing.\+h.
 
 
 
-Definition at line 125 of file packing.\+h.
+Definition at line 128 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a8cb03b2d0af8408ba4c590ade7c738ca}\label{classpacking_a8cb03b2d0af8408ba4c590ade7c738ca}} 
 \index{packing@{packing}!set\+\_\+finc@{set\+\_\+finc}}
@@ -1251,7 +1258,7 @@ Definition at line 125 of file packing.\+h.
 
 
 
-Definition at line 124 of file packing.\+h.
+Definition at line 127 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_aab96c0f738b9ff52cf5eb9deba301387}\label{classpacking_aab96c0f738b9ff52cf5eb9deba301387}} 
 \index{packing@{packing}!set\+\_\+md\+\_\+time@{set\+\_\+md\+\_\+time}}
@@ -1271,7 +1278,7 @@ Definition at line 633 of file packing.\+cpp.
 
 
 
-Definition at line 133 of file packing.\+h.
+Definition at line 136 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a9bfa5637ac07f61d5cd34655c3a36455}\label{classpacking_a9bfa5637ac07f61d5cd34655c3a36455}} 
 \index{packing@{packing}!set\+\_\+plotit@{set\+\_\+plotit}}
@@ -1281,7 +1288,7 @@ Definition at line 133 of file packing.\+h.
 
 
 
-Definition at line 129 of file packing.\+h.
+Definition at line 132 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a9c34cb0d24ff7bf013c19f801591c646}\label{classpacking_a9c34cb0d24ff7bf013c19f801591c646}} 
 \index{packing@{packing}!set\+\_\+plotskip@{set\+\_\+plotskip}}
@@ -1291,7 +1298,7 @@ Definition at line 129 of file packing.\+h.
 
 
 
-Definition at line 128 of file packing.\+h.
+Definition at line 131 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ab1b640756b858f5df25d88ab841300b2}\label{classpacking_ab1b640756b858f5df25d88ab841300b2}} 
 \index{packing@{packing}!set\+\_\+rand\+\_\+c@{set\+\_\+rand\+\_\+c}}
@@ -1311,7 +1318,7 @@ Definition at line 615 of file packing.\+cpp.
 
 
 
-Definition at line 132 of file packing.\+h.
+Definition at line 135 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a1f49ca3dbade782f8da82c946a2be238}\label{classpacking_a1f49ca3dbade782f8da82c946a2be238}} 
 \index{packing@{packing}!setup\+\_\+nlcl@{setup\+\_\+nlcl}}
@@ -1361,7 +1368,7 @@ Definition at line 1274 of file packing\+\_\+sim.\+cpp.
 
 
 
-Definition at line 143 of file packing.\+h.
+Definition at line 146 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ac55b5f684a8767d536c671f23eea808e}\label{classpacking_ac55b5f684a8767d536c671f23eea808e}} 
 \index{packing@{packing}!update\+\_\+celln@{update\+\_\+celln}}
@@ -1404,7 +1411,7 @@ Definition at line 314 of file packing\+\_\+sim.\+cpp.
 
 
 
-Definition at line 54 of file packing.\+h.
+Definition at line 57 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_afa09f18e29cec06705f33a5253f1b016}\label{classpacking_afa09f18e29cec06705f33a5253f1b016}} 
 \index{packing@{packing}!alpha0@{alpha0}}
@@ -1414,7 +1421,7 @@ Definition at line 54 of file packing.\+h.
 
 
 
-Definition at line 55 of file packing.\+h.
+Definition at line 58 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a16ab3555506f30e4848ca52ae1136444}\label{classpacking_a16ab3555506f30e4848ca52ae1136444}} 
 \index{packing@{packing}!aold@{aold}}
@@ -1424,7 +1431,11 @@ Definition at line 55 of file packing.\+h.
 
 
 
-Definition at line 25 of file packing.\+h.
+Pointer to two-\/dimensional array containing particle acceleration from previous time step (for velocity verlet) 
+
+
+
+Definition at line 28 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a01db0c365f0f66bbc2de30fed7e1881a}\label{classpacking_a01db0c365f0f66bbc2de30fed7e1881a}} 
 \index{packing@{packing}!c@{c}}
@@ -1434,7 +1445,11 @@ Definition at line 25 of file packing.\+h.
 
 
 
-Definition at line 28 of file packing.\+h.
+Pointer to contact matrix (stored in 1d array) 
+
+
+
+Definition at line 31 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a5c104fd62aea53bee075d978dd6d9d6a}\label{classpacking_a5c104fd62aea53bee075d978dd6d9d6a}} 
 \index{packing@{packing}!cell@{cell}}
@@ -1444,7 +1459,7 @@ Definition at line 28 of file packing.\+h.
 
 
 
-Definition at line 49 of file packing.\+h.
+Definition at line 52 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ae917ff801cb46aad3cb68a44acce4020}\label{classpacking_ae917ff801cb46aad3cb68a44acce4020}} 
 \index{packing@{packing}!celln@{celln}}
@@ -1454,7 +1469,7 @@ Definition at line 49 of file packing.\+h.
 
 
 
-Definition at line 45 of file packing.\+h.
+Definition at line 48 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a644c3ce4ed2caba0c84f30af9f7d58a8}\label{classpacking_a644c3ce4ed2caba0c84f30af9f7d58a8}} 
 \index{packing@{packing}!cellneighbors@{cellneighbors}}
@@ -1464,7 +1479,7 @@ Definition at line 45 of file packing.\+h.
 
 
 
-Definition at line 46 of file packing.\+h.
+Definition at line 49 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a4b3af5f349b64a433c53382610fb6563}\label{classpacking_a4b3af5f349b64a433c53382610fb6563}} 
 \index{packing@{packing}!cellpos@{cellpos}}
@@ -1474,7 +1489,7 @@ Definition at line 46 of file packing.\+h.
 
 
 
-Definition at line 48 of file packing.\+h.
+Definition at line 51 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a3610364abb17fe2c0bacec06e05d9123}\label{classpacking_a3610364abb17fe2c0bacec06e05d9123}} 
 \index{packing@{packing}!clabel@{clabel}}
@@ -1484,7 +1499,7 @@ Definition at line 48 of file packing.\+h.
 
 
 
-Definition at line 47 of file packing.\+h.
+Definition at line 50 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_af156dc6a748d6330d8d058d7b623f33e}\label{classpacking_af156dc6a748d6330d8d058d7b623f33e}} 
 \index{packing@{packing}!configobj@{configobj}}
@@ -1494,7 +1509,7 @@ Definition at line 47 of file packing.\+h.
 
 
 
-Definition at line 66 of file packing.\+h.
+Definition at line 69 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a154fee4288694b65d28f5d904b1784b6}\label{classpacking_a154fee4288694b65d28f5d904b1784b6}} 
 \index{packing@{packing}!D\+OF@{D\+OF}}
@@ -1504,7 +1519,11 @@ Definition at line 66 of file packing.\+h.
 
 
 
-Definition at line 15 of file packing.\+h.
+The number of degrees of freedom per particle. 
+
+
+
+Definition at line 18 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a61dd57ff727cdffa0573189b14a372d3}\label{classpacking_a61dd57ff727cdffa0573189b14a372d3}} 
 \index{packing@{packing}!dt@{dt}}
@@ -1514,7 +1533,11 @@ Definition at line 15 of file packing.\+h.
 
 
 
-Definition at line 17 of file packing.\+h.
+The length of the time step. 
+
+
+
+Definition at line 20 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ae4a4b73d1937c50d564cd71886d17fab}\label{classpacking_ae4a4b73d1937c50d564cd71886d17fab}} 
 \index{packing@{packing}!dtmax@{dtmax}}
@@ -1524,7 +1547,7 @@ Definition at line 17 of file packing.\+h.
 
 
 
-Definition at line 53 of file packing.\+h.
+Definition at line 56 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_acc65e17d00c4ae7ed3efee0da9693144}\label{classpacking_acc65e17d00c4ae7ed3efee0da9693144}} 
 \index{packing@{packing}!enobj@{enobj}}
@@ -1534,7 +1557,7 @@ Definition at line 53 of file packing.\+h.
 
 
 
-Definition at line 68 of file packing.\+h.
+Definition at line 71 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a1c04efa5180dbc7100daa11b1b0728f7}\label{classpacking_a1c04efa5180dbc7100daa11b1b0728f7}} 
 \index{packing@{packing}!ep@{ep}}
@@ -1544,7 +1567,11 @@ Definition at line 68 of file packing.\+h.
 
 
 
-Definition at line 33 of file packing.\+h.
+The energy scale for forces. 
+
+
+
+Definition at line 36 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a39113604e4ffe9563e79e8289e6eed61}\label{classpacking_a39113604e4ffe9563e79e8289e6eed61}} 
 \index{packing@{packing}!F@{F}}
@@ -1554,7 +1581,11 @@ Definition at line 33 of file packing.\+h.
 
 
 
-Definition at line 24 of file packing.\+h.
+Pointer to two-\/dimensional array containing forces on particles. 
+
+
+
+Definition at line 27 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a6bd8393eedd89fe3082be57be371dbaf}\label{classpacking_a6bd8393eedd89fe3082be57be371dbaf}} 
 \index{packing@{packing}!falpha@{falpha}}
@@ -1564,7 +1595,7 @@ Definition at line 24 of file packing.\+h.
 
 
 
-Definition at line 58 of file packing.\+h.
+Definition at line 61 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a2188035c9e34ec7f636822e83e785513}\label{classpacking_a2188035c9e34ec7f636822e83e785513}} 
 \index{packing@{packing}!fdec@{fdec}}
@@ -1574,7 +1605,7 @@ Definition at line 58 of file packing.\+h.
 
 
 
-Definition at line 57 of file packing.\+h.
+Definition at line 60 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ac67189efe0f5c00878074d9e1a6fd80a}\label{classpacking_ac67189efe0f5c00878074d9e1a6fd80a}} 
 \index{packing@{packing}!finc@{finc}}
@@ -1584,7 +1615,7 @@ Definition at line 57 of file packing.\+h.
 
 
 
-Definition at line 56 of file packing.\+h.
+Definition at line 59 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_abe2f507633454e3d2d8fd42161bcae09}\label{classpacking_abe2f507633454e3d2d8fd42161bcae09}} 
 \index{packing@{packing}!g@{g}}
@@ -1594,7 +1625,7 @@ Definition at line 56 of file packing.\+h.
 
 
 
-Definition at line 44 of file packing.\+h.
+Definition at line 47 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a8a79180aa5d7bd8faa6d048f036f5d2b}\label{classpacking_a8a79180aa5d7bd8faa6d048f036f5d2b}} 
 \index{packing@{packing}!isjammed@{isjammed}}
@@ -1604,7 +1635,7 @@ Definition at line 44 of file packing.\+h.
 
 
 
-Definition at line 64 of file packing.\+h.
+Definition at line 67 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_acf38ce991d03baddda7344ec7e979f6c}\label{classpacking_acf38ce991d03baddda7344ec7e979f6c}} 
 \index{packing@{packing}!K@{K}}
@@ -1614,7 +1645,11 @@ Definition at line 64 of file packing.\+h.
 
 
 
-Definition at line 35 of file packing.\+h.
+The total kinetic energy. 
+
+
+
+Definition at line 38 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ae4a6707ea8b2af01eda36ea9d230259e}\label{classpacking_ae4a6707ea8b2af01eda36ea9d230259e}} 
 \index{packing@{packing}!L@{L}}
@@ -1624,7 +1659,11 @@ Definition at line 35 of file packing.\+h.
 
 
 
-Definition at line 18 of file packing.\+h.
+Pointer to array of box lengths (rectangular) 
+
+
+
+Definition at line 21 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ab06bef3feef42f5c48c39fa1ae297e23}\label{classpacking_ab06bef3feef42f5c48c39fa1ae297e23}} 
 \index{packing@{packing}!m@{m}}
@@ -1634,7 +1673,11 @@ Definition at line 18 of file packing.\+h.
 
 
 
-Definition at line 27 of file packing.\+h.
+Particle masses. 
+
+
+
+Definition at line 30 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a282fd04f2195ce1535ef9a1eb0c3af40}\label{classpacking_a282fd04f2195ce1535ef9a1eb0c3af40}} 
 \index{packing@{packing}!N@{N}}
@@ -1644,7 +1687,11 @@ Definition at line 27 of file packing.\+h.
 
 
 
-Definition at line 13 of file packing.\+h.
+The number of particles in the experiment. 
+
+
+
+Definition at line 16 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_ad09604fb221c69596a95083c1c8c7d47}\label{classpacking_ad09604fb221c69596a95083c1c8c7d47}} 
 \index{packing@{packing}!NC@{NC}}
@@ -1654,7 +1701,11 @@ Definition at line 13 of file packing.\+h.
 
 
 
-Definition at line 16 of file packing.\+h.
+The number of possible interparticle contacts. 
+
+
+
+Definition at line 19 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a212d4cc14a81cd3bb06ec7cbb5b74567}\label{classpacking_a212d4cc14a81cd3bb06ec7cbb5b74567}} 
 \index{packing@{packing}!N\+C\+E\+L\+LS@{N\+C\+E\+L\+LS}}
@@ -1664,7 +1715,7 @@ Definition at line 16 of file packing.\+h.
 
 
 
-Definition at line 41 of file packing.\+h.
+Definition at line 44 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a9a8d986ed98d37a87ea3f3785c0ffe61}\label{classpacking_a9a8d986ed98d37a87ea3f3785c0ffe61}} 
 \index{packing@{packing}!N\+CL@{N\+CL}}
@@ -1674,7 +1725,7 @@ Definition at line 41 of file packing.\+h.
 
 
 
-Definition at line 40 of file packing.\+h.
+Definition at line 43 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a4e173c52dc54a01ee8a8c42a0afd473f}\label{classpacking_a4e173c52dc54a01ee8a8c42a0afd473f}} 
 \index{packing@{packing}!N\+CN@{N\+CN}}
@@ -1684,7 +1735,7 @@ Definition at line 40 of file packing.\+h.
 
 
 
-Definition at line 42 of file packing.\+h.
+Definition at line 45 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a43d0d9d087ec30c847e89b5002e422d4}\label{classpacking_a43d0d9d087ec30c847e89b5002e422d4}} 
 \index{packing@{packing}!N\+D\+IM@{N\+D\+IM}}
@@ -1694,7 +1745,11 @@ Definition at line 42 of file packing.\+h.
 
 
 
-Definition at line 14 of file packing.\+h.
+The physical dimension of the space. This can be an integer value of 1, 2, or 3. 
+
+
+
+Definition at line 17 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a4ef3865ec63508098d2957022fe11b8f}\label{classpacking_a4ef3865ec63508098d2957022fe11b8f}} 
 \index{packing@{packing}!neighborlist@{neighborlist}}
@@ -1704,7 +1759,7 @@ Definition at line 14 of file packing.\+h.
 
 
 
-Definition at line 50 of file packing.\+h.
+Definition at line 53 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_aae18c45219be166f5f1e44ab838f2252}\label{classpacking_aae18c45219be166f5f1e44ab838f2252}} 
 \index{packing@{packing}!nnupdate@{nnupdate}}
@@ -1714,7 +1769,7 @@ Definition at line 50 of file packing.\+h.
 
 
 
-Definition at line 43 of file packing.\+h.
+Definition at line 46 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a2e20ad3bfc90e5c328dddd7da34291e1}\label{classpacking_a2e20ad3bfc90e5c328dddd7da34291e1}} 
 \index{packing@{packing}!np@{np}}
@@ -1724,7 +1779,7 @@ Definition at line 43 of file packing.\+h.
 
 
 
-Definition at line 59 of file packing.\+h.
+Definition at line 62 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a31eede3d604c45fef6021170ee506c77}\label{classpacking_a31eede3d604c45fef6021170ee506c77}} 
 \index{packing@{packing}!nr@{nr}}
@@ -1734,7 +1789,11 @@ Definition at line 59 of file packing.\+h.
 
 
 
-Definition at line 36 of file packing.\+h.
+The number of rattler particles. 
+
+
+
+Definition at line 39 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_abbc23675b258dfad02a53e578c1e4589}\label{classpacking_abbc23675b258dfad02a53e578c1e4589}} 
 \index{packing@{packing}!pc@{pc}}
@@ -1744,7 +1803,11 @@ Definition at line 36 of file packing.\+h.
 
 
 
-Definition at line 29 of file packing.\+h.
+Pointer to particle contact list. 
+
+
+
+Definition at line 32 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a951a89b6ca12a40cb60344752bd8d817}\label{classpacking_a951a89b6ca12a40cb60344752bd8d817}} 
 \index{packing@{packing}!phi@{phi}}
@@ -1754,7 +1817,11 @@ Definition at line 29 of file packing.\+h.
 
 
 
-Definition at line 32 of file packing.\+h.
+Packing fraction. Values range between 0 and 1. 
+
+
+
+Definition at line 35 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a495864a18a5eeef957d7a1bc3d3eb2bd}\label{classpacking_a495864a18a5eeef957d7a1bc3d3eb2bd}} 
 \index{packing@{packing}!plotit@{plotit}}
@@ -1764,7 +1831,7 @@ Definition at line 32 of file packing.\+h.
 
 
 
-Definition at line 63 of file packing.\+h.
+Definition at line 66 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_aa88ec1647a3bdcf9c3cc03ea03257c1b}\label{classpacking_aa88ec1647a3bdcf9c3cc03ea03257c1b}} 
 \index{packing@{packing}!plotskip@{plotskip}}
@@ -1774,7 +1841,7 @@ Definition at line 63 of file packing.\+h.
 
 
 
-Definition at line 62 of file packing.\+h.
+Definition at line 65 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a3e301d8084ada7f0258b80639fa83c88}\label{classpacking_a3e301d8084ada7f0258b80639fa83c88}} 
 \index{packing@{packing}!r@{r}}
@@ -1784,7 +1851,11 @@ Definition at line 62 of file packing.\+h.
 
 
 
-Definition at line 26 of file packing.\+h.
+Particle radii. 
+
+
+
+Definition at line 29 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_aefd159c50069573f1f2a3a6f0ff50984}\label{classpacking_aefd159c50069573f1f2a3a6f0ff50984}} 
 \index{packing@{packing}!rcut@{rcut}}
@@ -1794,7 +1865,7 @@ Definition at line 26 of file packing.\+h.
 
 
 
-Definition at line 39 of file packing.\+h.
+Definition at line 42 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_aa5a588c50b2c22b3c2917a2da12f33e5}\label{classpacking_aa5a588c50b2c22b3c2917a2da12f33e5}} 
 \index{packing@{packing}!seed@{seed}}
@@ -1804,7 +1875,11 @@ Definition at line 39 of file packing.\+h.
 
 
 
-Definition at line 19 of file packing.\+h.
+The initial seed. 
+
+
+
+Definition at line 22 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a7d70ed77edfe21649b824f01d26432d0}\label{classpacking_a7d70ed77edfe21649b824f01d26432d0}} 
 \index{packing@{packing}!statobj@{statobj}}
@@ -1814,7 +1889,7 @@ Definition at line 19 of file packing.\+h.
 
 
 
-Definition at line 67 of file packing.\+h.
+Definition at line 70 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a4412ad37535700fcf62fb9e3d87c2c49}\label{classpacking_a4412ad37535700fcf62fb9e3d87c2c49}} 
 \index{packing@{packing}!U@{U}}
@@ -1824,7 +1899,11 @@ Definition at line 67 of file packing.\+h.
 
 
 
-Definition at line 34 of file packing.\+h.
+The total potential energy. 
+
+
+
+Definition at line 37 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a25a8813f1efa77beae413fe335bec3a7}\label{classpacking_a25a8813f1efa77beae413fe335bec3a7}} 
 \index{packing@{packing}!v@{v}}
@@ -1834,7 +1913,11 @@ Definition at line 34 of file packing.\+h.
 
 
 
-Definition at line 23 of file packing.\+h.
+Pointer to two-\/dimensional array containing particle velocties. 
+
+
+
+Definition at line 26 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a3b56d5b429817628d1cd764f4a62827d}\label{classpacking_a3b56d5b429817628d1cd764f4a62827d}} 
 \index{packing@{packing}!x@{x}}
@@ -1844,7 +1927,11 @@ Definition at line 23 of file packing.\+h.
 
 
 
-Definition at line 22 of file packing.\+h.
+Pointer to two-\/dimensional array containing particle positions. 
+
+
+
+Definition at line 25 of file packing.\+h.
 
 \mbox{\Hypertarget{classpacking_a8c37b117034cced906a5232358752725}\label{classpacking_a8c37b117034cced906a5232358752725}} 
 \index{packing@{packing}!xyzobj@{xyzobj}}
@@ -1854,7 +1941,7 @@ Definition at line 22 of file packing.\+h.
 
 
 
-Definition at line 65 of file packing.\+h.
+Definition at line 68 of file packing.\+h.
 
 
 
