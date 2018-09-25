@@ -10,17 +10,17 @@ using namespace std;
 
 int main(){
 	// local variables for packing
-  string fstr = "../test_input_files/residue_input_test.dat";
+  string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/core/io/core_input_N7_pdb1i1w_seed13.dat";
 	string cfgstr = "residue_cfg_test.dat";
 	string statstr = "residue_stat_test.dat";
 	string enstr = "residue_test_Energy.dat";
 	string xyzstr = "residue_test.xyz";
-	int N = 12;
+	int N = 7;
 	int dof = 6;
 	int nc = -1;
 	if (nc >= 80)
 		nc = 4;
-	int seed = 1;
+	int seed = 13;
 
 	// initialize rigid body packing
 	rigidbody respack(fstr,N,dof,nc,seed);
