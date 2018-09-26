@@ -269,6 +269,10 @@ void rigidbody::get_file_header(string &rbstr) {
 	int i, j;
 	double val, Ltmp;
 	ifstream obj(rbstr.c_str());
+	if (!obj.is_open()){
+		cout << "Input file not opened, throwing error..." << endl;
+		throw;
+	}
 
 	// get number of particles
 	obj >> i;
@@ -1580,7 +1584,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 					this->print_c_mat();
 				}
 				if (xyzobj.is_open())
-					this->print_xyz();
+					this->rigidbody_xyz();
 
 				cout << endl;
 				cout << endl;
@@ -1699,7 +1703,7 @@ void rigidbody::print_config() {
 			configobj << setw(w) << i;
 			configobj << setw(w) << setprecision(p) << ar[i][j];
 			for (d = 0; d < NDIM; d++)
-				configobj << setw(w) << setprecision(p) << xW[i][j][d];
+				configobj << setw(w) << setprecision(p) << xW[i][j][d]+x[i][d];
 			configobj << setw(w) << setprecision(p) << r[i];
 			for (d = 0; d < NDIM; d++)
 				configobj << setw(w) << setprecision(p) << x[i][d];

@@ -10,7 +10,7 @@ using namespace std;
 
 int main() {
 	// local variables for packing
-  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/core/io/core_input_N7_pdb1i1w_seed13.dat";
+  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/core/io/core_input_N7_pdb1n4w_seed15.dat";
 	string cfgstr = "residue_cfg_test.dat";
 	string statstr = "residue_stat_test.dat";
 	string enstr = "residue_test_Energy.dat";
@@ -76,6 +76,9 @@ int main() {
 	// print data
 	respack.print_stat();
 	respack.print_config();
+
+	// print xyz
+	respack.rigidbody_xyz();
 
 	return 0;
 }
