@@ -1,0 +1,503 @@
+\hypertarget{classrigidbody}{}\section{rigidbody Class Reference}
+\label{classrigidbody}\index{rigidbody@{rigidbody}}
+
+
+{\ttfamily \#include $<$rigidbody.\+h$>$}
+
+Inheritance diagram for rigidbody\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classrigidbody}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classrigidbody_a2d1f12365075606f81a18c3ce9454246}{rigidbody}} (string \&rbstr, int n, int dof, int nc, int s)
+\item 
+\mbox{\hyperlink{classrigidbody_a70821dc58b283f257e84016962f06381}{$\sim$rigidbody}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a3e81aee584c1f57c729d68000637df37}{reset\+\_\+cm}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_af5b3f78c77e8535e2d3f065f66225d3c}{update\+\_\+phi}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a30fc1a6f7cc98cee01b1a0b284c9a461}{update\+\_\+euler}} ()
+\item 
+int \mbox{\hyperlink{classrigidbody_a9287ef3ed29115edff7a823300b7623d}{get\+\_\+ac\+\_\+sum}} ()
+\item 
+double \mbox{\hyperlink{classrigidbody_ab60de6c5a1f3595ab4b6c87a2518acf6}{get\+\_\+atomic\+\_\+distance}} (int i, int j, int ai, int aj, double aij\mbox{[}$\,$\mbox{]})
+\item 
+double \mbox{\hyperlink{classrigidbody_afdbc4769886ebdd81947d3f9cdb5a905}{get\+\_\+\+Natot}} ()
+\item 
+double \mbox{\hyperlink{classrigidbody_ae697251dbe67f538682959ccc7aacec0}{get\+\_\+\+L\+WX}} ()
+\item 
+double \mbox{\hyperlink{classrigidbody_a922325c42744a3e26fafe69e34c884ab}{get\+\_\+\+L\+WY}} ()
+\item 
+double \mbox{\hyperlink{classrigidbody_aa97f66b8147830cf83b2298ab8c2b286}{get\+\_\+\+L\+WZ}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a0f3f1cbb05a92009e5831e657ee608cc}{get\+\_\+file\+\_\+header}} (string \&rbstr)
+\item 
+void \mbox{\hyperlink{classrigidbody_a948adf54e71037640543643bbfd1a7c5}{initialize\+\_\+particles}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a41b996f7b9d8064b3c14a2613293873c}{initialize\+\_\+dynamics}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a84c05d9190b4cab031ca9ab7cd18cd9e}{read\+\_\+in\+\_\+info}} (string \&rbstr)
+\item 
+void \mbox{\hyperlink{classrigidbody_ae4020098663edf7350e3f7061dacb82a}{initialize\+\_\+quaternions}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a4367ebfbba9658e93277b388c346ef6d}{q\+\_\+step}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_ab0dbd8ea400ec317677675c6298d1243}{rotation\+\_\+\+W2M}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a0329c2b25c20317b7e869e35adc27b0a}{euler\+\_\+q}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a839b5b063891c8fc71ad3dd990cfbf4a}{pos\+\_\+frot}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_aff843c0c9e358e2d33b0c7ff02c37573}{pos\+\_\+brot}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a0855a20a0df2aa086f24f2a383cf8189}{free\+\_\+md}} (double tmp0, double tend)
+\item 
+void \mbox{\hyperlink{classrigidbody_adcb984a4d69585e1c617d9506218ac9c}{free\+\_\+fire}} (double tmp0, double tend)
+\item 
+void \mbox{\hyperlink{classrigidbody_afabb8a8ca32317fc8fdb534932e0de88}{verlet\+\_\+first}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a284a5d8bbc75fe6fd81217c6f861ae60}{verlet\+\_\+second}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a6fd9a15863ae304469f28e4ef7274058}{force\+\_\+update}} ()
+\item 
+int \mbox{\hyperlink{classrigidbody_a8bb19f9f20480add2468b3b9376f7e7a}{rmv\+\_\+rattlers}} (int \&krcrs)
+\item 
+int \mbox{\hyperlink{classrigidbody_a69d75bd6de90bb5b9a446b8aa23741de}{id\+\_\+rattlers}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_ab2d23acd630aa36261f68b7c01ce3dd4}{rb\+\_\+jamming\+\_\+finder}} (double tmp0, int NT, double dphi, double Utol, double Ktol)
+\item 
+void \mbox{\hyperlink{classrigidbody_aede3f62a6b910a9bc10641de08a1f329}{rb\+\_\+scale}} (double phinew)
+\item 
+void \mbox{\hyperlink{classrigidbody_ace2c7ef24606c9912fd004a293569b6c}{rb\+\_\+root\+\_\+search}} (double \&phiH, double \&phiL, int \&check\+\_\+rattlers, int epconst, int \mbox{\hyperlink{classpacking_a31eede3d604c45fef6021170ee506c77}{nr}}, double dphi0, double Ktol, double Utol, int t)
+\item 
+void \mbox{\hyperlink{classrigidbody_a11a83ecf91f922faff8e2f26c8eace54}{rb\+\_\+fire}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_aa00fc3768317e6852643a37cbe19c76a}{print\+\_\+stat}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a24ffb7711348dc2813b8c07e899d065f}{print\+\_\+ac}} (std\+::ofstream \&obj, int w)
+\item 
+void \mbox{\hyperlink{classrigidbody_aa486e3fa6409f5031188193e37eadc10}{print\+\_\+config}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_aecb6c9283be568ba2c303d82d174d987}{monitor\+\_\+scale}} (double dphi, double phiL, double phiH)
+\item 
+void \mbox{\hyperlink{classrigidbody_a0af56b5a8e3c6550c9a45b6a59c262ef}{rigidbody\+\_\+md\+\_\+monitor}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_a05123548826f40f3737bd9f0fce21a85}{rigidbody\+\_\+xyz}} ()
+\item 
+void \mbox{\hyperlink{classrigidbody_ae7af1f93b40b47c9e855bcb0adb74434}{rigidbody\+\_\+print\+\_\+vars}} ()
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+The rigidbody class inherits from the packing class and contains functionality to simulate a packing experiement consisting of rigidbodies. 
+
+Definition at line 17 of file rigidbody.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classrigidbody_a2d1f12365075606f81a18c3ce9454246}\label{classrigidbody_a2d1f12365075606f81a18c3ce9454246}} 
+\index{rigidbody@{rigidbody}!rigidbody@{rigidbody}}
+\index{rigidbody@{rigidbody}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rigidbody()}{rigidbody()}}
+{\footnotesize\ttfamily rigidbody\+::rigidbody (\begin{DoxyParamCaption}\item[{string \&}]{rbstr,  }\item[{int}]{n,  }\item[{int}]{dof,  }\item[{int}]{nc,  }\item[{int}]{s }\end{DoxyParamCaption})}
+
+
+
+Definition at line 36 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a70821dc58b283f257e84016962f06381}\label{classrigidbody_a70821dc58b283f257e84016962f06381}} 
+\index{rigidbody@{rigidbody}!````~rigidbody@{$\sim$rigidbody}}
+\index{````~rigidbody@{$\sim$rigidbody}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{$\sim$rigidbody()}{~rigidbody()}}
+{\footnotesize\ttfamily rigidbody\+::$\sim$rigidbody (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 72 of file rigidbody.\+cpp.
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classrigidbody_a0329c2b25c20317b7e869e35adc27b0a}\label{classrigidbody_a0329c2b25c20317b7e869e35adc27b0a}} 
+\index{rigidbody@{rigidbody}!euler\+\_\+q@{euler\+\_\+q}}
+\index{euler\+\_\+q@{euler\+\_\+q}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{euler\+\_\+q()}{euler\_q()}}
+{\footnotesize\ttfamily void rigidbody\+::euler\+\_\+q (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 813 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a6fd9a15863ae304469f28e4ef7274058}\label{classrigidbody_a6fd9a15863ae304469f28e4ef7274058}} 
+\index{rigidbody@{rigidbody}!force\+\_\+update@{force\+\_\+update}}
+\index{force\+\_\+update@{force\+\_\+update}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{force\+\_\+update()}{force\_update()}}
+{\footnotesize\ttfamily void rigidbody\+::force\+\_\+update (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 972 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_adcb984a4d69585e1c617d9506218ac9c}\label{classrigidbody_adcb984a4d69585e1c617d9506218ac9c}} 
+\index{rigidbody@{rigidbody}!free\+\_\+fire@{free\+\_\+fire}}
+\index{free\+\_\+fire@{free\+\_\+fire}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{free\+\_\+fire()}{free\_fire()}}
+{\footnotesize\ttfamily void rigidbody\+::free\+\_\+fire (\begin{DoxyParamCaption}\item[{double}]{tmp0,  }\item[{double}]{tend }\end{DoxyParamCaption})}
+
+
+
+Definition at line 558 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a0855a20a0df2aa086f24f2a383cf8189}\label{classrigidbody_a0855a20a0df2aa086f24f2a383cf8189}} 
+\index{rigidbody@{rigidbody}!free\+\_\+md@{free\+\_\+md}}
+\index{free\+\_\+md@{free\+\_\+md}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{free\+\_\+md()}{free\_md()}}
+{\footnotesize\ttfamily void rigidbody\+::free\+\_\+md (\begin{DoxyParamCaption}\item[{double}]{tmp0,  }\item[{double}]{tend }\end{DoxyParamCaption})}
+
+
+
+Definition at line 506 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a9287ef3ed29115edff7a823300b7623d}\label{classrigidbody_a9287ef3ed29115edff7a823300b7623d}} 
+\index{rigidbody@{rigidbody}!get\+\_\+ac\+\_\+sum@{get\+\_\+ac\+\_\+sum}}
+\index{get\+\_\+ac\+\_\+sum@{get\+\_\+ac\+\_\+sum}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{get\+\_\+ac\+\_\+sum()}{get\_ac\_sum()}}
+{\footnotesize\ttfamily int rigidbody\+::get\+\_\+ac\+\_\+sum (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 187 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_ab60de6c5a1f3595ab4b6c87a2518acf6}\label{classrigidbody_ab60de6c5a1f3595ab4b6c87a2518acf6}} 
+\index{rigidbody@{rigidbody}!get\+\_\+atomic\+\_\+distance@{get\+\_\+atomic\+\_\+distance}}
+\index{get\+\_\+atomic\+\_\+distance@{get\+\_\+atomic\+\_\+distance}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{get\+\_\+atomic\+\_\+distance()}{get\_atomic\_distance()}}
+{\footnotesize\ttfamily double rigidbody\+::get\+\_\+atomic\+\_\+distance (\begin{DoxyParamCaption}\item[{int}]{i,  }\item[{int}]{j,  }\item[{int}]{ai,  }\item[{int}]{aj,  }\item[{double}]{aij\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 195 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a0f3f1cbb05a92009e5831e657ee608cc}\label{classrigidbody_a0f3f1cbb05a92009e5831e657ee608cc}} 
+\index{rigidbody@{rigidbody}!get\+\_\+file\+\_\+header@{get\+\_\+file\+\_\+header}}
+\index{get\+\_\+file\+\_\+header@{get\+\_\+file\+\_\+header}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{get\+\_\+file\+\_\+header()}{get\_file\_header()}}
+{\footnotesize\ttfamily void rigidbody\+::get\+\_\+file\+\_\+header (\begin{DoxyParamCaption}\item[{string \&}]{rbstr }\end{DoxyParamCaption})}
+
+
+
+Definition at line 268 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_ae697251dbe67f538682959ccc7aacec0}\label{classrigidbody_ae697251dbe67f538682959ccc7aacec0}} 
+\index{rigidbody@{rigidbody}!get\+\_\+\+L\+WX@{get\+\_\+\+L\+WX}}
+\index{get\+\_\+\+L\+WX@{get\+\_\+\+L\+WX}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{get\+\_\+\+L\+W\+X()}{get\_LWX()}}
+{\footnotesize\ttfamily double rigidbody\+::get\+\_\+\+L\+WX (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 229 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a922325c42744a3e26fafe69e34c884ab}\label{classrigidbody_a922325c42744a3e26fafe69e34c884ab}} 
+\index{rigidbody@{rigidbody}!get\+\_\+\+L\+WY@{get\+\_\+\+L\+WY}}
+\index{get\+\_\+\+L\+WY@{get\+\_\+\+L\+WY}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{get\+\_\+\+L\+W\+Y()}{get\_LWY()}}
+{\footnotesize\ttfamily double rigidbody\+::get\+\_\+\+L\+WY (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 239 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_aa97f66b8147830cf83b2298ab8c2b286}\label{classrigidbody_aa97f66b8147830cf83b2298ab8c2b286}} 
+\index{rigidbody@{rigidbody}!get\+\_\+\+L\+WZ@{get\+\_\+\+L\+WZ}}
+\index{get\+\_\+\+L\+WZ@{get\+\_\+\+L\+WZ}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{get\+\_\+\+L\+W\+Z()}{get\_LWZ()}}
+{\footnotesize\ttfamily double rigidbody\+::get\+\_\+\+L\+WZ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 249 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_afdbc4769886ebdd81947d3f9cdb5a905}\label{classrigidbody_afdbc4769886ebdd81947d3f9cdb5a905}} 
+\index{rigidbody@{rigidbody}!get\+\_\+\+Natot@{get\+\_\+\+Natot}}
+\index{get\+\_\+\+Natot@{get\+\_\+\+Natot}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{get\+\_\+\+Natot()}{get\_Natot()}}
+{\footnotesize\ttfamily double rigidbody\+::get\+\_\+\+Natot (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 219 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a69d75bd6de90bb5b9a446b8aa23741de}\label{classrigidbody_a69d75bd6de90bb5b9a446b8aa23741de}} 
+\index{rigidbody@{rigidbody}!id\+\_\+rattlers@{id\+\_\+rattlers}}
+\index{id\+\_\+rattlers@{id\+\_\+rattlers}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{id\+\_\+rattlers()}{id\_rattlers()}}
+{\footnotesize\ttfamily int rigidbody\+::id\+\_\+rattlers (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1261 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a41b996f7b9d8064b3c14a2613293873c}\label{classrigidbody_a41b996f7b9d8064b3c14a2613293873c}} 
+\index{rigidbody@{rigidbody}!initialize\+\_\+dynamics@{initialize\+\_\+dynamics}}
+\index{initialize\+\_\+dynamics@{initialize\+\_\+dynamics}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{initialize\+\_\+dynamics()}{initialize\_dynamics()}}
+{\footnotesize\ttfamily void rigidbody\+::initialize\+\_\+dynamics (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 368 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a948adf54e71037640543643bbfd1a7c5}\label{classrigidbody_a948adf54e71037640543643bbfd1a7c5}} 
+\index{rigidbody@{rigidbody}!initialize\+\_\+particles@{initialize\+\_\+particles}}
+\index{initialize\+\_\+particles@{initialize\+\_\+particles}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{initialize\+\_\+particles()}{initialize\_particles()}}
+{\footnotesize\ttfamily void rigidbody\+::initialize\+\_\+particles (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 326 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_ae4020098663edf7350e3f7061dacb82a}\label{classrigidbody_ae4020098663edf7350e3f7061dacb82a}} 
+\index{rigidbody@{rigidbody}!initialize\+\_\+quaternions@{initialize\+\_\+quaternions}}
+\index{initialize\+\_\+quaternions@{initialize\+\_\+quaternions}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{initialize\+\_\+quaternions()}{initialize\_quaternions()}}
+{\footnotesize\ttfamily void rigidbody\+::initialize\+\_\+quaternions (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 481 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_aecb6c9283be568ba2c303d82d174d987}\label{classrigidbody_aecb6c9283be568ba2c303d82d174d987}} 
+\index{rigidbody@{rigidbody}!monitor\+\_\+scale@{monitor\+\_\+scale}}
+\index{monitor\+\_\+scale@{monitor\+\_\+scale}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{monitor\+\_\+scale()}{monitor\_scale()}}
+{\footnotesize\ttfamily void rigidbody\+::monitor\+\_\+scale (\begin{DoxyParamCaption}\item[{double}]{dphi,  }\item[{double}]{phiL,  }\item[{double}]{phiH }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1768 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_aff843c0c9e358e2d33b0c7ff02c37573}\label{classrigidbody_aff843c0c9e358e2d33b0c7ff02c37573}} 
+\index{rigidbody@{rigidbody}!pos\+\_\+brot@{pos\+\_\+brot}}
+\index{pos\+\_\+brot@{pos\+\_\+brot}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{pos\+\_\+brot()}{pos\_brot()}}
+{\footnotesize\ttfamily void rigidbody\+::pos\+\_\+brot (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 945 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a839b5b063891c8fc71ad3dd990cfbf4a}\label{classrigidbody_a839b5b063891c8fc71ad3dd990cfbf4a}} 
+\index{rigidbody@{rigidbody}!pos\+\_\+frot@{pos\+\_\+frot}}
+\index{pos\+\_\+frot@{pos\+\_\+frot}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{pos\+\_\+frot()}{pos\_frot()}}
+{\footnotesize\ttfamily void rigidbody\+::pos\+\_\+frot (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 919 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a24ffb7711348dc2813b8c07e899d065f}\label{classrigidbody_a24ffb7711348dc2813b8c07e899d065f}} 
+\index{rigidbody@{rigidbody}!print\+\_\+ac@{print\+\_\+ac}}
+\index{print\+\_\+ac@{print\+\_\+ac}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{print\+\_\+ac()}{print\_ac()}}
+{\footnotesize\ttfamily void rigidbody\+::print\+\_\+ac (\begin{DoxyParamCaption}\item[{std\+::ofstream \&}]{obj,  }\item[{int}]{w }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1647 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_aa486e3fa6409f5031188193e37eadc10}\label{classrigidbody_aa486e3fa6409f5031188193e37eadc10}} 
+\index{rigidbody@{rigidbody}!print\+\_\+config@{print\+\_\+config}}
+\index{print\+\_\+config@{print\+\_\+config}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{print\+\_\+config()}{print\_config()}}
+{\footnotesize\ttfamily void rigidbody\+::print\+\_\+config (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1654 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_aa00fc3768317e6852643a37cbe19c76a}\label{classrigidbody_aa00fc3768317e6852643a37cbe19c76a}} 
+\index{rigidbody@{rigidbody}!print\+\_\+stat@{print\+\_\+stat}}
+\index{print\+\_\+stat@{print\+\_\+stat}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{print\+\_\+stat()}{print\_stat()}}
+{\footnotesize\ttfamily void rigidbody\+::print\+\_\+stat (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1611 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a4367ebfbba9658e93277b388c346ef6d}\label{classrigidbody_a4367ebfbba9658e93277b388c346ef6d}} 
+\index{rigidbody@{rigidbody}!q\+\_\+step@{q\+\_\+step}}
+\index{q\+\_\+step@{q\+\_\+step}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{q\+\_\+step()}{q\_step()}}
+{\footnotesize\ttfamily void rigidbody\+::q\+\_\+step (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 758 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a11a83ecf91f922faff8e2f26c8eace54}\label{classrigidbody_a11a83ecf91f922faff8e2f26c8eace54}} 
+\index{rigidbody@{rigidbody}!rb\+\_\+fire@{rb\+\_\+fire}}
+\index{rb\+\_\+fire@{rb\+\_\+fire}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rb\+\_\+fire()}{rb\_fire()}}
+{\footnotesize\ttfamily void rigidbody\+::rb\+\_\+fire (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1318 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_ab2d23acd630aa36261f68b7c01ce3dd4}\label{classrigidbody_ab2d23acd630aa36261f68b7c01ce3dd4}} 
+\index{rigidbody@{rigidbody}!rb\+\_\+jamming\+\_\+finder@{rb\+\_\+jamming\+\_\+finder}}
+\index{rb\+\_\+jamming\+\_\+finder@{rb\+\_\+jamming\+\_\+finder}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rb\+\_\+jamming\+\_\+finder()}{rb\_jamming\_finder()}}
+{\footnotesize\ttfamily void rigidbody\+::rb\+\_\+jamming\+\_\+finder (\begin{DoxyParamCaption}\item[{double}]{tmp0,  }\item[{int}]{NT,  }\item[{double}]{dphi,  }\item[{double}]{Utol,  }\item[{double}]{Ktol }\end{DoxyParamCaption})}
+
+
+
+Definition at line 619 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_ace2c7ef24606c9912fd004a293569b6c}\label{classrigidbody_ace2c7ef24606c9912fd004a293569b6c}} 
+\index{rigidbody@{rigidbody}!rb\+\_\+root\+\_\+search@{rb\+\_\+root\+\_\+search}}
+\index{rb\+\_\+root\+\_\+search@{rb\+\_\+root\+\_\+search}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rb\+\_\+root\+\_\+search()}{rb\_root\_search()}}
+{\footnotesize\ttfamily void rigidbody\+::rb\+\_\+root\+\_\+search (\begin{DoxyParamCaption}\item[{double \&}]{phiH,  }\item[{double \&}]{phiL,  }\item[{int \&}]{check\+\_\+rattlers,  }\item[{int}]{epconst,  }\item[{int}]{nr,  }\item[{double}]{dphi0,  }\item[{double}]{Ktol,  }\item[{double}]{Utol,  }\item[{int}]{t }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1420 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_aede3f62a6b910a9bc10641de08a1f329}\label{classrigidbody_aede3f62a6b910a9bc10641de08a1f329}} 
+\index{rigidbody@{rigidbody}!rb\+\_\+scale@{rb\+\_\+scale}}
+\index{rb\+\_\+scale@{rb\+\_\+scale}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rb\+\_\+scale()}{rb\_scale()}}
+{\footnotesize\ttfamily void rigidbody\+::rb\+\_\+scale (\begin{DoxyParamCaption}\item[{double}]{phinew }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1275 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a84c05d9190b4cab031ca9ab7cd18cd9e}\label{classrigidbody_a84c05d9190b4cab031ca9ab7cd18cd9e}} 
+\index{rigidbody@{rigidbody}!read\+\_\+in\+\_\+info@{read\+\_\+in\+\_\+info}}
+\index{read\+\_\+in\+\_\+info@{read\+\_\+in\+\_\+info}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{read\+\_\+in\+\_\+info()}{read\_in\_info()}}
+{\footnotesize\ttfamily void rigidbody\+::read\+\_\+in\+\_\+info (\begin{DoxyParamCaption}\item[{string \&}]{rbstr }\end{DoxyParamCaption})}
+
+
+
+Definition at line 415 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a3e81aee584c1f57c729d68000637df37}\label{classrigidbody_a3e81aee584c1f57c729d68000637df37}} 
+\index{rigidbody@{rigidbody}!reset\+\_\+cm@{reset\+\_\+cm}}
+\index{reset\+\_\+cm@{reset\+\_\+cm}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{reset\+\_\+cm()}{reset\_cm()}}
+{\footnotesize\ttfamily void rigidbody\+::reset\+\_\+cm (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 148 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a0af56b5a8e3c6550c9a45b6a59c262ef}\label{classrigidbody_a0af56b5a8e3c6550c9a45b6a59c262ef}} 
+\index{rigidbody@{rigidbody}!rigidbody\+\_\+md\+\_\+monitor@{rigidbody\+\_\+md\+\_\+monitor}}
+\index{rigidbody\+\_\+md\+\_\+monitor@{rigidbody\+\_\+md\+\_\+monitor}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rigidbody\+\_\+md\+\_\+monitor()}{rigidbody\_md\_monitor()}}
+{\footnotesize\ttfamily void rigidbody\+::rigidbody\+\_\+md\+\_\+monitor (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1718 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_ae7af1f93b40b47c9e855bcb0adb74434}\label{classrigidbody_ae7af1f93b40b47c9e855bcb0adb74434}} 
+\index{rigidbody@{rigidbody}!rigidbody\+\_\+print\+\_\+vars@{rigidbody\+\_\+print\+\_\+vars}}
+\index{rigidbody\+\_\+print\+\_\+vars@{rigidbody\+\_\+print\+\_\+vars}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rigidbody\+\_\+print\+\_\+vars()}{rigidbody\_print\_vars()}}
+{\footnotesize\ttfamily void rigidbody\+::rigidbody\+\_\+print\+\_\+vars (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1866 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a05123548826f40f3737bd9f0fce21a85}\label{classrigidbody_a05123548826f40f3737bd9f0fce21a85}} 
+\index{rigidbody@{rigidbody}!rigidbody\+\_\+xyz@{rigidbody\+\_\+xyz}}
+\index{rigidbody\+\_\+xyz@{rigidbody\+\_\+xyz}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rigidbody\+\_\+xyz()}{rigidbody\_xyz()}}
+{\footnotesize\ttfamily void rigidbody\+::rigidbody\+\_\+xyz (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1779 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a8bb19f9f20480add2468b3b9376f7e7a}\label{classrigidbody_a8bb19f9f20480add2468b3b9376f7e7a}} 
+\index{rigidbody@{rigidbody}!rmv\+\_\+rattlers@{rmv\+\_\+rattlers}}
+\index{rmv\+\_\+rattlers@{rmv\+\_\+rattlers}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rmv\+\_\+rattlers()}{rmv\_rattlers()}}
+{\footnotesize\ttfamily int rigidbody\+::rmv\+\_\+rattlers (\begin{DoxyParamCaption}\item[{int \&}]{krcrs }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1194 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_ab0dbd8ea400ec317677675c6298d1243}\label{classrigidbody_ab0dbd8ea400ec317677675c6298d1243}} 
+\index{rigidbody@{rigidbody}!rotation\+\_\+\+W2M@{rotation\+\_\+\+W2M}}
+\index{rotation\+\_\+\+W2M@{rotation\+\_\+\+W2M}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{rotation\+\_\+\+W2\+M()}{rotation\_W2M()}}
+{\footnotesize\ttfamily void rigidbody\+::rotation\+\_\+\+W2M (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 769 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a30fc1a6f7cc98cee01b1a0b284c9a461}\label{classrigidbody_a30fc1a6f7cc98cee01b1a0b284c9a461}} 
+\index{rigidbody@{rigidbody}!update\+\_\+euler@{update\+\_\+euler}}
+\index{update\+\_\+euler@{update\+\_\+euler}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{update\+\_\+euler()}{update\_euler()}}
+{\footnotesize\ttfamily void rigidbody\+::update\+\_\+euler (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 169 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_af5b3f78c77e8535e2d3f065f66225d3c}\label{classrigidbody_af5b3f78c77e8535e2d3f065f66225d3c}} 
+\index{rigidbody@{rigidbody}!update\+\_\+phi@{update\+\_\+phi}}
+\index{update\+\_\+phi@{update\+\_\+phi}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{update\+\_\+phi()}{update\_phi()}}
+{\footnotesize\ttfamily void rigidbody\+::update\+\_\+phi (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 155 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_afabb8a8ca32317fc8fdb534932e0de88}\label{classrigidbody_afabb8a8ca32317fc8fdb534932e0de88}} 
+\index{rigidbody@{rigidbody}!verlet\+\_\+first@{verlet\+\_\+first}}
+\index{verlet\+\_\+first@{verlet\+\_\+first}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{verlet\+\_\+first()}{verlet\_first()}}
+{\footnotesize\ttfamily void rigidbody\+::verlet\+\_\+first (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 719 of file rigidbody.\+cpp.
+
+\mbox{\Hypertarget{classrigidbody_a284a5d8bbc75fe6fd81217c6f861ae60}\label{classrigidbody_a284a5d8bbc75fe6fd81217c6f861ae60}} 
+\index{rigidbody@{rigidbody}!verlet\+\_\+second@{verlet\+\_\+second}}
+\index{verlet\+\_\+second@{verlet\+\_\+second}!rigidbody@{rigidbody}}
+\subsubsection{\texorpdfstring{verlet\+\_\+second()}{verlet\_second()}}
+{\footnotesize\ttfamily void rigidbody\+::verlet\+\_\+second (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 738 of file rigidbody.\+cpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{rigidbody_8h}{rigidbody.\+h}}\item 
+src/\mbox{\hyperlink{rigidbody_8cpp}{rigidbody.\+cpp}}\end{DoxyCompactItemize}
