@@ -99,6 +99,7 @@ public:
 	int get_NDIM() {return NDIM;};
 	int get_DOF() {return DOF;};
 	int get_seed() {return seed;};
+	int get_isjammed() {return isjammed;}
 	double get_dt() {return dt;};
 	double get_phi() {return phi;};
 	double get_ep() {return ep;};

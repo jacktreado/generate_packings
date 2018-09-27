@@ -10,16 +10,16 @@ using namespace std;
 
 int main() {
 	// local variables for packing
-  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/core/io/core_input_N7_pdb1n4w_seed15.dat";
-	string cfgstr = "residue_cfg_test.dat";
-	string statstr = "residue_stat_test.dat";
-	string enstr = "residue_test_Energy.dat";
+  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/io/res_input_N48_seed1.dat";
+	string cfgstr = "residue_cfg.test";
+	string statstr = "residue_stat.test";
+	string enstr = "residue_Energy.test";
 	string xyzstr = "residue_test.xyz";
-	int N = 7;
+	int N = 48;
 	int dof = 6;
 	int nc = -1;
-	if (nc >= 80)
-		nc = 4;
+	if (N >= 40)
+		nc = 3;
 	int seed = 13;
 
 	// initialize rigid body packing
