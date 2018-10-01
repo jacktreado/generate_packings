@@ -111,9 +111,7 @@ void packing::md_monitor(int t, int nr, double phiH, double phiL){
 	niso = DOF*nbb - NDIM + 1;
 
 	// print info about system
-	cout << "** =================" << endl;
-	cout << "**     t = " << t << endl;
-	cout << "** =================" << endl;
+	this->monitor_header(t);
 	cout << "** phi = " << phi << endl;
 	cout << "** phiH = " << phiH << endl;
 	cout << "** phiL = " << phiL << endl;
@@ -137,7 +135,7 @@ void packing::md_monitor(int t, int nr, double phiH, double phiL){
 	}
 }
 
-void packing::monitor_scale(double dphi, double phiL, double phiH) {
+void packing::monitor_scale(double dphi, double phiH, double phiL) {
 	cout << "phiH = " << phiH << endl;
 	cout << "phiL = " << phiL << endl;
 	cout << "dphi = " << dphi << endl;
@@ -451,6 +449,78 @@ void packing::print_nl_xyz(){
 		}
 		xyzobj << setw(w) << r[i];
 		xyzobj << endl;
+	}
+}
+
+
+void packing::print_all_nl_xyz(){
+	int i,d,dd,w;
+	w = 20;	
+
+	if (!xyzobj.is_open()){
+		cout << "ERROR: xyz file obj not open!" << endl;
+		throw "obj not open\n";
+	}
+
+	// print green if in nl of 1, red else
+	int K,M,l,k;
+	vector<int> neigh;
+	for (i=0; i<N; i++){
+		// get nl size
+		K = neighborlist[i].size();
+
+		// push back neighbors
+		for (l=0; l<K; l++)
+			neigh.push_back(neighborlist[i][l]);
+
+		// add upper t
+		for (k=0; k<i; k++){
+			M = neighborlist[k].size();
+			for (l=0; l<M; l++){
+				if (neighborlist[k][l] == i){
+					neigh.push_back(k);
+					break;
+				}
+			}
+		}
+
+		// update number of neighbors
+		K = neigh.size();
+
+		// print new .xyz header
+		xyzobj << K+1 << endl;
+		xyzobj << "Lattice=\"";
+		for (d=0; d<NDIM; d++){
+			for(dd=0; dd<NDIM; dd++){
+				if (dd==d)
+					xyzobj << L[d];
+				else
+					xyzobj << " 0.0 ";
+			}
+		}
+		xyzobj << "\" ";
+		xyzobj << '\t';
+		xyzobj << "Properties=species:S:1:pos:R:" <<  NDIM << ":radius:R:1" << endl;	
+
+		// print info for particle i
+		xyzobj << setw(w) << 'H';
+		for (d=0; d<NDIM; d++)
+			xyzobj << setw(w) << x[i][d];
+		xyzobj << setw(w) << r[i];
+		xyzobj << endl;
+
+		// print info for neighbors		
+		for (l=0; l<K; l++){
+			k = neigh[l];
+			xyzobj << setw(w) << 'C';
+			for (d=0; d<NDIM; d++)
+				xyzobj << setw(w) << x[k][d];
+			xyzobj << setw(w) << r[k];
+			xyzobj << endl;
+
+			// clear tmp neighbor list
+			neigh.clear();
+		}
 	}
 }
 

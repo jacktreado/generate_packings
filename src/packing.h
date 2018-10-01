@@ -203,6 +203,7 @@ public:
 	void print_neighborlist();
 	void print_cell_neighbors();
 	void print_nl_xyz();
+	void print_all_nl_xyz();
 	void print_cell_pos();
 	void print_clabel();
 	void print_celln();

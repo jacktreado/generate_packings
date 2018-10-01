@@ -157,7 +157,6 @@ packing::packing(string &str, int ndim, int s){
 	plotit = 1;
 }
 
-
 // N particles using neighbor list
 packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, int seed){
 	// set initial seed
@@ -165,7 +164,8 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 
 	// local variables
 	int i,j,d;
-	double rad,msum,vol,dphi,rc;
+	double rad,msum,vol,dphi,rc,L0;
+	L0 = 1.0;
 
 	// set parameters to member variables
 	N = n;
@@ -176,24 +176,14 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	nnupdate = nnu;
 	this->initialize_NC();
 
-	// get rad, # of neighbors, rcut magnitude (set to 2.5x large particle radius)
+	// get rad, # of neighbors
 	if (NDIM == 2){
 		rad = sqrt(phi0/(N*PI));
-		if (NCL == -1)
-			NCN = -1;
-		else{
-			rc = 2.5;
-			NCN = 8;
-		}
+		NCN = 8;
 	}
 	else if (NDIM == 3){
-		rad = pow((3.0*phi0)/(N*4.0*PI),1.0/NDIM);
-		if (NCL == -1)
-			NCN = -1;
-		else{
-			rc = 2.5;
-			NCN = 26;
-		}
+		rad = pow((3.0*L0*L0*L0*phi0)/(N*4.0*PI),1.0/NDIM);		
+		NCN = 26;
 	}		
 	else{
 		cout << "NDIM = " << NDIM << " not yet supported...." << endl;
@@ -202,27 +192,25 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	}
 	cout << "rad = " << rad << endl;
 
-	// get rcut
+	// get rcut (rc = magnitude, in units of larger radius)
+	rc = 3.5;
 	rcut = rc*alpha*rad;
 
 	// initial dt = 1
 	dt = 1.0;
 
 	// initial box = unit length
-	this->initialize_box(1.0);
+	this->initialize_box(L0);
 
 	// random initial positions & velocities, set force to 0, r to phi0 val
 	this->initialize_particles(seed,rad,alpha);	
 
 	// either "freeze" cell list by setting ptrs to null, or allocate memory
-	if (NCL == -1)
+	if (NCL < 0)
 		this->freeze_nlcl();
 	else{
 		this->setup_nlcl();
-		this->get_cell_neighbors();
-		this->get_cell_positions();
-		this->update_cell();
-		this->update_neighborlist();
+		this->initialize_nlcl();
 	}
 
 	// set std sim variables (energy, plotting, etc.)
@@ -242,7 +230,10 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	for(i=0; i<N; i++)
 		msum += m[i];
 	phi = msum/vol;
+	cout << "phi init = " << phi << endl;
 	dphi = phi0-phi;
+	cout << "setting to phi0 = " << phi0 << endl;
+	cout << "dphi = " << dphi << endl;
 	this->scale_sys(dphi);
 }
 
@@ -298,6 +289,28 @@ packing::~packing(){
 
 ================================== 
 */
+
+void packing::initialize_nlcl(){
+	cout << "** INIALIZING NLCL:" << endl;
+	cout << "** getting cell neighbors..." << endl;
+	this->get_cell_neighbors();
+
+	cout << "** getting cell positions..." << endl;
+	this->get_cell_positions();
+	this->print_cell_pos();
+
+	cout << "** populating cell information..." << endl;
+	this->update_cell();
+	this->print_cell();
+	this->print_clabel();
+	this->print_celln();	
+	this->print_cell_neighbors();	
+
+	cout << "** populating neighbor list information..." << endl;
+	this->update_neighborlist();
+	this->print_neighborlist();
+	cout << "** NLCL INITIALIZATION COMPLETE." << endl;
+}
 
 
 void packing::freeze_nlcl(){

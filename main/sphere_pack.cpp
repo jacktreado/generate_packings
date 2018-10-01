@@ -50,26 +50,33 @@ int main(int argc, char *argv[]){
 	stringstream s1ss(seed_str);
 	s1ss >> seed;
 
-	if (N > 999){
-		cout << "@@ ERROR: SYSTEM SIZE TOO LARGE, EXITING PROGRAM...." << endl;
-		return 0;
-	}
-
 	// jamming variables
 	int plotskip;
 	double ep,dt,Utol,Ktol,t;
 
 	// set parameters
 	ep = 10.0;			// energy scale (units of kbt)
-	t = 50.0;			// total amount of time (units of sim time)
+	t = 5e3;			// total amount of time (units of sim time)
 	dt = 0.1;			// time step (units of md time)
 	plotskip = 2e3;		// # of steps to skip plotting
 	Utol = N*1e-8;		// potential energy tolerance
 	Ktol = N*1e-20;		// kinetic energy tolerance
 
+	// NLCL parameters
+	int nc,nnu;
+	nnu = 100;
+	if (N < 50)
+		nc = -1;
+	else if (N < 800)
+		nc = 3;
+	else if (N < 1e4)
+		nc = 4;
+	else
+		nc = 5;	
+
 	// packing object instantiation
 	cout << "@@ Instantiating packing object..." << endl;
-	packing pack(N,NDIM,alpha,phi0,seed);
+	packing pack(N,NDIM,alpha,phi0,nc,nnu,seed);
 
 	// setup simulation
 	pack.set_ep(ep);

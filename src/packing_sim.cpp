@@ -228,8 +228,10 @@ void packing::hs_force(){
 	else
 		jend = N;
 
-	// reset U
+	// reset U and contacts
 	U = 0;
+	this->reset_c();
+
 
 	for (i=0; i<N; i++){
 		if (use_ncnl)
@@ -241,6 +243,8 @@ void packing::hs_force(){
 			// get particle index if using nlcl
 			if (use_ncnl)
 				j = neighborlist[i].at(jj);
+			else
+				j = jj;
 
 			// contact matrix index
 			cind = N*i + j - ((i+1)*(i+2))/2;
@@ -268,9 +272,6 @@ void packing::hs_force(){
 				// update potential energy
 				U += (ep/2)*pow(1-dx/sij,2);
 			}
-			// else, no force added and no contact			
-			else
-				c[cind] = 0;
 		}
 	}
 }
@@ -279,11 +280,6 @@ void packing::hs_force(){
 void packing::vel_update(){
 	int i,d;
 	double vel, anew;
-	double* vmean;
-
-	// vmean = new double[NDIM];
-	// for (d=0; d<NDIM; d++)
-	// 	vmean[d] = 0.0;
 
 	for (i=0; i<N; i++){
 		for (d=0; d<NDIM; d++){
@@ -292,21 +288,10 @@ void packing::vel_update(){
 			// update velocity
 			anew = F[i][d]/m[i];
 			vel += 0.5*dt*(anew + aold[i][d]);
-			// vmean[d] += vel;
 			v[i][d] = vel;
 			aold[i][d] = anew;
 		}
 	}
-
-	// for (d=0; d<NDIM; d++)
-	// 	vmean[d] /= N;
-
-	// for (i=0; i<N; i++){
-	// 	for (d=0; d<NDIM; d++)
-	// 		v[i][d] -= vmean[d];
-	// }
-
-	// delete [] vmean;
 }
 
 
@@ -410,7 +395,7 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 	epconst = 0;
 	Uold = 0;
 	dU = 0;
-	dUtol = 1e-6;
+	dUtol = 1e-8;
 	epc = 0;
 	epcN = 5e3;
 
@@ -418,13 +403,6 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 	int NT;
 	NT = round(tend/dt);
 	dt = tend/NT;
-
-	// if NLCL
-	if (NCL > -1){
-		this->get_cell_neighbors();
-		this->get_cell_positions();
-	}
-
 
 	cout << "===== BEGINNING TIME LOOP ======" << endl;
 	cout << " NT = " << NT << endl;
@@ -435,8 +413,10 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 	// loop over time
 	for (t=0; t<NT; t++){
 		// update nearest neighbor lists if applicable
-		if (t % nnupdate == 0 && NCL > -1)
+		if (t % nnupdate == 0 && NCL > -1){
+			cout << "^ ";
 			this->update_nlcl(t);
+		}
 
 		// first md time step
 		this->pos_update();
@@ -466,10 +446,11 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 			cout << "** Ktol = " << Ktol << endl;
 			cout << "** check_rattlers = " << check_rattlers << endl;
 			cout << endl << endl;
-			if (xyzobj.is_open()){
-				this->print_xyz();
+			if (xyzobj.is_open()){				
 				if (NCL > -1)
-					this->print_nl_xyz();	
+					this->print_nl_xyz();
+				else
+					this->print_xyz();
 			}
 		}
 
@@ -490,9 +471,6 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 			epc = 0;
 		}
 		Uold = U;
-
-		if (epconst == 1)
-			check_rattlers = 1;
 
 		this->root_search(phiH,phiL,check_rattlers,epconst,nr,dphi0,Ktol,Utol,t);
 
@@ -554,9 +532,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 
 			// if NLCL, change update check (particles don't move, don't need to check as often)
 			if (NCL > -1)
-				nnupdate *= 50;	
-
-			isjammed = 1;
+				nnupdate *= 50;
 		}
 	}
 	else{
@@ -675,9 +651,16 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 					cout << "Contact Matrix:" << endl;
 					this->print_c_mat();
 				}
-				if (xyzobj.is_open())
-					this->print_xyz();
 
+				if (xyzobj.is_open()){
+					if (NCL < 0)		
+						this->print_xyz();
+					else{
+						this->print_nl_xyz();
+						this->print_all_nl_xyz();
+					}
+
+				}
 				cout << endl;
 				cout << endl;
 				isjammed = 1;
@@ -785,6 +768,7 @@ void packing::fire(){
 		np++;
 	}		
 	else if (P < 0){
+		cout << "* ";
 		// reset K to measure based on new info
 		K = 0;
 
@@ -845,8 +829,9 @@ void packing::scale_sys(double dphi){
 	dtmax *= pow(s, -0.5 * NDIM);
 
 	// if NLCL engaged, scale rcut
-	if (NCL > 0) {
+	if (NCL > -1) {
 		rcut *= s;
+		this->update_cell();
 		this->update_neighborlist();
 	}
 }
@@ -868,29 +853,6 @@ void packing::update_nlcl(int t){
 		this->update_cell();
 	this->update_neighborlist();	
 }
-
-void packing::initialize_nlcl(){
-	cout << "** INIALIZING NLCL:" << endl;
-	cout << "** getting cell neighbors..." << endl;
-	this->get_cell_neighbors();
-
-	cout << "** getting cell positions..." << endl;
-	this->get_cell_positions();
-	this->print_cell_pos();
-
-	cout << "** populating cell information..." << endl;
-	this->update_cell();
-	this->print_cell();
-	this->print_clabel();
-	this->print_celln();	
-	this->print_cell_neighbors();	
-
-	cout << "** populating neighbor list information..." << endl;
-	this->update_neighborlist();
-	this->print_neighborlist();
-	cout << "** NLCL INITIALIZATION COMPLETE." << endl;
-}
-
 
 void packing::add_cell(int k, int i){
 	cell[k].push_back(i);
@@ -1059,11 +1021,11 @@ int packing::get_new_cell(int i){
 		h = sqrt(h);
 
 		// check if min dist
-		if (h < mindist){			
+		if (h < mindist){
 			mindist = h;
-			minm = k;
+			minm = k;			
 		}
-	}	
+	}
 
 	// if no min set, error
 	if (minm == -1){
@@ -1123,14 +1085,10 @@ void packing::update_neighborlist(){
 			// if p2 > particle i, check distance (knocks down force update loop)
 			if (p2 > i){
 				h = this->get_distance(i,p2);
-				if (h < rcut){
-					// cout << "found neighbor of i = " << i << ", at p2 = " << p2 << endl;
+				if (h < rcut)
 					this->add_neighbor(i,p2);
-				}
 			}
 		}
-
-		// cout << "; checking neighboring cells";
 
 		// loop over cells neighboring to cell l
 		for (k=0; k<NCN; k++){

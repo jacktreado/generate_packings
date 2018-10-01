@@ -19,7 +19,7 @@
 
 using namespace std;
 
-#define N 100
+#define N 200
 #define NDIM 3
 #define seed 3
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
 	string xyz_str = "nl.xyz";
 
 	// main variables
-	double phi0 = 0.01;
+	double phi0 = 0.6;
 	double dphi = 0.001;
 	double alpha = pow(2,1.0/3.0);
 
@@ -41,15 +41,15 @@ int main(int argc, char *argv[]){
 
 	// set MD parameters
 	ep = 10.0;			// energy scale (units of kbt)
-	t = 5.0;			// total amount of time (units of sim time)
+	t = 500.0;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
-	plotskip = 1000;		// # of steps to skip plotting
+	plotskip = 500;		// # of steps to skip plotting
 	Utol = N*1e-8;		// potential energy tolerance
 	Ktol = N*1e-20;		// kinetic energy tolerance
 
 	// neighbor list variables
 	int nc = 3;
-	int nnu = 100;
+	int nnu = 50;
 
 	// packing object instantiation
 	cout << "Instiating object" << endl;
@@ -75,21 +75,22 @@ int main(int argc, char *argv[]){
 	cout << "Printing starting info to xyz file" << endl;
 	p1.print_xyz();
 
-	cout << "printing cell positions" << endl;
-	p1.print_cell_pos();
+	if (nc > -1){
+		cout << "printing cell positions" << endl;
+		p1.print_cell_pos();
 
-	cout << "printing" << endl;
-	p1.print_cell();
-	p1.print_clabel();
-	p1.print_celln();	
-	p1.print_cell_neighbors();	
+		cout << "printing" << endl;
+		p1.print_cell();
+		p1.print_clabel();
+		p1.print_celln();	
+		p1.print_cell_neighbors();	
 
-	cout << "update neighbor list" << endl;
-	p1.update_neighborlist();
+		cout << "update neighbor list" << endl;
+		p1.update_neighborlist();
 
-	cout << "printing" << endl;	
-	p1.print_neighborlist();	
-	p1.print_nl_xyz();
+		cout << "printing" << endl;	
+		p1.print_neighborlist();
+	}
 
 	// Bring system to jammed state
 	cout << "Beginnning jamming" << endl;
