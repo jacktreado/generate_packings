@@ -157,137 +157,15 @@ packing::packing(string &str, int ndim, int s){
 	plotit = 1;
 }
 
-// N particles, no nlcl
-packing::packing(int n, int ndim, double alpha, double phi0, int seed){
-	// set initial seed
-	srand48(seed);
-
-	// local variables
-	int i,j,d;
-	double rad;
-
-	// set parameters to member variables
-	N = n;
-	NDIM = ndim;
-	DOF = NDIM;
-	phi = phi0;
-	this->initialize_NC();
-
-	// set all other member vars to default values
-	if (NDIM == 2)
-		rad = sqrt(phi0/(N*PI));
-	else if (NDIM == 3)
-		rad = pow((3.0*phi0)/(N*4.0*PI),1.0/NDIM);	
-	else{
-		cout << "NDIM = " << NDIM << " not yet supported...." << endl;
-		rad = 0.0;
-	}
-
-	// initial dt = 1
-	dt = 1.0;
-
-	// initial box = unit length
-	L = new double[NDIM];
-	for (d=0; d<NDIM; d++){
-		L[d] = 1.0;
-		cout << "L[" << d+1 << "] = " << L[d] << endl;
-	}
-
-	// random initial positions & velocities, set force to 0, r to phi0 val
-	x = new double*[N];
-	v = new double*[N];
-	F = new double*[N];
-	aold = new double*[N];
-	r = new double[N];
-	m = new double[N];
-	pc = new int[N];	
-	for (i=0; i<N; i++){
-		x[i] = new double[NDIM];
-		v[i] = new double[NDIM];
-		F[i] = new double[NDIM];
-		aold[i] = new double[NDIM];
-
-		if (i < round(N/2))
-			r[i] = rad;	
-		else
-			r[i] = alpha*rad;
-
-		if (NDIM == 2)
-			m[i] = PI*r[i]*r[i];
-		else if (NDIM == 3)
-			m[i] = (1.3333333333)*PI*r[i]*r[i]*r[i];
-		else{
-			cout << "NDIM not yet supported..." << endl;
-			throw "NDIM not supported for mass calc...\n";
-		}
-
-		pc[i] = 0;
-		for (d=0; d<NDIM; d++){
-			x[i][d] = L[d]*drand48();
-			v[i][d] = drand48();
-			F[i][d] = 0.0;
-			aold[i][d] = 0.0;
-		}
-	}
-
-	// initialize energy
-	ep = 1.0;
-	U = 0.0;
-	K = 0.0;
-
-	// initialize contact matrix
-	c = new double[NC];
-	for (i=0; i<NC; i++)
-		c[i] = 0;
-
-	// initialize number of rattlers (not checked at t = 0)
-	nr = 0;
-
-	// FIRE variables
-	alpha0 = 0.1;
-	alpha = alpha0;
-	finc = 1.1;
-	fdec = 0.5;
-	falpha = 0.99;
-	np = 0;
-
-	// output variables
-	plotskip = 1000;
-	isjammed = 0;
-
-	// CL/NL variables: set to nullptr, except for NL, make everything a neighbor to everything
-	rcut = -1;
-	NCL = -1;
-	NCELLS = -1;
-	NCN = -1;
-	nnupdate = -1;
-	g = nullptr;
-	clabel = nullptr;
-	cellpos = nullptr;
-	cellneighbors = nullptr;
-	celln = nullptr;
-	cell = nullptr;
-
-	neighborlist = new vector<int>[N];
-	for (i=0; i<N; i++){
-		for (j=i+1; j<N; j++)
-			neighborlist[i].push_back(j);
-	}
-
-	// set default plot value to 1
-	plotit = 1;
-}
-
-
 
 // N particles using neighbor list
-packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, double rc, int seed){
+packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, int seed){
 	// set initial seed
 	srand48(seed);
 
 	// local variables
 	int i,j,d;
-	double rad,msum,vol,dphi;
+	double rad,msum,vol,dphi,rc;
 
 	// set parameters to member variables
 	N = n;
@@ -298,21 +176,31 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, do
 	nnupdate = nnu;
 	this->initialize_NC();
 
-	// set all other member vars to default values
-	if (NDIM == 2)
-		NCN = 8;
-	else if (NDIM == 3)
-		NCN = 26;
+	// get rad, # of neighbors, rcut magnitude (set to 2.5x large particle radius)
+	if (NDIM == 2){
+		rad = sqrt(phi0/(N*PI));
+		if (NCL == -1)
+			NCN = -1;
+		else{
+			rc = 2.5;
+			NCN = 8;
+		}
+	}
+	else if (NDIM == 3){
+		rad = pow((3.0*phi0)/(N*4.0*PI),1.0/NDIM);
+		if (NCL == -1)
+			NCN = -1;
+		else{
+			rc = 2.5;
+			NCN = 26;
+		}
+	}		
 	else{
-		cout << "ERROR: NDIM = " << NDIM << " not yet supported...." << endl;
-		rad = 0.0;
+		cout << "NDIM = " << NDIM << " not yet supported...." << endl;
 		cout << "ENDING PROGRAM.\n";
 		throw "NDIM not supported\n";
 	}
-
-	// get rad
-	rad = 0.1;
-	msum = 0;
+	cout << "rad = " << rad << endl;
 
 	// get rcut
 	rcut = rc*alpha*rad;
@@ -321,112 +209,41 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, do
 	dt = 1.0;
 
 	// initial box = unit length
-	L = new double[NDIM];
-	g = new double[NDIM];
-	for (d=0; d<NDIM; d++){
-		L[d] = 1.0;
-		cout << "L[" << d+1 << "] = " << L[d] << endl;
-
-		// get cell grid dimensions
-		g[d] = L[d]/nc;
-	}
+	this->initialize_box(1.0);
 
 	// random initial positions & velocities, set force to 0, r to phi0 val
-	x = new double*[N];
-	v = new double*[N];
-	F = new double*[N];
-	aold = new double*[N];
-	r = new double[N];
-	m = new double[N];
-	pc = new int[N];	
-	clabel = new int[N];
-	neighborlist = new vector<int>[N];	
-	for (i=0; i<N; i++){
-		x[i] = new double[NDIM];
-		v[i] = new double[NDIM];
-		F[i] = new double[NDIM];
-		aold[i] = new double[NDIM];
+	this->initialize_particles(seed,rad,alpha);	
 
-		// add polydispersity
-		if (i < round(N/2))
-			r[i] = alpha*rad;
-		else
-			r[i] = rad;
-
-		if (NDIM == 2)
-			m[i] = PI*r[i]*r[i];
-		else if (NDIM == 3)
-			m[i] = (1.3333333333)*PI*r[i]*r[i]*r[i];
-		else{
-			cout << "NDIM not yet supported..." << endl;
-			throw "NDIM not supported for mass calc...\n";
-		}
-
-		msum += m[i];
-
-		pc[i] = 0;
-		for (d=0; d<NDIM; d++){
-			x[i][d] = L[d]*drand48();
-			v[i][d] = drand48();
-			F[i][d] = 0.0;
-			aold[i][d] = 0.0;
-		}
-		clabel[i] = -1;
+	// either "freeze" cell list by setting ptrs to null, or allocate memory
+	if (NCL == -1)
+		this->freeze_nlcl();
+	else{
+		this->setup_nlcl();
+		this->get_cell_neighbors();
+		this->get_cell_positions();
+		this->update_cell();
+		this->update_neighborlist();
 	}
 
-	vol = 1.0;
-	for(d=0; d<NDIM; d++)
-		vol *= L[d];
+	// set std sim variables (energy, plotting, etc.)
+	this->setup_std_sim();
 
-	phi = msum/vol;
-
-	dphi = phi0-phi;
-	this->scale_sys(dphi);
-
-	// initialize cell list
-	cellpos = new double*[N];
-	cellneighbors = new int*[NCELLS];
-	cell = new vector<int>[NCELLS];
-	celln = new int[NCELLS];
-
-	for (i=0; i<NCELLS; i++){
-		celln[i] = 1;
-		cellpos[i] = new double[NDIM];
-		for (d=0; d<NDIM; d++)
-			cellpos[i][d] = -1;
-
-		cellneighbors[i] = new int[NCN];
-		for (d=0; d<NCN; d++)
-			cellneighbors[i][d] = -1;
-	}
-
-	// initialize energy
-	ep = 1.0;
-	U = 0.0;
-	K = 0.0;
-
-	// initialize contact matrix
-	c = new double[NC];
-	for (i=0; i<NC; i++)
-		c[i] = 0;
-
-	// initialize number of rattlers (not checked at t = 0)
-	nr = 0;
-
-	// FIRE variables
-	alpha0 = 0.1;
-	alpha = alpha0;
-	finc = 1.1;
-	fdec = 0.5;
-	falpha = 0.99;
-	np = 0;
-
-	// output variables
-	plotskip = 1000;
-	isjammed = 0;
+	// set std FIRE variables
+	this->setup_std_FIRE();
 
 	// set default plot value to 1
 	plotit = 1;
+
+	// scale particles to desired size
+	vol = 1.0;
+	msum = 0;
+	for(d=0; d<NDIM; d++)
+		vol *= L[d];
+	for(i=0; i<N; i++)
+		msum += m[i];
+	phi = msum/vol;
+	dphi = phi0-phi;
+	this->scale_sys(dphi);
 }
 
 
@@ -559,7 +376,7 @@ void packing::initialize_particles(){
 		m[i] = 0.0;
 		pc[i] = 0;
 		for (d=0; d<NDIM; d++){
-			x[i][d] = 0.0;
+			x[i][d] = L[d]*drand48();
 			v[i][d] = 0.0;
 			F[i][d] = 0.0;
 			aold[i][d] = 0.0;
@@ -570,6 +387,54 @@ void packing::initialize_particles(){
 	c = new double[NC];
 	for (i=0; i<NC; i++)
 		c[i] = 0;
+}
+
+void packing::initialize_particles(int seed, double rad, double alpha){
+	// set seed for positions
+	srand48(seed);
+
+	// local variables
+	int i,d;
+
+	// random initial positions & velocities, set force to 0, r to phi0 val
+	x = new double*[N];
+	v = new double*[N];
+	F = new double*[N];
+	aold = new double*[N];
+	r = new double[N];
+	m = new double[N];
+	pc = new int[N];			
+	for (i=0; i<N; i++){
+		x[i] = new double[NDIM];
+		v[i] = new double[NDIM];
+		F[i] = new double[NDIM];
+		aold[i] = new double[NDIM];		
+		pc[i] = 0;
+		for (d=0; d<NDIM; d++){
+			x[i][d] = L[d]*drand48();
+			v[i][d] = 0.0;
+			F[i][d] = 0.0;
+			aold[i][d] = 0.0;
+		}
+
+		if (i < round(0.5*N))
+			r[i] = rad;	
+		else
+			r[i] = alpha*rad;
+		m[i] = (4.0/3.0)*PI*pow(r[i],3);
+
+		cout << "r[" << i << "] = " << r[i] << ", m[" << i << "] = " << m[i] << endl;
+	}
+
+	// initialize contact matrix
+	c = new double[NC];
+	for (i=0; i<NC; i++)
+		c[i] = 0;
+
+	// check mean mass
+	cout << "mean mass in initialize_particles = ";
+	double mean_mass = this->get_mean_mass();
+	cout << mean_mass << endl;
 }
 
 void packing::initialize_box(double val){
@@ -642,7 +507,11 @@ void packing::set_md_time(double dt0){
 	w = sqrt(ks/m_avg);
 	dt = dt0/w;
 
-	cout << "&&& MD time step dt = " << dt << endl;
+	cout << "* mean m = " << m_avg << endl;
+	cout << "* mean r = " << r_avg << endl;
+	cout << "* char. spring = " << ks << endl;
+	cout << "* char. freq. = " << w << endl;
+	cout << "* MD time step dt = " << dt << endl;
 }
 
 

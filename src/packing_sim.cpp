@@ -204,11 +204,7 @@ void packing::pos_update(){
 }
 
 
-/*	FORCE UPDATES  */
-// HS: harmonic spring
-// HZS: hertzian spring
-// RLJ: repulsive lennard jones
-// ES: electrostatics
+/*	FORCE UPDATE  */
 
 double packing::hs(double sij, double xij){
 	double f;
@@ -220,15 +216,32 @@ double packing::hs(double sij, double xij){
 }
 
 void packing::hs_force(){
-	int i,j,d,cind;
+	int i,j,d,cind,jstart,jend,jj;
 	double sij, dx;
 	double xij[NDIM];
+	bool use_ncnl;
+
+	// check whether or not to use neighbor list
+	use_ncnl = (NCL > -1);
+	if (use_ncnl)
+		jstart = 0;
+	else
+		jend = N;
 
 	// reset U
 	U = 0;
 
 	for (i=0; i<N; i++){
-		for (j=i+1; j<N; j++){
+		if (use_ncnl)
+			jend = neighborlist[i].size();
+		else
+			jstart = i+1;
+
+		for (jj=jstart; jj<jend; jj++){
+			// get particle index if using nlcl
+			if (use_ncnl)
+				j = neighborlist[i].at(jj);
+
 			// contact matrix index
 			cind = N*i + j - ((i+1)*(i+2))/2;
 
@@ -251,54 +264,6 @@ void packing::hs_force(){
 				// update contact list
 				pc[i]++;
 				pc[j]++;				
-
-				// update potential energy
-				U += (ep/2)*pow(1-dx/sij,2);
-			}
-			// else, no force added and no contact			
-			else
-				c[cind] = 0;
-		}
-	}
-}
-
-void packing::hs_force_nn(){
-	int i,j,jj,NN,cind,d;
-	double dx,sij; 
-	double xij[NDIM];
-
-	// reset U
-	U = 0;
-
-	for (i=0; i<N; i++){
-		NN = neighborlist[i].size();
-		for (jj=0; jj<NN; jj++){
-			// get neighbor from neighborlist
-			j = neighborlist[i].at(jj);
-
-			// contact matrix index
-			cind = N*i + j - ((i+1)*(i+2))/2;
-
-			// get contact distance sij
-			sij = r[j] + r[i];
-
-			// get distance between particles
-			dx = this->get_distance(i,j,xij);
-
-			// particles in contact, calculate force
-			if (dx < sij){				
-
-				for (d=0; d<NDIM; d++){
-					F[i][d] += (this->hs(sij,dx))*xij[d];
-					// F[j][d] -= (this->hs(sij,dx))*xij[d];
-				}
-
-				// update contact matrix			
-				c[cind] = 1;
-
-				// update contact list
-				pc[i]++;
-				// pc[j]++;				
 
 				// update potential energy
 				U += (ep/2)*pow(1-dx/sij,2);
@@ -360,22 +325,8 @@ int packing::rmv_rattlers(int& krcrs) {
 
 	// loop over rows, eliminate contacts to rattlers
 	for (i=0; i<N; i++){
-		// start with r=0 contacts
-		r = 0;
-
 		// count contacts
-		for (j=0; j<N; j++){			
-			if (j < i){
-				ci = N*j + i - ((j+1)*(j+2))/2;
-				r += c[ci];
-			}
-			else if (j > i){
-				cj = N*i + j - ((i+1)*(i+2))/2;	// mapping from matrix space to sub matrix space	
-				r += c[cj];
-			}		
-			else
-				continue;
-		}
+		r = pc[i];
 
 		// remove from network if r <= DOF, delete contacts
 		if (r <= DOF){
@@ -444,7 +395,7 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 
 	// initialize particle velocities
 	cout << "* initializing velocities in jamming_finder()..." << endl;
-	this->mxwl_vel_init(tmp0);
+	this->rand_vel_init(tmp0);
 
 	// initialize variables
 	kr = 0;
@@ -468,6 +419,13 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 	NT = round(tend/dt);
 	dt = tend/NT;
 
+	// if NLCL
+	if (NCL > -1){
+		this->get_cell_neighbors();
+		this->get_cell_positions();
+	}
+
+
 	cout << "===== BEGINNING TIME LOOP ======" << endl;
 	cout << " NT = " << NT << endl;
 	cout << " dt = " << dt << endl;
@@ -475,7 +433,11 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 	cout << "================================" << endl << endl;
 
 	// loop over time
-	for (t=0; t<NT; t++){		
+	for (t=0; t<NT; t++){
+		// update nearest neighbor lists if applicable
+		if (t % nnupdate == 0 && NCL > -1)
+			this->update_nlcl(t);
+
 		// first md time step
 		this->pos_update();
 
@@ -484,9 +446,6 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 
 		// vel update
 		this->vel_update();
-
-		// check for nan
-		// this->catch_nans(t);
 
 		// fire update (inertial relaxer)
 		this->fire();
@@ -507,8 +466,11 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 			cout << "** Ktol = " << Ktol << endl;
 			cout << "** check_rattlers = " << check_rattlers << endl;
 			cout << endl << endl;
-			if (xyzobj.is_open())
+			if (xyzobj.is_open()){
 				this->print_xyz();
+				if (NCL > -1)
+					this->print_nl_xyz();	
+			}
 		}
 
 		if (phi > 1.0){
@@ -534,132 +496,6 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 
 		this->root_search(phiH,phiL,check_rattlers,epconst,nr,dphi0,Ktol,Utol,t);
 
-		if (isjammed == 1)
-			break;
-	}
-}
-
-
-// generate jammed packing using fire
-void packing::jamming_finder_nn(double tend, double dphi, double Utol, double Ktol) {
-	// local variables
-	int t,kr,csum,niso,nbb;
-	double dphi0,tmp0,phiL,phiH;
-	bool oc,uc,gr,jammed,marginal;
-	int check_rattlers;
-
-	// set initial temperature
-	tmp0 = 5.0;
-
-	// initialize particle velocities
-	cout << "* initializing velocities in jamming_finder()..." << endl;
-	this->mxwl_vel_init(tmp0);
-
-	// initialize variables
-	kr = 0;
-	dphi0 = dphi;
-	phiL = -1;
-	phiH = -1;
-	check_rattlers = 0;
-
-	// constant energy checking
-	double Uold,dU,dUtol; 
-	int epc,epcN,epconst;
-	epconst = 0;
-	Uold = 0;
-	dU = 0;
-	dUtol = 1e-6;
-	epc = 0;
-	epcN = 1e3;
-
-	// get number of time steps
-	int NT;
-	NT = round(tend/dt);
-	dt = tend/NT;
-
-	// get cell neighbor list and positions
-	this->get_cell_neighbors();
-	this->get_cell_positions();
-
-	cout << "===== BEGINNING TIME LOOP ======" << endl;
-	cout << "NT = " << NT << endl;
-	cout << "dt = " << dt << endl;
-	cout << "tend = " << tend << endl;
-
-	// loop over time
-	for (t=0; t<NT; t++){	
-		// update nearest neighbor lists
-		if (t % nnupdate == 0){
-			// cout << "updating cell list" << endl;
-			this->update_cell();
-			// cout << "updating neighborlist" << endl;
-			this->update_neighborlist();
-		}
-
-		if (t % plotskip == 0){
-			// cout << "printing??" << endl;
-			this->md_monitor(t,nr,phiH,phiL);
-			cout << endl;
-			cout << "** check_rattlers = " << check_rattlers << endl;
-			cout << "** epconst = " << epconst << endl;
-			if (xyzobj.is_open()){
-				// cout << "PRINTING NL INFO..." << endl;
-				// this->print_cell();
-				// this->print_neighborlist();
-				this->print_nl_xyz();									
-			}
-			cout << endl << endl;
-		}	
-
-		// first md time step
-		this->pos_update();
-
-		// force update
-		this->hs_force_nn();
-
-		// vel update
-		this->vel_update();
-
-		// check for nan
-		this->catch_nans(t);
-
-		// fire update (inertial relaxer)
-		if (t > 500)
-			this->fire();
-
-		// check for rattlers if root search is on
-		if (check_rattlers){
-			kr = 0;
-			nr = this->rmv_rattlers(kr);
-		}		
-		else
-			nr = 0;
-
-		nbb = N - nr;
-		niso = DOF*nbb - NDIM + 1;
-		csum = this->get_c_sum();		
-
-		if (phi > 1.0){
-			this->print_vars();
-			throw "phi > 1, ending...\n";
-		}
-
-		// check for constant potential energy
-		dU = abs(Uold-U);
-		if (dU < dUtol){
-			epc++;
-			if (epc > epcN)
-				epconst = 1;
-		}
-		else{
-			epconst = 0;
-			epc = 0;
-		}
-		Uold = U;
-
-		
-		if (t > 500)
-			this->root_search(phiH,phiL,check_rattlers,epconst,nr,dphi0,Ktol,Utol,t);
 		if (isjammed == 1)
 			break;
 	}
@@ -692,10 +528,12 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 	csum = this->get_c_sum();
 
 	gr = (U < Utol);
-	oc = (U > Utol && K < Ktol && csum >= niso && epconst == 1);
+	// oc = (U > Utol && K < Ktol && csum >= niso && epconst == 1);
+	oc = (U > 2 * Utol && epconst == 1);
 	uc = (U < Utol);
-	marginal = (K < Ktol && nr == N && epconst);
-	jammed = (U > Utol && U < 2*Utol && K < Ktol && csum == niso && nr < N);
+	// marginal = (K < Ktol && nr == N && epconst);
+	marginal = 0;
+	jammed = (U > Utol && U < 2*Utol && K < Ktol && epconst == 1);
 
 
 	if (phiH < 0){
@@ -703,40 +541,36 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 			check_rattlers = 0;
 			this->scale_sys(dphi);
 		}
-		else if (oc){			
+		else if (oc){				
 			phiH = phi;
-			dphi = -0.05*dphi0;
+			dphi = -2 * drand48() * dphi0;
 			check_rattlers = 1;
 
 			cout << endl;
 			cout << "phiH 1st set at nt = " << t << endl;
-			cout << "phiH = " << phi << endl;
-			cout << "phiL = " << phiL << endl;
-			cout << "dphi = " << dphi << endl;
-			cout << "old phi = " << phi << endl;
-			this->scale_sys(dphi);
-			cout << "new phi = " << phi << endl;
+			this->monitor_scale(dphi,phiH,phiL);
 			cout << "entering root search..." << endl;
 			cout << endl;
+
+			// if NLCL, change update check (particles don't move, don't need to check as often)
+			if (NCL > -1)
+				nnupdate *= 50;	
+
+			isjammed = 1;
 		}
 	}
 	else{
 		if (phiL < 0){
 
 			// if still overcompressed, decrease again
-			if (oc){
+			if (oc){				
 				phiH = phi;
-				dphi = -0.05*dphi0;
+				dphi = -drand48() * dphi0;
 
 				cout << endl;
 				cout << "still overcompressed..." << endl;
 				cout << "phiH set at nt = " << t << endl;
-				cout << "phiH = " << phi << endl;
-				cout << "phiL = " << phiL << endl;
-				cout << "dphi = " << dphi << endl;					
-				cout << "old phi = " << phi << endl;
-				this->scale_sys(dphi);
-				cout << "new phi = " << phi << endl;					
+				this->monitor_scale(dphi,phiH,phiL);				
 				cout << "continuing root search..." << endl;
 			}
 
@@ -748,12 +582,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 				cout << endl;
 				cout << "relaxation found!" << endl;
 				cout << "phiL set at nt = " << t << endl;
-				cout << "phiH = " << phi << endl;
-				cout << "phiL = " << phiL << endl;
-				cout << "dphi = " << dphi << endl;					
-				cout << "old phi = " << phi << endl;
-				this->scale_sys(dphi);
-				cout << "new phi = " << phi << endl;
+				this->monitor_scale(dphi,phiH,phiL);
 				cout << "root search interval found, growing..." << endl;
 			}
 
@@ -761,33 +590,23 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 			if (marginal){
 				phiL = -1;
 				phiH = -1;
-				dphi = (1+0.05*drand48())*dphi0;
+				dphi = 0.05 * drand48() * dphi0;
 
 				cout << endl;
 				cout << "marginal state found..." << endl;
 				cout << "root search reset at nt = " << t << endl;
-				cout << "phiH = " << phi << endl;
-				cout << "phiL = " << phiL << endl;
-				cout << "dphi = " << dphi << endl;
-				cout << "old phi = " << phi << endl;
-				this->scale_sys(dphi);
-				cout << "new phi = " << phi << endl;
+				this->monitor_scale(dphi,phiH,phiL);
 				cout << "marginal, so trying root search again..." << endl;
 			}
 
 			if (jammed){
-				phiL = 0.9*phi;
+				phiL = 0.99*phi;
 				dphi = 0.5*(phiH + phiL) - phi;
 
 				cout << endl;
 				cout << "almost jammed found!" << endl;
 				cout << "phiL set at nt = " << t << endl;
-				cout << "phiH = " << phi << endl;
-				cout << "phiL = " << phiL << endl;
-				cout << "dphi = " << dphi << endl;					
-				cout << "old phi = " << phi << endl;
-				this->scale_sys(dphi);
-				cout << "new phi = " << phi << endl;
+				this->monitor_scale(dphi,phiH,phiL);
 				cout << "root search interval found, growing..." << endl;
 			}
 
@@ -802,12 +621,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 				cout << endl;
 				cout << "overcompressed state found!" << endl;
 				cout << "phiH set at nt = " << t << endl;
-				cout << "phiH = " << phiH << endl;
-				cout << "phiL = " << phiL << endl;
-				cout << "dphi = " << dphi << endl;
-				cout << "old phi = " << phi << endl;
-				this->scale_sys(dphi);
-				cout << "new phi = " << phi << endl;
+				this->monitor_scale(dphi,phiH,phiL);
 				cout << "decreasing root search guess..." << endl;					
 			} 
 
@@ -819,12 +633,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 				cout << endl;
 				cout << "relaxed state found!" << endl;
 				cout << "phiL set at nt = " << t << endl;
-				cout << "phiH = " << phiH << endl;
-				cout << "phiL = " << phiL << endl;
-				cout << "dphi = " << dphi << endl;
-				cout << "old phi = " << phi << endl;
-				this->scale_sys(dphi);
-				cout << "new phi = " << phi << endl;
+				this->monitor_scale(dphi,phiH,phiL);
 				cout << "increasing root search guess..." << endl;					
 			} 
 
@@ -836,13 +645,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 
 				cout << endl;
 				cout << "marginal state found..." << endl;
-				cout << "root search reset at nt = " << t << endl;
-				cout << "phiH = " << phi << endl;
-				cout << "phiL = " << phiL << endl;
-				cout << "dphi = " << dphi << endl;
-				cout << "old phi = " << phi << endl;
-				this->scale_sys(dphi);
-				cout << "new phi = " << phi << endl;
+				this->monitor_scale(dphi,phiH,phiL);
 				cout << "marginal, so trying root search again..." << endl;
 			}
 
@@ -855,7 +658,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 				cout << "Writing config at nt = " << t << endl;
 				cout << "Final U = " << U << endl;
 				cout << "Final K = " << K << endl;
-				cout << "Final phi = " << phi << endl;
+				cout << "Final phi = " << setprecision(10) << phi << endl;
 				cout << "Final csum = " << csum << endl;
 				cout << "Final niso = " << niso << endl;
 				cout << "Final niso max = " << DOF*N-NDIM+1 << endl;
@@ -886,18 +689,13 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 	if (abs(dphi) < 1e-14){
 		phiL = -1;
 		phiH = -1;
-		dphi = (0.5+drand48())*0.1*dphi0;
+		dphi = 0.05 * (2 * drand48() - 1) * dphi0;
 		check_rattlers = 0;
 
 		cout << endl;
 		cout << "stalled growth found..." << endl;
 		cout << "root search reset at nt = " << t << endl;
-		cout << "phiH = " << phi << endl;
-		cout << "phiL = " << phiL << endl;
-		cout << "dphi = " << dphi << endl;
-		cout << "old phi = " << phi << endl;
-		this->scale_sys(dphi);
-		cout << "new phi = " << phi << endl;
+		this->monitor_scale(dphi,phiH,phiL);
 		cout << "marginal, so trying root search again..." << endl;
 	}
 }
@@ -1023,23 +821,17 @@ void packing::fire(){
 
 void packing::scale_sys(double dphi){
 	int i,d;
-	double g,msum,vol;	
+	double s,msum,vol;	
 
 	// get scale factor
-	g = pow((phi+dphi)/phi,(double)1/NDIM);
-
-	// increase phi
-	// phi = phi + dphi;
-
-	// scale energy
-	ep *= g*g;	
+	s = pow((phi+dphi)/phi,(double)1/NDIM);
 
 	// scale lengths
 	msum = 0;
 	for (i=0; i<N; i++){
 		// scale particle sizes
-		m[i] *= pow(g,NDIM);
-		r[i] *= g;
+		m[i] *= pow(s,NDIM);
+		r[i] *= s;
 		msum += m[i];
 	}
 
@@ -1048,10 +840,15 @@ void packing::scale_sys(double dphi){
 		vol *= L[d];
 	phi = msum/vol;
 
-	dt *= pow(g,NDIM/2);
+	ep *= pow(s, 2);
+	dt *= pow(s, -0.5 * NDIM);
+	dtmax *= pow(s, -0.5 * NDIM);
 
-	// scale cutoff length
-	rcut *= g;	
+	// if NLCL engaged, scale rcut
+	if (NCL > 0) {
+		rcut *= s;
+		this->update_neighborlist();
+	}
 }
 
 
@@ -1065,6 +862,12 @@ void packing::scale_sys(double dphi){
 
 ========================================= 
 */
+
+void packing::update_nlcl(int t){
+	if (t % 5*nnupdate == 0)
+		this->update_cell();
+	this->update_neighborlist();	
+}
 
 void packing::initialize_nlcl(){
 	cout << "** INIALIZING NLCL:" << endl;
@@ -1089,8 +892,8 @@ void packing::initialize_nlcl(){
 }
 
 
-void packing::add_cell(int m, int i){
-	cell[m].push_back(i);
+void packing::add_cell(int k, int i){
+	cell[k].push_back(i);
 }
 
 void packing::reset_cells(){
@@ -1109,9 +912,9 @@ void packing::reset_neighborlist(int i){
 }
 
 void packing::update_celln(){
-	int m;
-	for (m=0; m<NCELLS; m++)
-		celln[m] = cell[m].size();
+	int k;
+	for (k=0; k<NCELLS; k++)
+		celln[k] = cell[k].size();
 }
 
 void packing::get_cell_neighbors(){
@@ -1215,23 +1018,23 @@ void packing::get_cell_neighbors(){
 }
 
 void packing::get_cell_positions(){
-	int m,d;
+	int k,d;
 	int ind;	
 
 	// loop over cells, get pos of each one
-	for (m=0; m<NCELLS; m++){
+	for (k=0; k<NCELLS; k++){
 		for (d=0; d<NDIM; d++){
 			// get indices xi,yi,zi,wi,etc
-			ind = floor((m % (int)pow(NCL,d+1))/(pow(NCL,d)));
+			ind = floor((k % (int)pow(NCL,d+1))/(pow(NCL,d)));
 
 			// get position in given dimension of cell
-			cellpos[m][d] = g[d]*(ind+0.5);
+			cellpos[k][d] = g[d]*(ind+0.5);
 		}
 	}
 }
 
 int packing::get_new_cell(int i){
-	int m,d,insq,minm;
+	int k,d,insq,minm;
 	double cposi;
 	double dr,h,mindist;
 
@@ -1239,13 +1042,13 @@ int packing::get_new_cell(int i){
 	minm = -1;
 
 	// loop over cells, get pos of each one
-	for (m=0; m<NCELLS; m++){
+	for (k=0; k<NCELLS; k++){
 
 		h = 0;
 		insq = 0;
 		for (d=0; d<NDIM; d++){
 			// get cell pos
-			cposi = cellpos[m][d];
+			cposi = cellpos[k][d];
 
 			// get distance to particle i
 			dr = x[i][d] - cposi;
@@ -1258,7 +1061,7 @@ int packing::get_new_cell(int i){
 		// check if min dist
 		if (h < mindist){			
 			mindist = h;
-			minm = m;
+			minm = k;
 		}
 	}	
 
@@ -1295,7 +1098,7 @@ void packing::update_cell(){
 
 void packing::update_neighborlist(){
 	// local variables
-	int M,i,j,d,l,l2,m;
+	int K,i,j,d,l,l2,k;
 	int p2;
 	double dr,h;
 
@@ -1309,21 +1112,16 @@ void packing::update_neighborlist(){
 		l = clabel[i];
 
 		// get number of atoms in cell l
-		M = celln[l];
-
-		// cout << "checking NL for i = " << i;
-		// cout << "; in cell " << l;
-		// cout << "; # of atoms = " << M;	
-		// cout << endl;	
+		K = celln[l];	
 
 		// loop over atoms in cell l
-		for (j=0; j<M; j++){
+		for (j=0; j<K; j++){
 
 			// get particle in cell 
 			p2 = cell[l].at(j);
 
-			// if diff from particle i, check distance
-			if (p2 != i){
+			// if p2 > particle i, check distance (knocks down force update loop)
+			if (p2 > i){
 				h = this->get_distance(i,p2);
 				if (h < rcut){
 					// cout << "found neighbor of i = " << i << ", at p2 = " << p2 << endl;
@@ -1335,24 +1133,21 @@ void packing::update_neighborlist(){
 		// cout << "; checking neighboring cells";
 
 		// loop over cells neighboring to cell l
-		for (m=0; m<NCN; m++){
+		for (k=0; k<NCN; k++){
 			// get cell label of neighboring cell to cell l
-			l2 = cellneighbors[l][m];
+			l2 = cellneighbors[l][k];
 
 			// get number of atoms in cell l2
-			M = celln[l2];
-
-			// cout << "; l2 = " << l2;
-			// cout << ", M = " << M;
+			K = celln[l2];			
 
 			// loop over atoms in cell l2
-			for (j=0; j<M; j++){
+			for (j=0; j<K; j++){
 
 				// get particle in cell
 				p2 = cell[l2].at(j);
 
-				// if diff from particle i, check distance
-				if (p2 != i){
+				// if p2 > particle i, check distance (knocks down force update loop)
+				if (p2 > i){
 					h = this->get_distance(i,p2);
 					if (h < rcut)
 						this->add_neighbor(i,p2);

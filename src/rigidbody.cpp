@@ -1229,7 +1229,7 @@ int rigidbody::rmv_rattlers(int& krcrs) {
 						ci = N * j + i - ((j + 1) * (j + 2)) / 2;
 						if (c[ci] > 0) {
 							pc[j]--;
-							pc[j] -= cm[ci];
+							ac[j] -= cm[ci];
 							c[ci] = 0;
 							cm[ci] = 0;
 						}
@@ -1238,7 +1238,7 @@ int rigidbody::rmv_rattlers(int& krcrs) {
 						cj = N * i + j - ((i + 1) * (i + 2)) / 2;	// mapping from matrix space to sub matrix space
 						if (c[cj] > 0) {
 							pc[j]--;
-							pc[j] -= cm[cj];
+							ac[j] -= cm[cj];
 							c[cj] = 0;
 							cm[cj] = 0;
 						}
@@ -1470,6 +1470,10 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			cout << endl;
 			cout << "phiH 1st set at nt = " << t << endl;
 			this->monitor_scale(phi + dphi, phiL, phiH);
+
+			// if NLCL, change update check (particles don't move, don't need to check as often)
+			if (NCL > -1)
+				nnupdate *= 50;
 		}
 	}
 	else {
@@ -1510,7 +1514,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			}
 
 			if (jammed) {
-				phiL = 0.9 * phi;
+				phiL = 0.99 * phi;
 				dphi = 0.5 * (phiH + phiL) - phi;
 
 				cout << endl;

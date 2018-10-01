@@ -73,15 +73,15 @@ public:
 	// constructors & destructors
 	packing(int n, int dof, int nc, int s);											// N spheres, use by rigidbody class
 	packing(std::string &str, int ndim, int s);										// N spheres, read from file
-	packing(int n, int ndim, double alpha, double phi0, int seed);					// N spheres, no neighbor list
 	packing(int n, int ndim, double alpha, double phi0,
-	        int nc, int nnu, double rc, int seed);										// N spheres w/ neighbor list
+	        int nc, int nnu, int seed);												// N spheres w/ neighbor list
 	~packing();
 
 	// initialization
 	void initialize_NC() {NC = (N * (N - 1)) / 2;}
 	void initialize_box(double val);
 	void initialize_particles();
+	void initialize_particles(int seed, double alpha, double rad);
 	void initialize_nlcl();
 	void setup_nlcl();
 	void freeze_nlcl();
@@ -198,6 +198,7 @@ public:
 	                 int nr, double dphi0, double Ktol, double Utol, int t);
 
 	// neighbor list/cell list
+	void update_nlcl(int t);
 	void print_cell();
 	void print_neighborlist();
 	void print_cell_neighbors();
@@ -231,6 +232,7 @@ public:
 
 	// printers
 	void md_monitor(int t, int nr, double phiH, double phiL);
+	void monitor_scale(double dphi, double phiH, double phiL);
 	void print_xyz();
 	void print_c_mat();
 	void print_c_mat(std::ofstream &obj);

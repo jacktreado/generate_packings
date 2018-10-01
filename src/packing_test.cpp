@@ -137,6 +137,18 @@ void packing::md_monitor(int t, int nr, double phiH, double phiL){
 	}
 }
 
+void packing::monitor_scale(double dphi, double phiL, double phiH) {
+	cout << "phiH = " << phiH << endl;
+	cout << "phiL = " << phiL << endl;
+	cout << "dphi = " << dphi << endl;
+	cout << "total contacts = " << this->get_c_sum() << endl;
+	cout << "niso max = " << DOF*N-NDIM+1 << endl;
+	cout << "old phi = " << phi << endl;
+	this->scale_sys(dphi);
+	cout << "new phi = " << phi+dphi << endl;
+	cout << endl;
+}
+
 void packing::print_xyz(){
 	int i,d,dd,w;
 	w = 20;	
