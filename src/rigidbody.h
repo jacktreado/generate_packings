@@ -79,6 +79,8 @@ public:
 	// Molecular Dynamics
 	void free_md(double tmp0, double tend);
 	void free_fire(double tmp0, double tend);
+	void single_md(int t);
+	void single_fire(int t);
 
 	// MD components
 	void verlet_first();

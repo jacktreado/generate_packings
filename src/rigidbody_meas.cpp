@@ -59,10 +59,10 @@ rigidbody::single_fire(int t){
 
 
 // FUNCTION to read in positions from config file,
-// 
+//
 //
 //
 
-rigidbody::contact_break(int NT, double tmp0){
+// rigidbody::contact_break(int NT, double tmp0){
 
-}
+// }
