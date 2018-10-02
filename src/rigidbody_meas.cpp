@@ -21,7 +21,7 @@
 
 
 
-rigidbody::single_md(int t){
+void rigidbody::single_md(int t){
 	// update nearest neighbor lists if applicable
 	if (t % nnupdate == 0 && NCL > -1)
 		this->update_nlcl(t);
@@ -36,7 +36,7 @@ rigidbody::single_md(int t){
 	this->verlet_second();
 }
 
-rigidbody::single_fire(int t){
+void rigidbody::single_fire(int t){
 	// update nearest neighbor lists if applicable
 	if (t % nnupdate == 0 && NCL > -1)
 		this->update_nlcl(t);
