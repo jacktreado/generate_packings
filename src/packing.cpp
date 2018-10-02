@@ -42,7 +42,7 @@ packing::packing(int n, int dof, int nc, int s){
 	DOF = dof;
 	NCL = nc;
 	NCELLS = pow(nc,NDIM);
-	nnupdate = 1;	
+	nnupdate = 50;	
 	this->initialize_NC();
 
 	// local variables
