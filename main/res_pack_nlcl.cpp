@@ -69,9 +69,9 @@ int main(int argc, char *argv[]){
 	if (N >= 80){
 		cout << "@@ System large enough to warrant NLCL..." << endl;
 		if (N < 200)
-			nc = 4;			// number of cells along one direction
+			nc = 3;			// number of cells along one direction
 		else
-			nc = 5;
+			nc = 4;
 
 	}
 	else
