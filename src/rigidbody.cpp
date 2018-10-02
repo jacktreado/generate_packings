@@ -528,27 +528,18 @@ void rigidbody::free_md(double tmp0, double tend) {
 
 	for (t = 0; t < NT; t++) {
 		// if NLCL, update
-		if (NCL > 0 && t % nnupdate == 0) {
+		if (NCL > -1 && t % nnupdate == 0) {
 			this->update_cell();
 			this->update_neighborlist();
 		}
 
 		// advance quaternions, positions
-#ifdef DEBUG_ON
-		cout << "t = " << t << " verlet step 1..." << endl;
-#endif
 		this->verlet_first();
 
 		// update forces
-#ifdef DEBUG_ON
-		cout << "t = " << t << " force update..." << endl;
-#endif
 		this->force_update();
 
 		// advance angular momentum
-#ifdef DEBUG_ON
-		cout << "t = " << t << " verlet step 2..." << endl;
-#endif
 		this->verlet_second();
 
 		// output information
@@ -589,15 +580,9 @@ void rigidbody::free_fire(double tmp0, double tend) {
 		}
 
 		// advance quaternions, positions
-#ifdef DEBUG_ON
-		cout << "t = " << t << " verlet step 1..." << endl;
-#endif
 		this->verlet_first();
 
 		// update forces
-#ifdef DEBUG_ON
-		cout << "t = " << t << " force update..." << endl;
-#endif
 		this->force_update();
 
 		if (U < N * 1e-8)
@@ -607,9 +592,6 @@ void rigidbody::free_fire(double tmp0, double tend) {
 		this->rb_fire();
 
 		// advance angular momentum
-#ifdef DEBUG_ON
-		cout << "t = " << t << " verlet step 2..." << endl;
-#endif
 		this->verlet_second();
 
 		// output information
@@ -654,10 +636,10 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 	cout << "================================" << endl << endl;
 
 	for (t = 0; t < NT; t++) {
-		// if NLCL, update
-		if (NCL > 0 && t % nnupdate == 0) {
-			this->update_cell();
-			this->update_neighborlist();
+		// update nearest neighbor lists if applicable
+		if (t % nnupdate == 0 && NCL > -1){
+			cout << "^ ";
+			this->update_nlcl(t);
 		}
 
 		// advance quaternions, positions

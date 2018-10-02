@@ -99,7 +99,6 @@ void packing::calc_dm(string& fstr){
 	}
 	obj.close();
 	delete [] dm;
-
 }
 
 double packing::perturb_single_particle(int i, int k, double h){
@@ -146,8 +145,6 @@ double packing::perturb_two_particles(int i, int j, int k, int l, double h){
 	// return V
 	return V;
 }
-
-
 
 // calculate vacf from already initialized system
 void packing::calc_vacf(int NT, int vsave, ofstream& obj){
@@ -212,7 +209,6 @@ void packing::calc_vacf(int NT, int vsave, ofstream& obj){
 	this->print_vacf(NT,vsave,vacf,obj);
 }
 
-
 // get vacf from previous velocities
 void packing::get_vacf(int t, int vsave, vector<double>** vlist, vector<double>& numer, vector<double>& denom){	
 	int i,j,d,dt,dtmaxtmp;
@@ -253,9 +249,7 @@ void packing::finish_vacf(int NT, int vsave, vector<double>& numer, vector<doubl
 		// increase dt	
 		dt++;			
 	}
-
 }
-
 
 void packing::print_vacf(int NT, int vsave, vector<double>& vacf, ofstream& obj){
 	int s = vacf.size();
@@ -267,8 +261,6 @@ void packing::print_vacf(int NT, int vsave, vector<double>& vacf, ofstream& obj)
 	obj << dt << endl;
 	for (i=0; i<s; i++)
 		obj << vacf.at(i) << endl;
-
-
 }
 
 

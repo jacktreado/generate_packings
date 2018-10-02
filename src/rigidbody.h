@@ -16,7 +16,6 @@
 
 class rigidbody : public packing{
 private:
-
 	double Krot; //!< rotational kinetic energy
 	double LCON; //!< local angular momentum
 
