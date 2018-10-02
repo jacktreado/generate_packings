@@ -75,7 +75,7 @@ int main(int argc, char *argv[]){
 
 	}
 	else
-		nc = 3;
+		nc = -1;
 	
 	// instantiate rigidbody md object
 	rigidbody rp(input_str,N,dof,nc,seed);
