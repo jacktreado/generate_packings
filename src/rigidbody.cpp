@@ -985,8 +985,6 @@ void rigidbody::force_update() {
 
 				// get neighbor from neighborlist
 				j = neighborlist[i].at(jj);
-				if (j < i)
-					continue;
 
 				// contact matrix index
 				cind = N * i + j - ((i + 1) * (i + 2)) / 2;
@@ -1047,9 +1045,10 @@ void rigidbody::force_update() {
 									cm[cind] = 1;
 									pc_found = 1;
 								}
+								else
+									cm[cind]++;
 								ac[i]++;
 								ac[j]++;
-								cm[cind]++;
 
 								// update potential energy
 								U += (ep / 2) * pow(1 - da / rij, 2);
@@ -1146,9 +1145,10 @@ void rigidbody::force_update() {
 									cm[cind] = 1;
 									pc_found = 1;
 								}
+								else
+									cm[cind]++;
 								ac[i]++;
-								ac[j]++;
-								cm[cind]++;
+								ac[j]++;								
 
 								// update potential energy
 								U += (ep / 2) * pow(1 - da / rij, 2);
@@ -1558,8 +1558,16 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 				cout << "Final niso max = " << DOF*N - NDIM + 1 << endl;
 				cout << "Final rattler # = " << nr << endl;
 				cout << "Final contacts:" << endl;
+				cout << "pc:" << endl;
 				for (int i = 1; i < N + 1; i++) {
 					cout << setw(6) << pc[i - 1];
+					if (i % 10 == 0)
+						cout << endl;
+				}
+				cout << endl;
+				cout << "ac:" << endl;
+				for (int i = 1; i < N + 1; i++) {
+					cout << setw(6) << ac[i - 1];
 					if (i % 10 == 0)
 						cout << endl;
 				}
