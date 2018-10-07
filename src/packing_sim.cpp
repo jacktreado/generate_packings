@@ -980,14 +980,16 @@ void packing::get_cell_neighbors(){
 }
 
 void packing::get_cell_positions(){
-	int k,d;
-	int ind;	
+	int k,d,i1,i2;
+	int ind;
 
 	// loop over cells, get pos of each one
-	for (k=0; k<NCELLS; k++){
-		for (d=0; d<NDIM; d++){
+	for (k=0; k<NCELLS; k++){		
+		for (d=0; d<NDIM; d++){			
 			// get indices xi,yi,zi,wi,etc
-			ind = floor((k % (int)pow(NCL,d+1))/(pow(NCL,d)));
+			i1 = round(pow(NCL,d+1));
+			i2 = round(pow(NCL,d));
+			ind = floor((k % i1)/(i2));
 
 			// get position in given dimension of cell
 			cellpos[k][d] = g[d]*(ind+0.5);
@@ -1030,6 +1032,7 @@ int packing::get_new_cell(int i){
 	// if no min set, error
 	if (minm == -1){
 		cout << "ERROR: No native cell found, error in get_new_cell()...";
+		cout << "ERROR: particle position = " << x[i][0] << ", " << x[i][1] << ", " << x[i][2] << endl;
 		throw "NO NATIVE CELL FOUND!!\n";
 	}
 	else

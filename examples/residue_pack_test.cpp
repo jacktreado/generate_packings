@@ -10,17 +10,17 @@ using namespace std;
 
 int main() {
 	// local variables for packing
-  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/io/res_input_N12_seed1.dat";
+  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/io/res_input_N12_seed3.dat";
 	string cfgstr = "residue_cfg.test";
 	string statstr = "residue_stat.test";
 	string enstr = "residue_Energy.test";
 	string xyzstr = "residue_test.xyz";
 	int N = 12;
 	int dof = 6;
-	int nc = -1;
+	int nc = 3;
 	if (N >= 40)
 		nc = 3;
-	int seed = 13;
+	int seed = 3;
 
 	// initialize rigid body packing
 	rigidbody respack(fstr, N, dof, nc, seed);
@@ -34,9 +34,9 @@ int main() {
 	ep = 10.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
-	tmp0 = 0.01;		// initial temperature
+	tmp0 = 0.001;		// initial temperature
 	plotskip = 1000;		// # of steps to skip plotting
-	phi0 = 0.1;		// initial packing fraction
+	phi0 = 0.5;		// initial packing fraction
 	dphi = 0.001;		// initial packing fraction step
 	Utol = N * 1e-8;
 	Ktol = N * 1e-20;
@@ -61,10 +61,6 @@ int main() {
 	respack.rigidbody_xyz();
 
 	// run md
-	if (nc > 0) {
-		respack.update_neighborlist();
-		respack.print_neighborlist();
-	}
 	respack.rb_jamming_finder(tmp0, NT, dphi, Utol, Ktol);
 	// respack.free_fire(tmp0,t);
 	// respack.free_md(tmp0,t);

@@ -83,6 +83,7 @@ public:
 	void initialize_particles();
 	void initialize_particles(int seed, double alpha, double rad);
 	void initialize_nlcl();
+	void nlcl_null();
 	void setup_nlcl();
 	void freeze_nlcl();
 	void setup_std_FIRE();

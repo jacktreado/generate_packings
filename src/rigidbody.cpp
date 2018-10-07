@@ -62,7 +62,7 @@ rigidbody::rigidbody(string &rbstr, int n, int dof, int nc, int s) : packing(n, 
 	this->initialize_quaternions();
 
 	// setup neighbor & cell list if nc is positive
-	if (nc > 0)
+	if (nc > -1)
 		this->initialize_nlcl();
 
 	cout << endl << endl;
@@ -1426,7 +1426,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 
 	nbb = N - nr;
 	niso = DOF * nbb - NDIM + 1;
-	acsum = (this->get_ac_sum()) / 2;
+	acsum = 0.5*this->get_ac_sum();
 	pcsum = this->get_c_sum();
 
 	gr = (U < Utol);
@@ -1551,7 +1551,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 				cout << "Writing config at nt = " << t << endl;
 				cout << "Final U = " << U << endl;
 				cout << "Final K = " << K << endl;
-				cout << "Final phi = " << phi << endl;
+				cout << "Final phi = " << setprecision(6) << phi << endl;
 				cout << "Final pcsum = " << pcsum << endl;
 				cout << "Final acsum = " << acsum << endl;
 				cout << "Final niso = " << niso << endl;
@@ -1560,9 +1560,8 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 				cout << "Final contacts:" << endl;
 				for (int i = 1; i < N + 1; i++) {
 					cout << setw(6) << pc[i - 1];
-					if (i % 10 == 0) {
+					if (i % 10 == 0)
 						cout << endl;
-					}
 				}
 				cout << endl;
 				if (N < 40) {
@@ -1804,11 +1803,11 @@ void rigidbody::rigidbody_xyz() {
 				if (NCL > 0) {
 					nf = 0;
 					if (i == 0)
-						xyzobj << setw(w) << 'X';
+						xyzobj << setw(w) << 'H';
 					else {
 						for (k = 0; k < neighborlist[0].size(); k++) {
 							if (i == neighborlist[0].at(k)) {
-								xyzobj << setw(w) << 'X';
+								xyzobj << setw(w) << 'Y';
 								nf++;
 								if (nf > 1) {
 									this->print_cell();
@@ -1818,9 +1817,8 @@ void rigidbody::rigidbody_xyz() {
 								}
 							}
 						}
-
-						if (nf == 0 && i != 0)
-							xyzobj << setw(w) << 'H';
+						if (nf == 0)
+							xyzobj << setw(w) << 'X';
 					}
 				}
 				else

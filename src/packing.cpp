@@ -59,7 +59,8 @@ packing::packing(int n, int dof, int nc, int s){
 	this->initialize_particles();
 
 	// setup cell if appropriate
-	if (nc < 0)
+	this->nlcl_null();
+	if (nc == -1)
 		this->freeze_nlcl();
 	else
 		this->setup_nlcl();
@@ -193,7 +194,7 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	cout << "rad = " << rad << endl;
 
 	// get rcut (rc = magnitude, in units of larger radius)
-	rc = 3.5;
+	rc = 3;
 	rcut = rc*alpha*rad;
 
 	// initial dt = 1
@@ -206,6 +207,7 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	this->initialize_particles(seed,rad,alpha);	
 
 	// either "freeze" cell list by setting ptrs to null, or allocate memory
+	this->nlcl_null();
 	if (NCL < 0)
 		this->freeze_nlcl();
 	else{
@@ -243,6 +245,8 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 
 
 packing::~packing(){
+	cout << "~entering packing destructor" << endl;
+
 	// delete 1d arrays
 	delete [] L;
 	delete [] r;
@@ -251,6 +255,7 @@ packing::~packing(){
 	delete [] pc;
 
 	// delete 2d arrays
+	cout << "freeing particle memory..." << endl;
 	for (int i=0; i<N; i++){
 		delete [] x[i];
 		delete [] v[i];
@@ -262,18 +267,20 @@ packing::~packing(){
 	delete [] F;
 
 	// delete cell list/neighbor list variables
-	delete [] g;
-	delete [] celln;
-	delete [] clabel;
-	for (int i=0; i<NCELLS; i++){
-		delete [] cellpos[i];
-		delete [] cellneighbors[i];
-		cell[i].clear();		
+	if (NCL > -1){		
+		delete [] g;
+		delete [] celln;
+		delete [] clabel;
+		for (int i=0; i<NCELLS; i++){
+			delete [] cellpos[i];
+			delete [] cellneighbors[i];
+			cell[i].clear();
+		}
+		delete [] cellpos;
+		delete [] cellneighbors;
+		delete [] cell;
+		delete [] neighborlist;
 	}
-	delete [] cellpos;
-	delete [] cellneighbors;
-	delete [] cell;
-	delete [] neighborlist;	
 
 	xyzobj.close();
 	configobj.close();
@@ -290,21 +297,34 @@ packing::~packing(){
 ================================== 
 */
 
+void packing::nlcl_null(){
+	g = nullptr;
+	clabel = nullptr;
+	cellpos = nullptr;
+	cellneighbors = nullptr;
+	celln = nullptr;
+	cell = nullptr;
+	neighborlist = nullptr;
+}
+
 void packing::initialize_nlcl(){
 	cout << "** INIALIZING NLCL:" << endl;
 	cout << "** getting cell neighbors..." << endl;
 	this->get_cell_neighbors();
+	this->print_cell_neighbors();
 
 	cout << "** getting cell positions..." << endl;
 	this->get_cell_positions();
+	this->print_cell_neighbors();
 	this->print_cell_pos();
+	this->print_cell_neighbors();
 
-	cout << "** populating cell information..." << endl;
+	cout << "** populating cell information..." << endl;	
 	this->update_cell();
+	this->print_cell_neighbors();
 	this->print_cell();
 	this->print_clabel();
-	this->print_celln();	
-	this->print_cell_neighbors();	
+	this->print_celln();		
 
 	cout << "** populating neighbor list information..." << endl;
 	this->update_neighborlist();
@@ -341,9 +361,9 @@ void packing::setup_nlcl(){
 	// local variables
 	int i,d;
 	
-	// initialize cell list
-	neighborlist = new vector<int>[N];
-	cellpos = new double*[N];
+	// initialize cell list	
+	neighborlist = new vector<int>[N];	
+	cellpos = new double*[NCELLS];
 	cellneighbors = new int*[NCELLS];
 	cell = new vector<int>[NCELLS];
 	celln = new int[NCELLS];
@@ -378,7 +398,7 @@ void packing::initialize_particles(){
 	F = new double*[N];
 	aold = new double*[N];
 	r = new double[N];
-	m = new double[N];
+	m = new double[N];	
 	pc = new int[N];			
 	for (i=0; i<N; i++){
 		x[i] = new double[NDIM];
