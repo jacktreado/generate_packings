@@ -66,13 +66,14 @@ int main(int argc, char *argv[]){
 	cout << "@@ Instantiating packing object..." << endl;
 
 	// NLCL parameters, if system is large enough
-	if (N >= 80){
+	if (N >= 40){
 		cout << "@@ System large enough to warrant NLCL..." << endl;
-		if (N < 200)
+		if (N < 100)
 			nc = 3;			// number of cells along one direction
-		else
+		if (N < 200)
 			nc = 4;
-
+		else
+			nc = 5;
 	}
 	else
 		nc = -1;

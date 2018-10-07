@@ -10,12 +10,12 @@ using namespace std;
 
 int main() {
 	// local variables for packing
-  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/io/res_input_N32_seed1.dat";
+  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/io/res_input_N48_seed1.dat";
 	string cfgstr = "residue_cfg.test";
 	string statstr = "residue_stat.test";
 	string enstr = "residue_Energy.test";
 	string xyzstr = "residue_test.xyz";
-	int N = 32;
+	int N = 48;
 	int dof = 6;
 	int nc = 3;
 	if (N >= 40)
@@ -35,7 +35,7 @@ int main() {
 	NT = 5e8;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
 	tmp0 = 0.001;		// initial temperature
-	plotskip = 1000;		// # of steps to skip plotting
+	plotskip = 100;		// # of steps to skip plotting
 	phi0 = 0.525;		// initial packing fraction
 	dphi = 0.001;		// initial packing fraction step
 	Utol = N * 1e-8;
