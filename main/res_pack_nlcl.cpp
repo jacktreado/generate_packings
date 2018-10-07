@@ -86,13 +86,10 @@ int main(int argc, char *argv[]){
 	rp.set_ep(ep);
 	rp.set_md_time(dt);
 	rp.set_dtmax(10.0);
-	rp.set_plotskip(plotskip);		
+	rp.set_plotskip(plotskip);
+	rp.pos_frot();		
 
 	// Bring system to jammed state
-	if (nc > 0){
-		rp.update_neighborlist();
-		rp.print_neighborlist();
-	}
 	rp.rb_jamming_finder(tmp0,NT,dphi,Utol,Ktol);
 	
 	// open output files
