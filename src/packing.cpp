@@ -324,7 +324,7 @@ void packing::initialize_nlcl(){
 	this->print_cell_neighbors();
 	this->print_cell();
 	this->print_clabel();
-	this->print_celln();		
+	this->print_celln();
 
 	cout << "** populating neighbor list information..." << endl;
 	this->update_neighborlist();

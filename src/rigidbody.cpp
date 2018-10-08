@@ -477,7 +477,7 @@ void rigidbody::read_in_info(string &rbstr) {
 
 	// if large enough box, update cell grid length
 	if (NCL > 0) {
-		rcut = 1.2 * maxrad;
+		rcut = 2.01 * maxrad;
 		this->update_cell_g();
 	}
 }
@@ -993,9 +993,8 @@ void rigidbody::force_update() {
 				sij = r[j] + r[i];
 
 				// get distance between particles
-				dx = this->get_distance(i, j, Rij);
+				dx = this->get_distance(i, j);
 
-				// if true, residues close by, check atomic overlaps
 				if (dx < sij) {
 					for (ai = 0; ai < Na[i]; ai++) {
 						for (aj = 0; aj < Na[j]; aj++) {
@@ -1048,7 +1047,7 @@ void rigidbody::force_update() {
 								else
 									cm[cind]++;
 								ac[i]++;
-								ac[j]++;
+								ac[j]++;								
 
 								// update potential energy
 								U += (ep / 2) * pow(1 - da / rij, 2);

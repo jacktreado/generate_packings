@@ -849,8 +849,7 @@ void packing::scale_sys(double dphi){
 */
 
 void packing::update_nlcl(int t){
-	if (t % 5*nnupdate == 0)
-		this->update_cell();
+	this->update_cell();
 	this->update_neighborlist();	
 }
 
