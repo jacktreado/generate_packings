@@ -477,7 +477,7 @@ void rigidbody::read_in_info(string &rbstr) {
 
 	// if large enough box, update cell grid length
 	if (NCL > 0) {
-		rcut = 2.01 * maxrad;
+		rcut = 1.2 * maxrad;
 		this->update_cell_g();
 	}
 }
@@ -1759,6 +1759,8 @@ void rigidbody::rigidbody_md_monitor() {
 		cout << "Printing XYZ" << endl;
 		this->rigidbody_xyz();
 		cout << endl;
+
+		this->print_neighborlist();
 	}
 }
 
