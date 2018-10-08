@@ -39,7 +39,7 @@ protected:
 	int nr;							//!< The number of rattler particles
 
 	// neighbor list/cell list information
-	double rcut; 					// multiple of radius that you check for neighbors
+	double* rcut; 					// multiple of radius that you check for neighbors
 	int NCL;						// number of cells along one box length
 	int NCELLS;						// number of cells
 	int NCN;						// number of cell neighbors (FEV neighbors on cubic lattice)
@@ -85,7 +85,7 @@ public:
 	void initialize_nlcl();
 	void nlcl_null();
 	void setup_nlcl();
-	void freeze_nlcl();
+	void freeze_nlcl();	
 	void setup_std_FIRE();
 	void setup_std_sim();
 	void mc_pos_init();
@@ -114,7 +114,6 @@ public:
 	double get_dtmax() {return dtmax;};
 	double get_distance(int p1, int p2);
 	double get_distance(int p1, int p2, double xij[]);
-	double get_rcut() {return rcut;};
 	double get_mean_vel();
 	double get_com();
 	double get_mean_mass();
@@ -134,7 +133,6 @@ public:
 	void set_plotit(int val) {plotit = val;};
 	void set_dt(double val) {dt = val;};
 	void set_ep(double val) {ep = val;};
-	void set_rcut(double val) {rcut = val;};
 	void set_phi(double val) {
 		int i;
 		double g = pow( val / phi, (1 / (double)NDIM) );
@@ -199,11 +197,14 @@ public:
 	                 int nr, double dphi0, double Ktol, double Utol, int t);
 
 	// neighbor list/cell list
+	void init_rcut();
+	void scale_rcut(double s);
 	void update_nlcl(int t);
 	void print_cell();
 	void print_neighborlist();
 	void print_cell_neighbors();
 	void print_nl_xyz();
+	void print_nl_xyz(int p1, int p2);
 	void print_all_nl_xyz();
 	void print_cell_pos();
 	void print_clabel();
@@ -218,6 +219,7 @@ public:
 	int get_new_cell(int i);
 	void update_cell();
 	void update_neighborlist();
+	void nlcl_check(int t);
 
 	// growth
 	void scale_sys(double dphi);

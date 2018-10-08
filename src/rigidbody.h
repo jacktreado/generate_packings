@@ -102,6 +102,7 @@ public:
 	void monitor_scale(double dphi, double phiL, double phiH);
 	void rigidbody_md_monitor();
 	void rigidbody_xyz();
+	void rigidbody_xyz(int p1, int p2);
 	void rigidbody_print_vars();
 
 };

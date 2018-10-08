@@ -66,17 +66,14 @@ int main(int argc, char *argv[]){
 	cout << "@@ Instantiating packing object..." << endl;
 
 	// NLCL parameters, if system is large enough
-	if (N >= 40){
-		cout << "@@ System large enough to warrant NLCL..." << endl;
-		if (N < 101)
-			nc = 4;			// number of cells along one direction
-		if (N < 200)
-			nc = 4;
-		else
-			nc = 5;
-	}
+	if (N < 40)
+		nc = -1;	
+	else if (N < 500)
+		nc = 3;
+	else if (N < 5000)
+		nc = 4;
 	else
-		nc = -1;
+		nc = 5;
 	
 	// instantiate rigidbody md object
 	rigidbody rp(input_str,N,dof,nc,seed);

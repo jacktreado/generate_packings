@@ -50,7 +50,7 @@ packing::packing(int n, int dof, int nc, int s){
 
 	// set other member variables to be changed
 	phi = -1;
-	rcut = -1;
+	rcut = nullptr;
 
 	// initialize box to -1
 	this->initialize_box(-1.0);
@@ -135,12 +135,12 @@ packing::packing(string &str, int ndim, int s){
 	plotskip = 1000;
 	isjammed = 0;
 
-	// CL/NL variables: set to nullptr, except for NL, make everything a neighbor to everything
-	rcut = -1;
+	// CL/NL variables: set to nullptr, except for NL, make everything a neighbor to everything	
 	NCL = -1;
 	NCELLS = -1;
 	NCN = -1;
 	nnupdate = -1;
+	rcut = nullptr;
 	g = nullptr;
 	clabel = nullptr;
 	cellpos = nullptr;
@@ -193,9 +193,8 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	}
 	cout << "rad = " << rad << endl;
 
-	// get rcut (rc = magnitude, in units of larger radius)
-	rc = 3;
-	rcut = rc*alpha*rad;
+	// initialize rcut
+	this->init_rcut();
 
 	// initial dt = 1
 	dt = 1.0;
@@ -267,7 +266,8 @@ packing::~packing(){
 	delete [] F;
 
 	// delete cell list/neighbor list variables
-	if (NCL > -1){		
+	if (NCL > -1){
+		delete [] rcut;
 		delete [] g;
 		delete [] celln;
 		delete [] clabel;
@@ -298,6 +298,7 @@ packing::~packing(){
 */
 
 void packing::nlcl_null(){
+	rcut = nullptr;
 	g = nullptr;
 	clabel = nullptr;
 	cellpos = nullptr;
@@ -337,12 +338,12 @@ void packing::freeze_nlcl(){
 	// local variables
 	int i,j;
 
-	// CL/NL variables: set to nullptr, except for NL, make everything a neighbor to everything
-	rcut = -1;
+	// CL/NL variables: set to nullptr, except for NL, make everything a neighbor to everything	
 	NCL = -1;
 	NCELLS = -1;
 	NCN = -1;
 	nnupdate = -1;
+	rcut = nullptr;
 	g = nullptr;
 	clabel = nullptr;
 	cellpos = nullptr;
@@ -362,6 +363,7 @@ void packing::setup_nlcl(){
 	int i,d;
 	
 	// initialize cell list	
+	rcut = new double[N];
 	neighborlist = new vector<int>[N];	
 	cellpos = new double*[NCELLS];
 	cellneighbors = new int*[NCELLS];

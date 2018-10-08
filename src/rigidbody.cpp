@@ -477,7 +477,7 @@ void rigidbody::read_in_info(string &rbstr) {
 
 	// if large enough box, update cell grid length
 	if (NCL > 0) {
-		rcut = 2.01 * maxrad;
+		this->init_rcut();
 		this->update_cell_g();
 	}
 }
@@ -984,7 +984,7 @@ void rigidbody::force_update() {
 				pc_found = 0;
 
 				// get neighbor from neighborlist
-				j = neighborlist[i].at(jj);
+				j = neighborlist[i].at(jj);	
 
 				// contact matrix index
 				cind = N * i + j - ((i + 1) * (i + 2)) / 2;
@@ -1293,8 +1293,11 @@ void rigidbody::rb_scale(double phinew) {
 	this->update_phi();
 
 	// if NLCL engaged, scale rcut
-	if (NCL > 0) {
-		rcut *= s;
+	if (NCL > -1) {
+		this->scale_rcut(s);
+		if (NCL > 3)
+			this->update_cell();
+
 		this->update_neighborlist();
 	}
 }
@@ -1807,48 +1810,121 @@ void rigidbody::rigidbody_xyz() {
 		for (j = 0; j < Na[i]; j++) {
 			// determine atomic type
 			rtmp = ar[i][j] / rmin;
-			if (rtmp < 1.12) {
-				// print NLCL info
-				if (NCL > 0) {
-					nf = 0;
-					if (i == 0)
-						xyzobj << setw(w) << 'H';
-					else {
-						for (k = 0; k < neighborlist[0].size(); k++) {
-							if (i == neighborlist[0].at(k)) {
-								xyzobj << setw(w) << 'Y';
-								nf++;
-								if (nf > 1) {
-									this->print_cell();
-									this->print_neighborlist();
-									cout << "Error at i = " << i << ", nf = " << nf << ", double neighborlist..." << endl;
-									throw "Error with neighborlist\n";
+			if (i==47)
+				xyzobj << setw(w) << 'Z';
+			else{
+				if (rtmp < 1.12) {
+					// print NLCL info
+					if (NCL > 0) {
+						nf = 0;
+						if (i == 0)
+							xyzobj << setw(w) << 'H';
+						else {
+							for (k = 0; k < neighborlist[0].size(); k++) {
+								if (i == neighborlist[0].at(k)) {
+									xyzobj << setw(w) << 'Y';
+									nf++;
+									if (nf > 1) {
+										this->print_cell();
+										this->print_neighborlist();
+										cout << "Error at i = " << i << ", nf = " << nf << ", double neighborlist..." << endl;
+										throw "Error with neighborlist\n";
+									}
 								}
 							}
+							if (nf == 0)
+								xyzobj << setw(w) << 'X';
 						}
-						if (nf == 0)
-							xyzobj << setw(w) << 'X';
+					}
+					else
+						xyzobj << setw(w) << 'H';
+				}			
+				else if (rtmp < 1.36) {
+					if (n_found == 0) {
+						xyzobj << setw(w) << 'N';
+						n_found = 1;
+					}
+					else {
+						xyzobj << setw(w) << 'C';
+						n_found = 0;
 					}
 				}
-				else
-					xyzobj << setw(w) << 'H';
-			}
-			else if (rtmp < 1.36) {
-				if (n_found == 0) {
-					xyzobj << setw(w) << 'N';
-					n_found = 1;
-				}
-				else {
+				else if (rtmp < 1.44)
+					xyzobj << setw(w) << 'O';
+				else if (rtmp < 1.56)
 					xyzobj << setw(w) << 'C';
-					n_found = 0;
-				}
+				else
+					xyzobj << setw(w) << 'S';				
 			}
-			else if (rtmp < 1.44)
-				xyzobj << setw(w) << 'O';
-			else if (rtmp < 1.56)
-				xyzobj << setw(w) << 'C';
+			
+
+			xyzobj << setw(w) << xW[i][j][0] + x[i][0];
+			xyzobj << setw(w) << xW[i][j][1] + x[i][1];
+			xyzobj << setw(w) << xW[i][j][2] + x[i][2];
+			xyzobj << setw(w) << ar[i][j];
+			xyzobj << endl;
+		}
+	}
+}
+
+void rigidbody::rigidbody_xyz(int p1, int p2) {
+	int i, j, k, nf, d, dd, w, n_found;
+	double rmin, rtmp;
+	w = 20;
+
+	// get min radius (for scaling)
+	rmin = 1e20;
+	for (j = 0; j < Na[0]; j++) {
+		if (ar[0][j] < rmin)
+			rmin = ar[0][j];
+	}
+
+	// print xyz header
+	xyzobj << this->get_Natot() << endl;
+	xyzobj << "Lattice=\"";
+	for (d = 0; d < NDIM; d++) {
+		for (dd = 0; dd < NDIM; dd++) {
+			if (dd == d)
+				xyzobj << L[d];
 			else
-				xyzobj << setw(w) << 'S';
+				xyzobj << " 0.0 ";
+		}
+	}
+	xyzobj << "\" ";
+	xyzobj << '\t';
+	xyzobj << "Properties=species:S:1:pos:R:" <<  NDIM << ":radius:R:1" << endl;
+
+	// print body
+	n_found = 0;
+	for (i = 0; i < N; i++) {
+		for (j = 0; j < Na[i]; j++) {
+			// determine atomic type
+			rtmp = ar[i][j] / rmin;
+			if (i==p1)
+				xyzobj << setw(w) << 'X';
+			else if (i==p2)
+				xyzobj << setw(w) << 'Y';
+			else{
+				if (rtmp < 1.12)					
+					xyzobj << setw(w) << 'H';
+				else if (rtmp < 1.36) {
+					if (n_found == 0) {
+						xyzobj << setw(w) << 'N';
+						n_found = 1;
+					}
+					else {
+						xyzobj << setw(w) << 'C';
+						n_found = 0;
+					}
+				}
+				else if (rtmp < 1.44)
+					xyzobj << setw(w) << 'O';
+				else if (rtmp < 1.56)
+					xyzobj << setw(w) << 'C';
+				else
+					xyzobj << setw(w) << 'S';				
+			}
+			
 
 			xyzobj << setw(w) << xW[i][j][0] + x[i][0];
 			xyzobj << setw(w) << xW[i][j][1] + x[i][1];

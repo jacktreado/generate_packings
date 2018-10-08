@@ -452,6 +452,57 @@ void packing::print_nl_xyz(){
 	}
 }
 
+void packing::print_nl_xyz(int p1, int p2){
+	int i,d,dd,w;
+	w = 20;	
+
+	if (!xyzobj.is_open()){
+		cout << "ERROR: xyz file obj not open!" << endl;
+		throw "obj not open\n";
+	}
+
+	// print .xyz header
+	xyzobj << N+NCELLS << endl;
+	xyzobj << "Lattice=\"";
+	for (d=0; d<NDIM; d++){
+		for(dd=0; dd<NDIM; dd++){
+			if (dd==d)
+				xyzobj << L[d];
+			else
+				xyzobj << " 0.0 ";
+		}
+	}
+	xyzobj << "\" ";
+	xyzobj << '\t';
+	xyzobj << "Properties=species:S:1:pos:R:" <<  NDIM << ":radius:R:1" << endl;
+
+	// print green if in nl of 1, red else
+	int nl = neighborlist[0].size();
+	int l = 0;
+	int n_found = 0;
+	for (i=0; i<N; i++){
+		if (i == p1)
+			xyzobj << setw(w) << 'C';
+		else if (i == p2)
+			xyzobj << setw(w) << 'X';
+		else			
+			xyzobj << setw(w) << 'N';
+
+		for (d=0; d<NDIM; d++)
+			xyzobj << setw(w) << x[i][d];
+		xyzobj << setw(w) << r[i];
+		xyzobj << endl;
+	}
+
+	for (i=0; i<NCELLS; i++){
+		xyzobj << setw(w) << "Z";
+		for (d=0; d<NDIM; d++)
+			xyzobj << setw(w) << cellpos[i][d];
+		xyzobj << setw(w) << round(0.25*L[0]/NCL);
+		xyzobj << endl;
+	}
+}
+
 
 void packing::print_all_nl_xyz(){
 	int i,d,dd,w;

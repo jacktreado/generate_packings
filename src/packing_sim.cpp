@@ -830,8 +830,10 @@ void packing::scale_sys(double dphi){
 
 	// if NLCL engaged, scale rcut
 	if (NCL > -1) {
-		rcut *= s;
-		this->update_cell();
+		this->scale_rcut(s);
+		if (NCL > 3)
+			this->update_cell();
+
 		this->update_neighborlist();
 	}
 }
@@ -848,9 +850,40 @@ void packing::scale_sys(double dphi){
 ========================================= 
 */
 
+void packing::init_rcut(){
+	// check if rcut pts to null
+	if (rcut == nullptr){
+		cout << "rcut not yet initialized, initializing to N..." << endl;
+		rcut = new double[N];
+	}
+
+	int i;
+	double maxrad;
+	maxrad = 0;
+
+	for (i=0; i<N; i++){
+		if (r[i] > maxrad)
+			maxrad = r[i];
+	}
+
+	// loop over system, make rcut avg between maxrad and ri
+	for (i=0; i<N; i++)
+		rcut[i] = r[i] + maxrad;
+
+}
+
+void packing::scale_rcut(double s){
+	int i;
+	for (i=0; i<N; i++)
+		rcut[i] *= s;
+}
+
 void packing::update_nlcl(int t){
-	this->update_cell();
-	this->update_neighborlist();	
+	if (NCL > 3)
+		this->update_cell();
+
+	this->update_neighborlist();
+	this->nlcl_check(t);
 }
 
 void packing::add_cell(int k, int i){
@@ -1087,7 +1120,7 @@ void packing::update_neighborlist(){
 			// if p2 > particle i, check distance (knocks down force update loop)
 			if (p2 > i){
 				h = this->get_distance(i,p2);
-				if (h < rcut)
+				if (h < rcut[i])
 					this->add_neighbor(i,p2);
 			}
 		}
@@ -1109,7 +1142,7 @@ void packing::update_neighborlist(){
 				// if p2 > particle i, check distance (knocks down force update loop)
 				if (p2 > i){
 					h = this->get_distance(i,p2);
-					if (h < rcut)
+					if (h < rcut[i])
 						this->add_neighbor(i,p2);
 				}
 			}
@@ -1119,7 +1152,46 @@ void packing::update_neighborlist(){
 
 
 
+void packing::nlcl_check(int t){
+	int i,j,k,nf;
+	double sij,h;
 
+	for (i=0; i<N; i++){
+		for (j=i+1; j<N; j++){
+			// get contact distance sij
+			sij = r[j] + r[i];
+
+			// get distance between particles
+			h = this->get_distance(i, j);
+
+			// if distance < sij, check that two particles are neighbors
+			nf = 0;
+			if (h < sij){
+
+				// check neighbor list of i
+				K = neighborlist[i].size();
+				for (k=0; k<K; k++){
+					if (neighborlist[i][k]==j){
+						nf = 1;
+						break;
+					}
+				}
+
+				// if j not in nl of i, then problem!
+				if (nf == 0){
+					this->print_cell_neighbors();
+					if (xyzobj.is_open())
+						this->print_nl_xyz(i,j);
+					cout << "*** t = " << t << ", neighbor not picked up in nlcl:" << endl;
+					cout << "i = " << i << ", j = " << j << ", dist/rcut[i] = " << h/rcut[i] << endl;
+					cout << "cells: ci = " << clabel[i] << ", cj = " << clabel[j] << endl;
+					cout << "ending program..." << endl;
+					throw "neighbor not caught\n";
+				}
+			}
+		}
+	}
+}
 
 
 

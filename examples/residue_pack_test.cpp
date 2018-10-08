@@ -17,9 +17,7 @@ int main() {
 	string xyzstr = "residue_test.xyz";
 	int N = 48;
 	int dof = 6;
-	int nc = 4;
-	if (N >= 40)
-		nc = 3;
+	int nc = 3;
 	int seed = 1;
 
 	// initialize rigid body packing
@@ -45,6 +43,7 @@ int main() {
 	// setup simulation
 	respack.set_ep(ep);
 	respack.set_md_time(dt);
+	respack.set_dtmax(10.0); // ADD FROM res_pack_nlcl
 	respack.set_plotskip(plotskip);
 
 	// setup energy & viz output
