@@ -23,7 +23,6 @@ int main(int argc, char *argv[]){
 	string N_str = argv[1];			// number of particles
 	string NDIM_str = argv[2];		// dimension of space
 	string phiJ_str = argv[3];		// initial jamming packing fraction guess
-	string dphi_str = argv[4];		// delta phi (for growth)
 	string seed_str = argv[5];		// seed
 	string input_str = argv[6];		// file with initial atomic coordinates
 	string config_str = argv[7];	// file to save stats
