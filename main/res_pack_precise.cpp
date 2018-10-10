@@ -23,10 +23,10 @@ int main(int argc, char *argv[]){
 	string N_str = argv[1];			// number of particles
 	string NDIM_str = argv[2];		// dimension of space
 	string phiJ_str = argv[3];		// initial jamming packing fraction guess
-	string seed_str = argv[5];		// seed
-	string input_str = argv[6];		// file with initial atomic coordinates
-	string config_str = argv[7];	// file to save stats
-	string stat_str = argv[8];		// file to save cluster list
+	string seed_str = argv[4];		// seed
+	string input_str = argv[5];		// file with initial atomic coordinates
+	string config_str = argv[6];	// file to save stats
+	string stat_str = argv[7];		// file to save cluster list
 
 	// get numerical values for input variables
 	int N,NDIM,seed;
