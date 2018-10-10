@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
 
 	// get numerical values for input variables
 	int N,NDIM,seed;
-	double dphi,phi0,phiJ,alpha;
+	double phi0,phiJ,alpha;
 
 	stringstream Nss(N_str);
 	Nss >> N;
@@ -41,9 +41,6 @@ int main(int argc, char *argv[]){
 	stringstream phiJss(phiJ_str);
 	phiJss >> phiJ;
 	phi0 = 2*phiJ;
-
-	stringstream dphiss(dphi_str);
-	dphiss >> dphi;
 
 	stringstream s1ss(seed_str);
 	s1ss >> seed;
@@ -84,7 +81,7 @@ int main(int argc, char *argv[]){
 
 	// Bring system to jammed state
 	cout << "@@ Using precise jamming method with phi0 = " << phi0 << ", phiJ = " << phiJ << endl;
-	rp.rb_jamming_precise(tmp0,NT,dphi,Utol,Ktol);
+	rp.rb_jamming_precise(phiJ,tmp0,NT,Utol,Ktol);
 	
 	// open output files
 	int isjammed = 0;
