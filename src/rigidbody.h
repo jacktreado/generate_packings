@@ -91,6 +91,8 @@ public:
 
 	// packing growth
 	void rb_jamming_finder(double tmp0, int NT, double dphi, double Utol, double Ktol);
+	void rb_jamming_precise(double tphiold, double tmp0, int NT, double Utol, double Ktol);
+	void get_U(double Ktol, int& nr);
 	void rb_scale(double phinew);
 	void rb_root_search(double& phiH, double& phiL, int& check_rattlers, int epconst, int nr, double dphi0, double Ktol, double Utol, int t);
 	void rb_fire();

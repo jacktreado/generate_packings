@@ -702,6 +702,205 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 	}
 }
 
+void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double Utol, double Ktol) {
+	// local variables
+	int s, kr, check_rattlers, nr;
+	double dphi0, phiold, phinew, tphinew1, tphinew2, tphinew, Uold, Unew;
+	double y = pow(10,-1.0/10.0);
+
+	// initialize velocities
+	this->rand_vel_init(tmp0);
+
+	// initialize variables
+	nr = 0;
+	phiold = 2*tphiold;
+
+	// get initial U
+	this->get_U(Ktol,nr);
+	Uold = U;
+
+	// update phinew
+	phinew = tphiold + (phiold-tphiold)*y;	
+
+	// update system
+	this->rb_scale(phinew);
+
+	// get final U
+	this->get_U(Ktol,nr);
+	Unew = U;
+
+	// get new guess for phiJ
+	tphinew1 = phinew - phiold*sqrt(Unew/Uold);
+	tphinew2 = 1 - sqrt(Unew/Uold);
+	tphinew = tphinew1/tphinew2;
+
+	// update phis for next run
+	phiold = phinew;
+	tphiold = tphinew;
+	Uold = Unew;
+
+	// loop over time
+	isjammed = 0;
+	for (s=0; s<NT; s++){
+		// update phinew
+		phinew = tphiold + (phiold-tphiold)*y;			
+
+		// update system
+		this->rb_scale(phinew);
+
+		// get updated U
+		this->get_U(Ktol,nr);
+		Unew = U;
+
+		// get new guess for phiJ
+		tphinew1 = phinew - phiold*sqrt(Unew/Uold);
+		tphinew2 = 1 - sqrt(Unew/Uold);
+		tphinew = tphinew1/tphinew2;
+
+		cout << endl << endl;
+		cout << "###################" << endl;
+		cout << "## s  = " << s << endl;
+		cout << "## phinew = " << setw(12) << phinew << "; phiold = " << setw(12) << phiold << endl;
+		cout << "## tphinew = " << setw(12) << tphinew << "; tphiold = " << setw(12) << tphiold << endl;
+		cout << "## new U = " << setw(12) << Unew << "; Uold = " << setw(12) << Uold << endl;
+		cout << "## nr = " << nr << endl;
+		cout << "## niso = " << DOF*(N-nr) - NDIM + 1 << endl;
+		cout << "## acsum = " << 0.5*this->get_ac_sum() << endl;
+		cout << "## pcsum = " << this->get_c_sum() << endl;				
+		cout << "###################" << endl;
+		cout << endl << endl;
+
+
+		// check for convergence
+		if (U < Utol){
+			cout << "Jammed packing found!" << endl;
+			cout << endl;
+			cout << endl;
+			cout << "Found jammed state!" << endl;
+			cout << "Writing config after s = " << s << "steps..." << endl;
+			cout << "Final U = " << U << endl;
+			cout << "Final K = " << K << endl;
+			cout << "Final phi = " << setprecision(6) << phi << endl;
+			cout << "Final acsum = " << 0.5*this->get_ac_sum() << endl;
+			cout << "Final pcsum = " << this->get_c_sum() << endl;
+			cout << "Final niso max = " << DOF*N - NDIM + 1 << endl;
+			cout << "Final contacts:" << endl;
+			cout << "pc:" << endl;
+			for (int i = 1; i < N + 1; i++) {
+				cout << setw(6) << pc[i - 1];
+				if (i % 10 == 0)
+					cout << endl;
+			}
+			cout << endl;
+			cout << "ac:" << endl;
+			for (int i = 1; i < N + 1; i++) {
+				cout << setw(6) << ac[i - 1];
+				if (i % 10 == 0)
+					cout << endl;
+			}
+			cout << endl;
+			if (N < 40) {
+				cout << "Contact Matrix:" << endl;
+				this->print_c_mat();
+			}
+			if (xyzobj.is_open())
+				this->rigidbody_xyz();
+
+			cout << endl;
+			cout << endl;
+			isjammed = 1;
+			break;
+		}		
+
+		// update phis for next run
+		phiold = phinew;
+		tphiold = tphinew;
+		Uold = Unew;
+	}
+
+	if (s == NT)
+		cout << "Jammed state was not found in NT..." << endl;
+
+}
+
+void rigidbody::get_U(double Ktol, int& nr){
+	int t,NT,kr;	
+	NT = 5e6;
+
+
+	// constant energy checking
+	double Uold, dU, dUtol;
+	int epc, epcN, epconst;
+	epconst = 0;
+	Uold = 0;
+	dU = 0;
+	dUtol = 1e-8;
+	epc = 0;
+	epcN = 1e2;
+	
+	// Minimize energy using FIRE
+	cout << "** GETTING Unew FOR phi = " << phi << endl;
+	for (t = 0; t < NT; t++) {
+		// update nearest neighbor lists if applicable
+		if (t % nnupdate == 0 && NCL > -1){
+			cout << "^ ";
+			this->update_nlcl(t);
+		}
+
+		// advance quaternions, positions
+		this->verlet_first();
+
+		// update forces
+		this->force_update();
+
+		// include fire relaxation
+		this->rb_fire();
+
+		// advance angular momentum
+		this->verlet_second();
+
+		// check for rattlers
+		kr = 0;
+		nr = this->rmv_rattlers(kr);
+
+		// check for constant potential energy
+		dU = abs(Uold - U);
+		if (dU < dUtol) {
+			epc++;
+			if (epc > epcN)
+				epconst = 1;
+		}
+		else {
+			epconst = 0;
+			epc = 0;
+		}
+		Uold = U;
+
+		// output information
+		if (t % plotskip == 0) {
+			this->monitor_header(t);
+			this->rigidbody_md_monitor();
+			cout << "U = " << U << endl;
+			cout << "Uold = " << Uold << endl;
+			cout << "dU = " << dU << endl;
+			cout << "epconst = " << epconst << endl;
+			cout << "nr = " << nr << endl;
+			cout << endl;
+			cout << endl;
+		}
+
+		if (epconst == 1 && K < Ktol)
+			break;
+	}
+
+	if (t==NT)
+		cout << "** COULD NOT FIND ENERGY MINIMUM IN NT', ENDING AND SETTING UNEW = U..." << endl;
+
+}
+
+
+
+
 void rigidbody::verlet_first() {
 	// update translational pos first, to get kinetic energy rolling
 	this->pos_update();
@@ -1761,8 +1960,6 @@ void rigidbody::rigidbody_md_monitor() {
 		cout << "Printing XYZ" << endl;
 		this->rigidbody_xyz();
 		cout << endl;
-
-		this->print_neighborlist();
 	}
 }
 
