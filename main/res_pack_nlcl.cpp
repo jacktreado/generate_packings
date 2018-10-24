@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
 	tmp0 = 0.01;		// initial temperature
 	dt = 0.05;			// time step (units of md time)
 	plotskip = 1e3;		// # of steps to skip plotting
-	Utol = N*1e-8;		// potential energy tolerance
+	Utol = N*1e-16;		// potential energy tolerance
 	Ktol = N*1e-20;		// kinetic energy tolerance
 
 	// rigid body object instantiation
