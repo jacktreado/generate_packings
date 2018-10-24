@@ -10,14 +10,14 @@ using namespace std;
 
 int main() {
 	// local variables for packing
-  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/io/res_input_N48_seed1.dat";
+  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/io/res_input_N12_seed1.dat";
 	string cfgstr = "residue_cfg.test";
 	string statstr = "residue_stat.test";
 	string enstr = "residue_Energy.test";
 	string xyzstr = "residue_test.xyz";
-	int N = 48;
+	int N = 12;
 	int dof = 6;
-	int nc = 3;
+	int nc = -1;
 	int seed = 1;
 
 	// initialize rigid body packing
@@ -33,9 +33,9 @@ int main() {
 	NT = 5e8;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
 	tmp0 = 0.001;		// initial temperature
-	plotskip = 100;		// # of steps to skip plotting
-	phi0 = 0.5;		// initial packing fraction
-	dphi = 0.001;		// initial packing fraction step
+	plotskip = 50;		// # of steps to skip plotting
+	phi0 = 0.01;		// initial packing fraction
+	dphi = 0.01;		// initial packing fraction step
 	Utol = N * 1e-8;
 	Ktol = N * 1e-20;
 	respack.rb_scale(phi0);

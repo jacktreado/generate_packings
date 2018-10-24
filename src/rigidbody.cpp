@@ -682,7 +682,7 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 		this->rb_root_search(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t);
 
 		// output information
-		if (t % plotskip == 0) {
+		if (t % plotskip == 0 || (t<2000 && t % 10 == 0)) {
 			this->monitor_header(t);
 			this->rigidbody_md_monitor();
 			cout << "** ROOT SEARCH: " << endl;
@@ -751,6 +751,16 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 		// get updated U
 		this->get_U(Ktol,nr);
 		Unew = U;
+
+		// output to energy file if open
+		if (enobj.is_open()) {
+			cout << "Printing ENERGY" << endl;
+			enobj << setw(12) << U;
+			enobj << setw(12) << K;
+			enobj << setw(12) << Krot;
+			enobj << setw(12) << U + K;
+			enobj << endl;
+		}
 
 		// get new guess for phiJ
 		tphinew1 = phinew - phiold*sqrt(Unew/Uold);
@@ -1310,7 +1320,20 @@ void rigidbody::force_update() {
 									fij[d] = (this->hs(rij, da)) * aij[d];
 									F[i][d] += fij[d];
 									F[j][d] -= fij[d];
+								}								
+
+								// update contact list
+								if (pc_found == 0) {
+									pc[i]++;
+									pc[j]++;
+									c[cind] = 1;
+									cm[cind] = 1;
+									pc_found = 1;
 								}
+								else
+									cm[cind]++;
+								ac[i]++;
+								ac[j]++;
 
 								// branch vectors to atoms
 								qix = xW[i][ai][0];
@@ -1333,24 +1356,11 @@ void rigidbody::force_update() {
 								// update net force due to j
 								fix += fij[0];
 								fiy += fij[1];
-								fiz += fij[2];
-
-								// update contact list
-								if (pc_found == 0) {
-									pc[i]++;
-									pc[j]++;
-									c[cind] = 1;
-									cm[cind] = 1;
-									pc_found = 1;
-								}
-								else
-									cm[cind]++;
-								ac[i]++;
-								ac[j]++;								
+								fiz += fij[2];		
 
 								// update potential energy
 								U += (ep / 2) * pow(1 - da / rij, 2);
-							}
+							}							
 						}
 					}
 
@@ -1941,19 +1951,19 @@ void rigidbody::rigidbody_md_monitor() {
 	cout << "dtmax = " << dtmax << endl;
 	cout << endl;
 
-	// output to energy file if open
-	if (enobj.is_open()) {
-		cout << "Printing ENERGY" << endl;
-		enobj << setw(12) << U;
-		enobj << setw(12) << K;
-		enobj << setw(12) << Krot;
-		enobj << setw(12) << U + K;
-		enobj << setw(12) << lwx;
-		enobj << setw(12) << lwy;
-		enobj << setw(12) << lwz;
-		enobj << setw(12) << LCON;
-		enobj << endl;
-	}
+	// // output to energy file if open
+	// if (enobj.is_open()) {
+	// 	cout << "Printing ENERGY" << endl;
+	// 	enobj << setw(12) << U;
+	// 	enobj << setw(12) << K;
+	// 	enobj << setw(12) << Krot;
+	// 	enobj << setw(12) << U + K;
+	// 	enobj << setw(12) << lwx;
+	// 	enobj << setw(12) << lwy;
+	// 	enobj << setw(12) << lwz;
+	// 	enobj << setw(12) << LCON;
+	// 	enobj << endl;
+	// }	
 
 	// output to xyz file if open
 	if (xyzobj.is_open()) {
