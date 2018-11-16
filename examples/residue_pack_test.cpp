@@ -8,20 +8,26 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char *argv[]) {
+	// input args
+	string N_str = argv[1];			// number of particles
+	string input_str = argv[2];		// input file
+
+	// get int for number of particles
+	stringstream Nss(N_str);
+	Nss >> N;
+
 	// local variables for packing
-  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/res/io/res_input_N12_seed1.dat";
 	string cfgstr = "residue_cfg.test";
 	string statstr = "residue_stat.test";
 	string enstr = "residue_Energy.test";
 	string xyzstr = "residue_test.xyz";
-	int N = 12;
 	int dof = 6;
 	int nc = -1;
 	int seed = 1;
 
 	// initialize rigid body packing
-	rigidbody respack(fstr, N, dof, nc, seed);
+	rigidbody respack(input_str,N,dof,nc,seed);
 
 	// Do short md to check if code is set up correctly
 
