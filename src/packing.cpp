@@ -191,21 +191,25 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 		cout << "ENDING PROGRAM.\n";
 		throw "NDIM not supported\n";
 	}
-	cout << "rad = " << rad << endl;
-
-	// initialize rcut
-	this->init_rcut();
+	cout << "rad = " << rad << endl;	
 
 	// initial dt = 1
 	dt = 1.0;
 
 	// initial box = unit length
+	cout << "initializing box size..." << endl;
 	this->initialize_box(L0);
 
 	// random initial positions & velocities, set force to 0, r to phi0 val
+	cout << "initializing particles..." << endl;
 	this->initialize_particles(seed,rad,alpha);	
 
+	// initialize rcut
+	cout << "initializing rcut..." << endl;
+	this->init_rcut();
+
 	// either "freeze" cell list by setting ptrs to null, or allocate memory
+	cout << "setting up neighborlist..." << endl;
 	this->nlcl_null();
 	if (NCL < 0)
 		this->freeze_nlcl();
@@ -215,15 +219,18 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	}
 
 	// set std sim variables (energy, plotting, etc.)
+	cout << "initializing sim variables..." << endl;
 	this->setup_std_sim();
 
 	// set std FIRE variables
+	cout << "initializing FIRE variables..." << endl;
 	this->setup_std_FIRE();
 
 	// set default plot value to 1
 	plotit = 1;
 
 	// scale particles to desired size
+	cout << "scaling particles..." << endl;
 	vol = 1.0;
 	msum = 0;
 	for(d=0; d<NDIM; d++)

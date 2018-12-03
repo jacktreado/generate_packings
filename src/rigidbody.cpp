@@ -33,6 +33,8 @@ const double PI = 3.1415926;
 ==================================
 */
 
+
+// constructor for residues to be read in
 rigidbody::rigidbody(string &rbstr, int n, int dof, int nc, int s) : packing(n, dof, nc, s) {
 	cout << "Entering rigidbody constructor..." << endl;
 	cout << endl << endl;
@@ -133,129 +135,6 @@ rigidbody::~rigidbody() {
 	delete [] qnew;
 	delete [] qdot;
 }
-
-
-
-
-/*
-==================================
-
-		 SETTERS & GETTERS
-
-==================================
-*/
-
-void rigidbody::reset_cm() {
-	int i;
-
-	for (i = 0; i < NC; i++)
-		cm[i] = 0;
-}
-
-void rigidbody::update_phi() {
-	int i, d;
-	double msum, Lprod;
-
-	msum = 0;
-	Lprod = 1;
-	for (i = 0; i < N; i++)
-		msum += m[i];
-	for (d = 0; d < NDIM; d++)
-		Lprod *= L[d];
-
-	phi = msum / Lprod;
-}
-
-void rigidbody::update_euler() {
-	int i;
-	double qs, qx, qy, qz;
-
-	for (i = 0; i < N; i++) {
-		// store quaternion values
-		qs = q[i].get_s();
-		qx = q[i].get_x();
-		qy = q[i].get_y();
-		qz = q[i].get_z();
-
-		// update euler angles based on https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-		eulang1[i] = atan2(2 * (qs * qx + qy * qz), 1 - 2 * (pow(qx, 2) + pow(qy, 2)));
-		eulang2[i] = asin(2 * (qs * qy - qz * qx));
-		eulang3[i] = atan2(2 * (qs * qz + qx * qy), 1 - 2 * (pow(qy, 2) + pow(qz, 2)));
-	}
-}
-
-int rigidbody::get_ac_sum() {
-	int i;
-	int val = 0;
-	for (i = 0; i < N; i++)
-		val += ac[i];
-	return val;
-}
-
-double rigidbody::get_atomic_distance(int i, int j, int ai, int aj, double aij[]) {
-	int d;
-	double dr, h, ap1, ap2;
-
-	h = 0;
-	dr = 0;
-	for (d = 0; d < NDIM; d++) {
-		// get position in W coordinate, not relative
-		ap1 = xW[i][ai][d] + x[i][d];
-		ap2 = xW[j][aj][d] + x[j][d];
-
-		// get distance
-		dr = ap2 - ap1;
-		dr -= L[d] * round(dr / L[d]);
-
-		// save distance for force calc
-		aij[d] = dr;
-		h += dr * dr;
-	}
-
-	h = sqrt(h);
-	return h;
-}
-
-double rigidbody::get_Natot() {
-	int i;
-	double sum = 0;
-
-	for (i = 0; i < N; i++)
-		sum += Na[i];
-
-	return sum;
-}
-
-double rigidbody::get_LWX() {
-	int i;
-	double lwsum = 0;
-
-	for (i = 0; i < N; i++)
-		lwsum += LW[i][0];
-
-	return lwsum;
-}
-
-double rigidbody::get_LWY() {
-	int i;
-	double lwsum = 0;
-
-	for (i = 0; i < N; i++)
-		lwsum += LW[i][1];
-
-	return lwsum;
-}
-
-double rigidbody::get_LWZ() {
-	int i;
-	double lwsum = 0;
-
-	for (i = 0; i < N; i++)
-		lwsum += LW[i][2];
-
-	return lwsum;
-}
-
 
 /*
 ==================================
@@ -507,6 +386,126 @@ void rigidbody::initialize_quaternions() {
 	this->pos_brot();
 }
 
+
+/*
+==================================
+
+		 SETTERS & GETTERS
+
+==================================
+*/
+
+void rigidbody::reset_cm() {
+	int i;
+
+	for (i = 0; i < NC; i++)
+		cm[i] = 0;
+}
+
+void rigidbody::update_phi() {
+	int i, d;
+	double msum, Lprod;
+
+	msum = 0;
+	Lprod = 1;
+	for (i = 0; i < N; i++)
+		msum += m[i];
+	for (d = 0; d < NDIM; d++)
+		Lprod *= L[d];
+
+	phi = msum / Lprod;
+}
+
+void rigidbody::update_euler() {
+	int i;
+	double qs, qx, qy, qz;
+
+	for (i = 0; i < N; i++) {
+		// store quaternion values
+		qs = q[i].get_s();
+		qx = q[i].get_x();
+		qy = q[i].get_y();
+		qz = q[i].get_z();
+
+		// update euler angles based on https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+		eulang1[i] = atan2(2 * (qs * qx + qy * qz), 1 - 2 * (pow(qx, 2) + pow(qy, 2)));
+		eulang2[i] = asin(2 * (qs * qy - qz * qx));
+		eulang3[i] = atan2(2 * (qs * qz + qx * qy), 1 - 2 * (pow(qy, 2) + pow(qz, 2)));
+	}
+}
+
+int rigidbody::get_ac_sum() {
+	int i;
+	int val = 0;
+	for (i = 0; i < N; i++)
+		val += ac[i];
+	return val;
+}
+
+double rigidbody::get_atomic_distance(int i, int j, int ai, int aj, double aij[]) {
+	int d;
+	double dr, h, ap1, ap2;
+
+	h = 0;
+	dr = 0;
+	for (d = 0; d < NDIM; d++) {
+		// get position in W coordinate, not relative
+		ap1 = xW[i][ai][d] + x[i][d];
+		ap2 = xW[j][aj][d] + x[j][d];
+
+		// get distance
+		dr = ap2 - ap1;
+		dr -= L[d] * round(dr / L[d]);
+
+		// save distance for force calc
+		aij[d] = dr;
+		h += dr * dr;
+	}
+
+	h = sqrt(h);
+	return h;
+}
+
+double rigidbody::get_Natot() {
+	int i;
+	double sum = 0;
+
+	for (i = 0; i < N; i++)
+		sum += Na[i];
+
+	return sum;
+}
+
+double rigidbody::get_LWX() {
+	int i;
+	double lwsum = 0;
+
+	for (i = 0; i < N; i++)
+		lwsum += LW[i][0];
+
+	return lwsum;
+}
+
+double rigidbody::get_LWY() {
+	int i;
+	double lwsum = 0;
+
+	for (i = 0; i < N; i++)
+		lwsum += LW[i][1];
+
+	return lwsum;
+}
+
+double rigidbody::get_LWZ() {
+	int i;
+	double lwsum = 0;
+
+	for (i = 0; i < N; i++)
+		lwsum += LW[i][2];
+
+	return lwsum;
+}
+
 void rigidbody::free_md(double tmp0, double tend) {
 	int t;
 
@@ -682,7 +681,7 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 		this->rb_root_search(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t);
 
 		// output information
-		if (t % plotskip == 0 || (t<2000 && t % 10 == 0)) {
+		if (t % plotskip == 0) {
 			this->monitor_header(t);
 			this->rigidbody_md_monitor();
 			cout << "** ROOT SEARCH: " << endl;
@@ -830,7 +829,6 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 
 	if (s == NT)
 		cout << "Jammed state was not found in NT..." << endl;
-
 }
 
 void rigidbody::get_U(double Ktol, int& nr){
@@ -905,11 +903,7 @@ void rigidbody::get_U(double Ktol, int& nr){
 
 	if (t==NT)
 		cout << "** COULD NOT FIND ENERGY MINIMUM IN NT', ENDING AND SETTING UNEW = U..." << endl;
-
 }
-
-
-
 
 void rigidbody::verlet_first() {
 	// update translational pos first, to get kinetic energy rolling
@@ -1641,12 +1635,9 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 	pcsum = this->get_c_sum();
 
 	gr = (U < Utol);
-	// oc = (U > Utol && K < Ktol && acsum >= niso && epconst == 1);
-	oc = (U > 2 * Utol && epconst == 1);
+	oc = (U > 2 * Utol && K < Ktol && epconst == 1);
 	uc = (U < Utol);
-	// marginal = (K < Ktol && nr == N && epconst);
 	marginal = 0;
-	// jammed = (U > Utol && U < 2*Utol && K < Ktol && acsum >= niso && epconst == 1);
 	jammed = (U > Utol && U < 2 * Utol && K < Ktol && epconst == 1);
 
 
@@ -1675,8 +1666,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			// if still overcompressed, decrease again
 			if (oc) {
 				phiH = phi;
-				dphi = -drand48() * dphi0;
-
+				dphi = -drand48() * dphi0;				
 				cout << endl;
 				cout << "still overcompressed..." << endl;
 				cout << "phiH set at nt = " << t << endl;
@@ -1951,19 +1941,19 @@ void rigidbody::rigidbody_md_monitor() {
 	cout << "dtmax = " << dtmax << endl;
 	cout << endl;
 
-	// // output to energy file if open
-	// if (enobj.is_open()) {
-	// 	cout << "Printing ENERGY" << endl;
-	// 	enobj << setw(12) << U;
-	// 	enobj << setw(12) << K;
-	// 	enobj << setw(12) << Krot;
-	// 	enobj << setw(12) << U + K;
-	// 	enobj << setw(12) << lwx;
-	// 	enobj << setw(12) << lwy;
-	// 	enobj << setw(12) << lwz;
-	// 	enobj << setw(12) << LCON;
-	// 	enobj << endl;
-	// }	
+	// output to energy file if open
+	if (enobj.is_open()) {
+		cout << "Printing ENERGY" << endl;
+		enobj << setw(12) << U;
+		enobj << setw(12) << K;
+		enobj << setw(12) << Krot;
+		enobj << setw(12) << U + K;
+		enobj << setw(12) << lwx;
+		enobj << setw(12) << lwy;
+		enobj << setw(12) << lwz;
+		enobj << setw(12) << LCON;
+		enobj << endl;
+	}	
 
 	// output to xyz file if open
 	if (xyzobj.is_open()) {

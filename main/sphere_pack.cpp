@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
 	dt = 0.1;			// time step (units of md time)
 	plotskip = 2e3;		// # of steps to skip plotting
 	Utol = N*1e-8;		// potential energy tolerance
-	Ktol = N*1e-20;		// kinetic energy tolerance
+	Ktol = N*1e-28;		// kinetic energy tolerance
 
 	// NLCL parameters
 	int nc,nnu;
