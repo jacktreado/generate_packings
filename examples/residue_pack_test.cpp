@@ -42,11 +42,11 @@ int main(int argc, char *argv[]) {
 	ep = 10.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
-	tmp0 = 0.001;		// initial temperature
-	plotskip = 1000;		// # of steps to skip plotting
-	phi0 = 0.1;		// initial packing fraction
+	tmp0 = 0.01;		// initial temperature
+	plotskip = 500;		// # of steps to skip plotting
+	phi0 = 0.01;		// initial packing fraction
 	dphi = 0.005;		// initial packing fraction step
-	Utol = N * 1e-8;
+	Utol = N * 1e-16;
 	Ktol = N * 1e-20;
 	respack.rb_scale(phi0);
 

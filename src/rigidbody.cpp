@@ -145,8 +145,8 @@ rigidbody::~rigidbody() {
 */
 
 void rigidbody::get_file_header(string &rbstr) {
-	int i, j;
-	double val, Ltmp;
+	int i,j,l;
+	double val, Ltmp, nasum;
 	ifstream obj(rbstr.c_str());
 	if (!obj.is_open()){
 		cout << "Input file not opened, throwing error..." << endl;
@@ -168,11 +168,12 @@ void rigidbody::get_file_header(string &rbstr) {
 	obj >> ctr;
 	string header(" ");
 	getline(obj, header);
+	cout << "header = " << header << endl << endl;
 
 	// loop over lines in data, get Na[i]
 	Na = new int[N];
 	i = 0;
-	j = 0;
+	l = 0;
 	Na[i] = 0;
 	while (!obj.eof()) {
 		obj >> i;
@@ -198,9 +199,23 @@ void rigidbody::get_file_header(string &rbstr) {
 		obj >> val;
 		// obj >> val;
 		obj >> Na[i];
+		cout << "l = " << l << "i = " << i << ", Na[" << i << "] = " << Na[i] << endl;
+
+
+		// increment l
+		l++;
+
+		// test to stop loop
+		if (i == N-1){
+			nasum = 0;
+			for (j=0; j<N; j++)
+				nasum += Na[j];
+			if (l == nasum){
+				cout << "all atoms found! breaking..." << endl;
+				break;
+			}
+		}
 	}
-	for (i = 0; i < N; i++)
-		cout << "Na[" << i << "] = " << Na[i] << endl;
 
 	// close file
 	obj.close();
@@ -1514,10 +1529,23 @@ void rigidbody::rb_fire() {
 	double fstarnrm = 0;
 	double tstarnrm = 0;
 	int Nmin = 50;
-	Quaternion lwtmp, q1, q2;
+	Quaternion qtmp, q1, q2;	
 
 	// calculate P
 	for (i = 0; i < N; i++) {
+		// rotate torques into M frame
+		qtmp.set_x(TqW[i][0]);
+		qtmp.set_y(TqW[i][1]);
+		qtmp.set_z(TqW[i][2]);
+
+		q1 = qtmp % q[i];
+		q2 *= q[i];
+		qtmp = q2 % q1;
+
+		TqM[i][0] = qtmp.get_x();
+		TqM[i][1] = qtmp.get_y();
+		TqM[i][2] = qtmp.get_z();
+
 		for (d = 0; d < NDIM; d++) {
 			P += F[i][d] * v[i][d] + TqM[i][d] * wM[i][d];
 			vstarnrm += v[i][d] * v[i][d];
@@ -1542,18 +1570,18 @@ void rigidbody::rb_fire() {
 			}
 
 			// rotate LM to LW
-			lwtmp.set_x(LM[i][0]);
-			lwtmp.set_y(LM[i][1]);
-			lwtmp.set_z(LM[i][2]);
+			qtmp.set_x(LM[i][0]);
+			qtmp.set_y(LM[i][1]);
+			qtmp.set_z(LM[i][2]);
 
 			q1 *= q[i];
-			q2 = lwtmp % q1;
-			lwtmp = q[i] % q2;
+			q2 = qtmp % q1;
+			qtmp = q[i] % q2;
 
 			// update molecule frame
-			LWhalf[i][0] = lwtmp.get_x();
-			LWhalf[i][1] = lwtmp.get_y();
-			LWhalf[i][2] = lwtmp.get_z();
+			LWhalf[i][0] = qtmp.get_x();
+			LWhalf[i][1] = qtmp.get_y();
+			LWhalf[i][2] = qtmp.get_z();
 		}
 	}
 
@@ -1576,7 +1604,7 @@ void rigidbody::rb_fire() {
 		K = 0;
 
 		// decrease time step
-		if (dt * fdec > 1e-2 * dtmax)
+		if (dt * fdec > 1e-4 * dtmax)
 			dt *= fdec;
 		else
 			dt = 1e-2 * dtmax;
@@ -1635,7 +1663,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 	pcsum = this->get_c_sum();
 
 	gr = (U < Utol);
-	oc = (U > 2 * Utol && K < Ktol && epconst == 1);
+	oc = (U > 2 * Utol && K < Ktol);
 	uc = (U < Utol);
 	marginal = 0;
 	jammed = (U > Utol && U < 2 * Utol && K < Ktol && epconst == 1);
@@ -1646,7 +1674,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			check_rattlers = 0;
 			this->rb_scale(phi + dphi);
 		}
-		else if (oc) {
+		else if (oc && epconst == 1) {
 			phiH = phi;
 			dphi = -2 * drand48() * dphi0;
 			check_rattlers = 1;
@@ -2042,7 +2070,7 @@ void rigidbody::rigidbody_xyz() {
 						n_found = 1;
 					}
 					else {
-						xyzobj << setw(w) << 'C';
+						xyzobj << setw(w) << 'X';
 						n_found = 0;
 					}
 				}
