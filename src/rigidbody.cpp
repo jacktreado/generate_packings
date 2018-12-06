@@ -1412,7 +1412,7 @@ int rigidbody::rmv_rattlers(int& krcrs) {
 		r = ac[i];
 
 		// remove from network if r <= DOF, delete contacts
-		if (r < DOF) {
+		if (r <= DOF) {
 			// increment # of rattlers
 			nr++;
 
@@ -1636,7 +1636,7 @@ void rigidbody::rb_fire() {
 		np++;
 }
 
-void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, int epconst, int nr, double dphi0, double Ktol, double Utol, int t) {
+void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, int epconst, int nr, double dphi0, double Ktol, double &Utol, int t) {
 	/*
 		GROWTH ALGORITHM
 
@@ -1648,13 +1648,12 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 	*/
 
 	int nbb, niso, pcsum, acsum;
-	bool gr, oc, uc, marginal, jammed;
+	bool gr, oc, uc, jammed;
 	double dphi = dphi0;
 
 	gr = 0;
 	oc = 0;
 	uc = 0;
-	marginal = 0;
 	jammed = 0;
 
 	nbb = N - nr;
@@ -1663,10 +1662,9 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 	pcsum = this->get_c_sum();
 
 	gr = (U < Utol);
-	oc = (U > 2 * Utol && K < Ktol);
-	uc = (U < Utol);
-	marginal = 0;
-	jammed = (U > Utol && U < 2 * Utol && K < Ktol && epconst == 1);
+	oc = (U > 2 * Utol && K < Ktol && epconst == 1 && acsum > 0);
+	uc = (U < Utol && epconst == 1);
+	jammed = ( (U > Utol && U < 2 * Utol && K < Ktol && epconst == 1 && acsum > 0) );
 
 
 	if (phiH < 0) {
@@ -1675,8 +1673,9 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			this->rb_scale(phi + dphi);
 		}
 		else if (oc && epconst == 1) {
+			Utol = N * 1e-16;
 			phiH = phi;
-			dphi = -2 * drand48() * dphi0;
+			dphi = -dphi0;
 			check_rattlers = 1;
 
 			cout << endl;
@@ -1692,9 +1691,9 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 		if (phiL < 0) {
 
 			// if still overcompressed, decrease again
-			if (oc) {
+			if (oc && epconst == 1) {
 				phiH = phi;
-				dphi = -drand48() * dphi0;				
+				dphi = -0.5*dphi0;				
 				cout << endl;
 				cout << "still overcompressed..." << endl;
 				cout << "phiH set at nt = " << t << endl;
@@ -1709,18 +1708,6 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 				cout << endl;
 				cout << "relaxation found!" << endl;
 				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
-			}
-
-			// if marginal, grow, reset root search
-			if (marginal) {
-				phiL = -1;
-				phiH = -1;
-				dphi = 0.05 * drand48() * dphi0;
-
-				cout << endl;
-				cout << "marginal state found..." << endl;
-				cout << "root search reset at nt = " << t << endl;
 				this->monitor_scale(phi + dphi, phiL, phiH);
 			}
 
@@ -1756,18 +1743,6 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 				cout << endl;
 				cout << "relaxed state found!" << endl;
 				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
-			}
-
-			// if marginal, grow, reset root search
-			if (marginal) {
-				phiL = -1;
-				phiH = -1;
-				dphi = 0.05 * drand48() * dphi0;
-
-				cout << endl;
-				cout << "marginal state found..." << endl;
-				cout << "root search reset at nt = " << t << endl;
 				this->monitor_scale(phi + dphi, phiL, phiH);
 			}
 
@@ -1815,18 +1790,18 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 		}
 	}
 
-	// test for stalled growth
-	if (abs(dphi) < 1e-14) {
-		phiL = -1;
-		phiH = -1;
-		dphi = 0.05 * (2 * drand48() - 1) * dphi0;
-		check_rattlers = 0;
+	// // test for stalled growth
+	// if (abs(dphi) < 1e-14) {
+	// 	phiL = -1;
+	// 	phiH = -1;
+	// 	dphi = 0.05 * (2 * drand48() - 1) * dphi0;
+	// 	check_rattlers = 0;
 
-		cout << endl;
-		cout << "stalled growth found..." << endl;
-		cout << "root search reset at nt = " << t << endl;
-		this->monitor_scale(phi + dphi, phiL, phiH);
-	}
+	// 	cout << endl;
+	// 	cout << "stalled growth found..." << endl;
+	// 	cout << "root search reset at nt = " << t << endl;
+	// 	this->monitor_scale(phi + dphi, phiL, phiH);
+	// }
 }
 
 
@@ -1952,11 +1927,11 @@ void rigidbody::rigidbody_md_monitor() {
 	cout << "phi = " << phi << endl;
 	cout << endl;
 	cout << "** Energy:" << endl;
-	cout << "U = " << U << endl;
-	cout << "K = " << K << endl;
-	cout << "Krot = " << Krot << endl;
-	cout << "Ktrans = " << K - Krot << endl;
-	cout << "E = " << U + K << endl;
+	cout << "U = " << U/N << endl;
+	cout << "K = " << K/N << endl;
+	cout << "Krot = " << Krot/N << endl;
+	cout << "Ktrans = " << K/N - Krot/N << endl;
+	cout << "E = " << U/N + K/N << endl;
 	cout << endl;
 	cout << "** Contacts:" << endl;
 	cout << "sum c = " << this->get_c_sum() << endl;
@@ -1998,7 +1973,10 @@ void rigidbody::monitor_scale(double phinew, double phiL, double phiH) {
 	cout << "old phi = " << phi << endl;
 	this->rb_scale(phinew);
 	cout << "new phi = " << phi << endl;
-	cout << "entering root search..." << endl;
+	cout << "U = " << U/N << endl;
+	cout << "K = " << K/N << endl;
+	cout << "c = " << 0.5*this->get_ac_sum() << endl;
+	cout << "conitinuing root search..." << endl;
 	cout << endl;
 }
 

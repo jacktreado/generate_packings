@@ -17,9 +17,7 @@ int main(int argc, char *argv[]) {
 	// input args
 	string N_str = argv[1];			// number of particles
 	string input_str = argv[2];		// input file
-	string cfg_str = argv[3];		// config file
-	string stat_str = argv[4];		// stat file
-	string Utol_str = argv[5];		// Utol string
+	string Utol_str = argv[3];		// Utol string
 
 	// get int for number of particles
 	stringstream Nss(N_str);
@@ -28,13 +26,18 @@ int main(int argc, char *argv[]) {
 	stringstream Utolss(Utol_str);
 	Utolss >> Utol;
 
+	string cfgstr = "dimer_cfg.test";		// config file
+	string statstr = "dimer_stat.test";		// stat file
+	string enstr = "dimer_en.test";
+	string xyzstr = "dimer.xyz";
+
 	// local variables for packing
 	int dof = 5;
 	int nc = -1;
 	int seed = 1;
 
 	// initialize rigid body packing
-	rigidbody respack(input_str,N,dof,nc,seed);
+	rigidbody dimer_pack(input_str,N,dof,nc,seed);
 
 	// set MD parameters
 	double ep, dt, tmp0, phi0, dphi, Ktol;
@@ -44,33 +47,37 @@ int main(int argc, char *argv[]) {
 	NT = 5e8;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
 	tmp0 = 0.001;		// initial temperature
-	plotskip = 2e4;		// # of steps to skip plotting
+	plotskip = 2e3;		// # of steps to skip plotting
 	phi0 = 0.1;		// initial packing fraction
-	dphi = 0.005;		// initial packing fraction step
-	Ktol = N * 1e-20;
-	respack.rb_scale(phi0);
+	dphi = 0.001;		// initial packing fraction step
+	Ktol = N * 1e-25;
+	dimer_pack.rb_scale(phi0);
 
 	// setup simulation
-	respack.set_ep(ep);
-	respack.set_md_time(dt);
-	respack.set_dtmax(10.0);
-	respack.set_plotskip(plotskip);
+	dimer_pack.set_ep(ep);
+	dimer_pack.set_md_time(dt);
+	dimer_pack.set_dtmax(10.0);
+	dimer_pack.set_plotskip(plotskip);
 
 	// update xW based on xM
-	respack.pos_frot();
+	dimer_pack.pos_frot();
+
+	// open xyz and en files
+	dimer_pack.open_en(enstr.c_str());
+	dimer_pack.open_xyz(xyzstr.c_str());
 
 	// run md
-	respack.rb_jamming_finder(tmp0, NT, dphi, Utol, Ktol);
+	dimer_pack.rb_jamming_finder(tmp0, NT, dphi, Utol, Ktol);
 	// respack.free_fire(tmp0,t);
 	// respack.free_md(tmp0,t);
 
 	// output stat and config
-	respack.open_stat(stat_str.c_str());
-	respack.open_config(cfg_str.c_str());
+	dimer_pack.open_stat(statstr.c_str());
+	dimer_pack.open_config(cfgstr.c_str());
 
 	// print data
-	respack.print_stat();
-	respack.print_config();
+	dimer_pack.print_stat();
+	dimer_pack.print_config();
 
 	return 0;
 }
