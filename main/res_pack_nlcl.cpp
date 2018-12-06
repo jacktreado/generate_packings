@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
 	dt = 0.05;			// time step (units of md time)
 	plotskip = 5e3;		// # of steps to skip plotting
 	Utol = N*1e-16;		// potential energy tolerance
-	Ktol = N*1e-20;		// kinetic energy tolerance
+	Ktol = N*1e-30;		// kinetic energy tolerance
 
 	// rigid body object instantiation
 	cout << "@@ Instantiating packing object..." << endl;
