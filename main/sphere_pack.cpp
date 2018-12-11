@@ -57,15 +57,15 @@ int main(int argc, char *argv[]){
 	// set parameters
 	ep = 10.0;			// energy scale (units of kbt)
 	t = 5e3;			// total amount of time (units of sim time)
-	dt = 0.1;			// time step (units of md time)
+	dt = 0.05;			// time step (units of md time)
 	plotskip = 2e3;		// # of steps to skip plotting
-	Utol = N*1e-8;		// potential energy tolerance
-	Ktol = N*1e-28;		// kinetic energy tolerance
+	Utol = N*1e-16;		// potential energy tolerance
+	Ktol = N*1e-30;		// kinetic energy tolerance
 
 	// NLCL parameters
 	int nc,nnu;
 	nnu = 100;
-	if (N < 50)
+	if (N < 500)
 		nc = -1;
 	else if (N < 800)
 		nc = 3;

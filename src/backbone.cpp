@@ -3,6 +3,7 @@
 #include "rigidbody.h"
 #include "backbone.h"
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include <fstream>
 #include <string>
@@ -26,8 +27,8 @@ backbone::backbone(string &bbstr, int n, int dof, int nc, int s) : rigidbody(bbs
 	kba = 1.0;
 	kda = 1.0;
 
-	// set rest lengths to 1
-	l0 = 1;
+	// set rest lengths to 100% of contact distance
+	l0 = 2;
 	theta0 = 0.2*PI;
 	da0 = 0.2*PI;
 
@@ -99,16 +100,13 @@ void backbone::initialize_bb(string &bbstr, int NATOT){
 void backbone::top_relax(){
 	// local variables
 	int k = 0;
-	int kmax = 1e2;
+	int kmax = 1e3;
 	double Ubb = 0;
 	double Utol = 1e-16;
 	double T0 = 1e-2;
 
 	// initialize velocities
 	this->rand_vel_init(T0);
-
-	// setup dtmax for FIRE
-	this->set_dtmax(10.0);
 
 	// get backbone forces
 	Ubb = this->bb_force_update();
@@ -183,7 +181,7 @@ double backbone::bl_force(int i){
 	// local variables
 	double dij[NDIM];
 	double vfij[NDIM];
-	double rij,fij,Ubb;
+	double rij,fij,r0,Ubb;
 	double qix,qiy,qiz,qjx,qjy,qjz;
 	double tix,tiy,tiz,tjx,tjy,tjz;
 	int im1,nid,cid,d;
@@ -191,17 +189,19 @@ double backbone::bl_force(int i){
 	// get attached monomer
 	im1 = i-1;
 	cid = bbid[im1][1];
-	nid = bbid[i][0];	
+	nid = bbid[i][0];
 
 	// calculate distance
 	rij = this->get_atomic_distance(im1,i,cid,nid,dij);
 
 	// calculate scalar force
-	fij = -kbl*(rij-l0);
+	r0 = ar[im1][cid]+ar[i][nid];
+	r0 = l0*r0;
+	fij = kbl*(1-(r0/rij));
 
 	// update vectorial force
 	for (d=0; d<NDIM; d++){
-		vfij[d] = fij*(dij[d]/rij);
+		vfij[d] = fij*dij[d];
 		F[im1][d] += vfij[d];
 		F[i][d] -= vfij[d];
 	}
@@ -225,7 +225,22 @@ double backbone::bl_force(int i){
 	TqW[i][2] += -qjx * vfij[1] + qjy * vfij[0];
 
 	// potential
-	Ubb = (kbl/2)*pow(rij-l0,2);
+	Ubb = 0.5*kbl*pow(rij-r0,2);
+
+	// diagnostic output
+	// cout << "** Distances and forces between (" << im1 << "," << cid << ") and (" << i << "," << nid << ") = " << endl;
+	// cout << "distance: ";
+	// cout << setw(10) << rij/r0;
+	// cout << setw(10) << dij[0];
+	// cout << setw(10) << dij[1];
+	// cout << setw(10) << dij[2];
+	// cout << endl;
+	// cout << "forces: ";
+	// cout << setw(10) << vfij[0];
+	// cout << setw(10) << vfij[1];
+	// cout << setw(10) << vfij[2];
+	// cout << endl << endl;
+
 
 	return Ubb;
 }
@@ -246,21 +261,4 @@ double backbone::da_force(int i){
 	double dx,dy,dz,Ubb;
 
 	return Ubb;
-}
-
-
-// SCALE BACKBONE PACKING BY PHI
-void backbone::rb_scale(double phinew){
-	// local variables
-	double s, invdim;
-
-	// get scale parameter
-	invdim = (double)1 / NDIM;
-	s = pow(phinew / phi, invdim);
-
-	// scale bond length distance
-	l0 *= s;
-
-	// call std rigid body scaling
-	this->rigidbody::rb_scale(phinew);
 }

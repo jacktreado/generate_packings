@@ -846,6 +846,107 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 		cout << "Jammed state was not found in NT..." << endl;
 }
 
+void rigidbody::rb_jamming_easy(double tmp0, int NT, double dphi, double Utol, double Ktol) {
+	// local variables
+	int t, kr, check_rattlers;
+	double dphi0, phiL, phiH;
+	bool min = 0;
+
+	// initialize variables
+	kr = 0;
+	dphi0 = dphi;
+	phiL = -1;
+	phiH = -1;
+	check_rattlers = 0;
+
+	// constant energy checking
+	double Uold, dU, dUtol;
+	int epc, epcN, epconst;
+	epconst = 0;
+	Uold = 0;
+	dU = 0;
+	dUtol = 1e-16;
+	epc = 0;
+	epcN = 5e3;
+
+	// initialize velocities
+	this->rand_vel_init(tmp0);
+
+	// setup dtmax for FIRE
+	this->set_dtmax(10.0);
+
+	cout << "===== BEGINNING TIME LOOP ======" << endl;
+	cout << "NT = " << NT << endl;
+	cout << "dt = " << dt << endl;
+	cout << "================================" << endl << endl;
+
+	for (t = 0; t < NT; t++) {
+		// update nearest neighbor lists if applicable
+		if (t % nnupdate == 0 && NCL > -1){
+			cout << "^ ";
+			this->update_nlcl(t);
+		}
+
+		// advance quaternions, positions
+		this->verlet_first();
+
+		// update forces
+		this->force_update();
+
+		// include fire relaxation
+		this->rb_fire();
+
+		// advance angular momentum
+		this->verlet_second();
+
+		// check for rattlers
+		if (check_rattlers) {
+			kr = 0;
+			nr = this->rmv_rattlers(kr);
+		}
+		else
+			nr = 0;
+
+		// check for constant potential energy
+		dU = abs(Uold - U);
+		if (dU < dUtol) {
+			epc++;
+			if (epc > epcN)
+				epconst = 1;
+		}
+		else {
+			epconst = 0;
+			epc = 0;
+		}
+		Uold = U;
+
+		if (epconst == 1)
+			check_rattlers = 1;
+
+		// run root search routine
+		this->rb_easy(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t, min);
+
+		// output information
+		if (t % plotskip == 0) {
+			this->monitor_header(t);
+			this->rigidbody_md_monitor();
+			cout << "** ROOT SEARCH: " << endl;
+			cout << "phi = " << phi << endl;
+			cout << "phiL = " << phiL << endl;
+			cout << "phiH = " << phiH << endl;
+			cout << "epconst = " << epconst << endl;
+			cout << "check_rattlers = " << check_rattlers << endl;
+			cout << "nr = " << nr << endl;
+			cout << endl;
+			cout << endl;
+		}
+
+		// break if jamming found
+		if (isjammed == 1)
+			break;
+	}
+}
+
 void rigidbody::get_U(double Ktol, int& nr){
 	int t,NT,kr;	
 	NT = 5e6;
@@ -1804,6 +1905,134 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 	// }
 }
 
+void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &epconst, int nr, double dphi0, double Ktol, double &Utol, int t, bool &min) {
+	// local variables
+	int nbb, niso, pcsum, acsum;
+	bool gr, oc, uc, ismin;
+	double dphi = dphi0;
+
+	// initialize bools
+	gr = 0;
+	oc = 0;
+	uc = 0;
+
+	// get number of contacts
+	nbb = N - nr;
+	niso = DOF * nbb - NDIM + 1;
+	acsum = 0.5*this->get_ac_sum();
+	pcsum = this->get_c_sum();
+
+	// check bool conditions
+	gr = (U < Utol);
+	oc = (U > 2 * Utol && K < Ktol && epconst == 1 && acsum > 0 && !min);
+	uc = (U < Utol && epconst == 1 && !min);
+	ismin = (epconst == 1 && min);
+
+	// increase/decrease phi based on U and K
+	if (phiH < 0) {
+		if (gr) {
+			check_rattlers = 0;
+			this->rb_scale(phi + dphi);
+		}
+		else if (oc && epconst == 1) {
+			phiH = phi;
+			dphi = -0.5*dphi0;
+			check_rattlers = 1;
+
+			cout << endl;
+			cout << "phiH 1st set at nt = " << t << endl;
+			this->monitor_scale(phi + dphi, phiL, phiH);
+
+			// if NLCL, change update check (particles don't move, don't need to check as often)
+			if (NCL > -1)
+				nnupdate *= 50;
+		}
+	}
+	else {
+		if (phiL < 0) {
+
+			// if still overcompressed, decrease again
+			if (oc && epconst == 1) {
+				phiH = phi;
+				dphi = -0.25*dphi0;				
+				cout << endl;
+				cout << "still overcompressed..." << endl;
+				cout << "phiH set at nt = " << t << endl;
+				this->monitor_scale(phi + dphi, phiL, phiH);
+			}
+
+			// if undercompressed, increase packing fraction, done!
+			if (uc) {
+				phiL = phi;
+				dphi = 0.5 * (phiH + phiL) - phi;
+
+				cout << endl;
+				cout << "relaxation found!" << endl;
+				cout << "phiL set at nt = " << t << endl;
+				this->monitor_scale(phi + dphi, phiL, phiH);
+			}
+
+		}
+		else {
+
+			// if overcompressed, minimize and get out of there
+			if (oc) {
+				cout << endl;
+				cout << "***************************" << endl;
+				cout << "***************************" << endl;
+				cout << "overcompressed state found!" << endl;
+				cout << "min set to true at nt = " << t << endl;
+				cout << "***************************" << endl;
+				cout << "***************************" << endl;
+				min = true;
+				epconst = 0;
+			}
+
+			// Minimized, probably not as close as one would want but hey! points for trying!
+			if (ismin){
+				cout << endl;
+				cout << endl;
+				cout << "Found minimized state that's close enough!" << endl;
+				cout << "Writing config at t = " << t*dt << endl;
+				cout << "Writing config at nt = " << t << endl;
+				cout << "Final U = " << U << endl;
+				cout << "Final K = " << K << endl;
+				cout << "Final phi = " << setprecision(6) << phi << endl;
+				cout << "Final pcsum = " << pcsum << endl;
+				cout << "Final acsum = " << acsum << endl;
+				cout << "Final niso = " << niso << endl;
+				cout << "Final niso max = " << DOF*N - NDIM + 1 << endl;
+				cout << "Final rattler # = " << nr << endl;
+				cout << "Final contacts:" << endl;
+				cout << "pc:" << endl;
+				for (int i = 1; i < N + 1; i++) {
+					cout << setw(6) << pc[i - 1];
+					if (i % 10 == 0)
+						cout << endl;
+				}
+				cout << endl;
+				cout << "ac:" << endl;
+				for (int i = 1; i < N + 1; i++) {
+					cout << setw(6) << ac[i - 1];
+					if (i % 10 == 0)
+						cout << endl;
+				}
+				cout << endl;
+				if (N < 40) {
+					cout << "Contact Matrix:" << endl;
+					this->print_c_mat();
+				}
+				if (xyzobj.is_open())
+					this->rigidbody_xyz();
+
+				cout << endl;
+				cout << endl;
+				isjammed = 1;
+			}
+			
+		}
+	}
+}
 
 
 
@@ -2044,11 +2273,11 @@ void rigidbody::rigidbody_xyz() {
 				}			
 				else if (rtmp < 1.36) {
 					if (n_found == 0) {
-						xyzobj << setw(w) << 'N';
+						xyzobj << setw(w) << 'N' << i;
 						n_found = 1;
 					}
 					else {
-						xyzobj << setw(w) << 'X';
+						xyzobj << setw(w) << 'C' << i;
 						n_found = 0;
 					}
 				}

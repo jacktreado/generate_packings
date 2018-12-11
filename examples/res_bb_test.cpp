@@ -12,7 +12,7 @@ int main (int argc, char *argv[]){
 	cout << "starting bb test main!" << endl;
 
 	// number of particles
-	int N = 16;
+	int N = 3;
 
 	// input file path	
 	string inputstr = "/Users/JackTreado/_pv/backbone/bb_io/res_bb_input_N3_seed1.dat";
@@ -43,7 +43,7 @@ int main (int argc, char *argv[]){
 	NT = 5e8;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
 	tmp0 = 0.001;		// initial temperature
-	plotskip = 1;		// # of steps to skip plotting
+	plotskip = 10;		// # of steps to skip plotting
 	phi0 = 0.01;			// initial packing fraction
 	dphi = 0.005;		// initial packing fraction step
 	Ktol = N * 1e-20;

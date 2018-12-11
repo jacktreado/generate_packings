@@ -53,8 +53,5 @@ public:
 	double bl_force (int i);
 	double ba_force (int i);
 	double da_force (int i);
-
-	// backbone-specific scale
-	void rb_scale (double phinew);
 };
 #endif

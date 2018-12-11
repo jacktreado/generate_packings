@@ -22,10 +22,10 @@ int main(int argc, char *argv[]) {
 	Nss >> N;
 
 	// local variables for packing
-	string cfgstr = "residue_cfg.test";
-	string statstr = "residue_stat.test";
-	string enstr = "residue_Energy.test";
-	string xyzstr = "residue_test.xyz";
+	string cfgstr = "res_easy_cfg.test";
+	string statstr = "res_easy_stat.test";
+	string enstr = "res_easy_en.test";
+	string xyzstr = "res_easy_test.xyz";
 	int dof = 6;
 	int nc = -1;
 	int seed = 1;
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 	respack.rigidbody_xyz();
 
 	// run md
-	respack.rb_jamming_finder(tmp0, NT, dphi, Utol, Ktol);
+	respack.rb_jamming_easy(tmp0, NT, dphi, Utol, Ktol);
 	// respack.free_fire(tmp0,t);
 	// respack.free_md(tmp0,t);
 

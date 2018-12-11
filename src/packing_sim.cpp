@@ -492,13 +492,12 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 	*/
 
 	int nbb,niso,csum;
-	bool gr,oc,uc,marginal,jammed;
+	bool gr,oc,uc,jammed;
 	double dphi = dphi0;
 
 	gr = 0;
 	oc = 0;
 	uc = 0;
-	marginal = 0;
 	jammed = 0;
 
 	nbb = N - nr;
@@ -506,12 +505,9 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 	csum = this->get_c_sum();
 
 	gr = (U < Utol);
-	// oc = (U > Utol && K < Ktol && csum >= niso && epconst == 1);
-	oc = (U > 2 * Utol && epconst == 1);
-	uc = (U < Utol);
-	// marginal = (K < Ktol && nr == N && epconst);
-	marginal = 0;
-	jammed = (U > Utol && U < 2*Utol && K < Ktol && epconst == 1);
+	oc = (U > 2 * Utol && K < Ktol && epconst == 1 && csum > 0);
+	uc = (U < Utol && epconst == 1);
+	jammed = ( (U > Utol && U < 2 * Utol && K < Ktol && epconst == 1 && csum > 0) );
 
 
 	if (phiH < 0){
@@ -521,7 +517,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 		}
 		else if (oc){				
 			phiH = phi;
-			dphi = -2 * drand48() * dphi0;
+			dphi = -0.5*dphi0;
 			check_rattlers = 1;
 
 			cout << endl;
@@ -562,19 +558,6 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 				cout << "root search interval found, growing..." << endl;
 			}
 
-			// if marginal, grow, reset root search
-			if (marginal){
-				phiL = -1;
-				phiH = -1;
-				dphi = 0.05 * drand48() * dphi0;
-
-				cout << endl;
-				cout << "marginal state found..." << endl;
-				cout << "root search reset at nt = " << t << endl;
-				this->monitor_scale(dphi,phiH,phiL);
-				cout << "marginal, so trying root search again..." << endl;
-			}
-
 			if (jammed){
 				phiL = 0.99*phi;
 				dphi = 0.5*(phiH + phiL) - phi;
@@ -612,18 +595,6 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 				this->monitor_scale(dphi,phiH,phiL);
 				cout << "increasing root search guess..." << endl;					
 			} 
-
-			// if marginal, grow, reset root search
-			if (marginal){
-				phiL = -1;
-				phiH = -1;
-				dphi = (1+0.05*drand48())*dphi0;
-
-				cout << endl;
-				cout << "marginal state found..." << endl;
-				this->monitor_scale(dphi,phiH,phiL);
-				cout << "marginal, so trying root search again..." << endl;
-			}
 
 			// if jammed, end!
 			if (jammed){
