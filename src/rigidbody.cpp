@@ -1975,6 +1975,17 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 		}
 		else {
 
+			// if undercompressed, root search up
+			if (uc) {
+				phiL = phi;
+				dphi = 0.5 * (phiH + phiL) - phi;
+
+				cout << endl;
+				cout << "relaxed state found!" << endl;
+				cout << "phiL set at nt = " << t << endl;
+				this->monitor_scale(phi + dphi, phiL, phiH);
+			}
+
 			// if overcompressed, minimize and get out of there
 			if (oc) {
 				cout << endl;
