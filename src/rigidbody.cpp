@@ -1935,17 +1935,62 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 			this->rb_scale(phi + dphi);
 		}
 		else if (oc && epconst == 1) {
-			phiH = phi;
-			dphi = -0.5*dphi0;
-			check_rattlers = 1;
+			// phiH = phi;
+			// dphi = -0.5*dphi0;
+			// check_rattlers = 1;
 
-			cout << endl;
-			cout << "phiH 1st set at nt = " << t << endl;
-			this->monitor_scale(phi + dphi, phiL, phiH);
+			// cout << endl;
+			// cout << "phiH 1st set at nt = " << t << endl;
+			// this->monitor_scale(phi + dphi, phiL, phiH);
 
 			// if NLCL, change update check (particles don't move, don't need to check as often)
-			if (NCL > -1)
-				nnupdate *= 50;
+			// if (NCL > -1)
+			// 	nnupdate *= 50;
+
+			// set min = 1, end
+			min = true;
+		}
+
+		// Minimized, probably not as close as one would want but hey! points for trying!
+		if (ismin){
+			cout << endl;
+			cout << endl;
+			cout << "Found minimized state that's close enough!" << endl;
+			cout << "Writing config at t = " << t*dt << endl;
+			cout << "Writing config at nt = " << t << endl;
+			cout << "Final U = " << U << endl;
+			cout << "Final K = " << K << endl;
+			cout << "Final phi = " << setprecision(6) << phi << endl;
+			cout << "Final pcsum = " << pcsum << endl;
+			cout << "Final acsum = " << acsum << endl;
+			cout << "Final niso = " << niso << endl;
+			cout << "Final niso max = " << DOF*N - NDIM + 1 << endl;
+			cout << "Final rattler # = " << nr << endl;
+			cout << "Final contacts:" << endl;
+			cout << "pc:" << endl;
+			for (int i = 1; i < N + 1; i++) {
+				cout << setw(6) << pc[i - 1];
+				if (i % 10 == 0)
+					cout << endl;
+			}
+			cout << endl;
+			cout << "ac:" << endl;
+			for (int i = 1; i < N + 1; i++) {
+				cout << setw(6) << ac[i - 1];
+				if (i % 10 == 0)
+					cout << endl;
+			}
+			cout << endl;
+			if (N < 40) {
+				cout << "Contact Matrix:" << endl;
+				this->print_c_mat();
+			}
+			if (xyzobj.is_open())
+				this->rigidbody_xyz();
+
+			cout << endl;
+			cout << endl;
+			isjammed = 1;
 		}
 	}
 	else {
@@ -1999,47 +2044,48 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 				epconst = 0;
 			}
 
-			// Minimized, probably not as close as one would want but hey! points for trying!
-			if (ismin){
-				cout << endl;
-				cout << endl;
-				cout << "Found minimized state that's close enough!" << endl;
-				cout << "Writing config at t = " << t*dt << endl;
-				cout << "Writing config at nt = " << t << endl;
-				cout << "Final U = " << U << endl;
-				cout << "Final K = " << K << endl;
-				cout << "Final phi = " << setprecision(6) << phi << endl;
-				cout << "Final pcsum = " << pcsum << endl;
-				cout << "Final acsum = " << acsum << endl;
-				cout << "Final niso = " << niso << endl;
-				cout << "Final niso max = " << DOF*N - NDIM + 1 << endl;
-				cout << "Final rattler # = " << nr << endl;
-				cout << "Final contacts:" << endl;
-				cout << "pc:" << endl;
-				for (int i = 1; i < N + 1; i++) {
-					cout << setw(6) << pc[i - 1];
-					if (i % 10 == 0)
-						cout << endl;
-				}
-				cout << endl;
-				cout << "ac:" << endl;
-				for (int i = 1; i < N + 1; i++) {
-					cout << setw(6) << ac[i - 1];
-					if (i % 10 == 0)
-						cout << endl;
-				}
-				cout << endl;
-				if (N < 40) {
-					cout << "Contact Matrix:" << endl;
-					this->print_c_mat();
-				}
-				if (xyzobj.is_open())
-					this->rigidbody_xyz();
+			// STRICTER CONDITION
+			// // Minimized, probably not as close as one would want but hey! points for trying!
+			// if (ismin){
+			// 	cout << endl;
+			// 	cout << endl;
+			// 	cout << "Found minimized state that's close enough!" << endl;
+			// 	cout << "Writing config at t = " << t*dt << endl;
+			// 	cout << "Writing config at nt = " << t << endl;
+			// 	cout << "Final U = " << U << endl;
+			// 	cout << "Final K = " << K << endl;
+			// 	cout << "Final phi = " << setprecision(6) << phi << endl;
+			// 	cout << "Final pcsum = " << pcsum << endl;
+			// 	cout << "Final acsum = " << acsum << endl;
+			// 	cout << "Final niso = " << niso << endl;
+			// 	cout << "Final niso max = " << DOF*N - NDIM + 1 << endl;
+			// 	cout << "Final rattler # = " << nr << endl;
+			// 	cout << "Final contacts:" << endl;
+			// 	cout << "pc:" << endl;
+			// 	for (int i = 1; i < N + 1; i++) {
+			// 		cout << setw(6) << pc[i - 1];
+			// 		if (i % 10 == 0)
+			// 			cout << endl;
+			// 	}
+			// 	cout << endl;
+			// 	cout << "ac:" << endl;
+			// 	for (int i = 1; i < N + 1; i++) {
+			// 		cout << setw(6) << ac[i - 1];
+			// 		if (i % 10 == 0)
+			// 			cout << endl;
+			// 	}
+			// 	cout << endl;
+			// 	if (N < 40) {
+			// 		cout << "Contact Matrix:" << endl;
+			// 		this->print_c_mat();
+			// 	}
+			// 	if (xyzobj.is_open())
+			// 		this->rigidbody_xyz();
 
-				cout << endl;
-				cout << endl;
-				isjammed = 1;
-			}
+			// 	cout << endl;
+			// 	cout << endl;
+			// 	isjammed = 1;
+			// }
 			
 		}
 	}
