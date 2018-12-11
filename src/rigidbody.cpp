@@ -865,7 +865,7 @@ void rigidbody::rb_jamming_easy(double tmp0, int NT, double dphi, double Utol, d
 	epconst = 0;
 	Uold = 0;
 	dU = 0;
-	dUtol = 1e-16;
+	dUtol = 1e-8;
 	epc = 0;
 	epcN = 5e3;
 
