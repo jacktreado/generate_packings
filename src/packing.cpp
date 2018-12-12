@@ -42,7 +42,7 @@ packing::packing(int n, int dof, int nc, int s){
 	DOF = dof;
 	NCL = nc;
 	NCELLS = pow(nc,NDIM);
-	nnupdate = 50;	
+	nnupdate = 10;	
 	this->initialize_NC();
 
 	// local variables
@@ -542,8 +542,8 @@ void packing::set_md_time(double dt0){
 	double m_avg,r_avg,ks,w;
 
 	// get average m
-	m_avg = this->get_mean_mass();
-	r_avg = this->get_mean_rad();
+	m_avg = this->get_min_mass();
+	r_avg = this->get_min_rad();
 	ks = ep/(r_avg*r_avg);
 
 	w = sqrt(ks/m_avg);
@@ -638,6 +638,18 @@ double packing::get_mean_mass(){
 	return val;
 }
 
+double packing::get_min_mass(){
+	int i;
+	double mintmp = 1e32;
+
+	for (i=0; i<N; i++){
+		if (m[i] < mintmp)
+			mintmp = m[i];
+	}
+
+	return mintmp;
+}
+
 double packing::get_mean_rad(){
 	int i;
 	double val = 0.0;
@@ -647,6 +659,18 @@ double packing::get_mean_rad(){
 
 	val /= N;
 	return val;
+}
+
+double packing::get_min_rad(){
+	int i;
+	double mintmp = 1e32;
+
+	for (i=0; i<N; i++){
+		if (r[i] < mintmp)
+			mintmp = r[i];
+	}
+
+	return mintmp;
 }
 
 double packing::get_c_sum(){

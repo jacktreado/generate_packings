@@ -210,7 +210,8 @@ double packing::hs(double sij, double xij){
 	double f;
 
 	// calc pairwise force, update potential
-	f = -(ep/(sij*sij))*(sij/xij-1);
+	f = (ep/(sij*sij))*(1-sij/xij);
+	// f = ep*(1-sij/xij);
 
 	return f;
 }

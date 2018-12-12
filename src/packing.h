@@ -117,7 +117,9 @@ public:
 	double get_mean_vel();
 	double get_com();
 	double get_mean_mass();
+	double get_min_mass();
 	double get_mean_rad();
+	double get_min_rad();
 	double get_c_sum();
 
 

@@ -55,17 +55,21 @@ rigidbody::rigidbody(string &rbstr, int n, int dof, int nc, int s) : packing(n, 
 	cout << "reading in data from " << rbstr << endl;
 	this->read_in_info(rbstr);
 
-	// get initial packing fraction
-	cout << "Original phi = " << phi << endl;
+	// get initial packing fraction	
 	this->update_phi();
-	cout << "New phi = " << phi << endl;
+	cout << "Original phi = " << phi << endl;
 
 	// initialize quaternions
+	cout << "initializing quaternions" << endl;
 	this->initialize_quaternions();
 
 	// setup neighbor & cell list if nc is positive
-	if (nc > -1)
+	if (nc > -1){
+		cout << "initializing nlcl" << endl;
 		this->initialize_nlcl();
+	}
+	else
+		cout << "nc = -1, no nlcl for this simulation" << endl;
 
 	cout << endl << endl;
 	cout << "... rigidbody constructor complete." << endl;
@@ -521,7 +525,7 @@ double rigidbody::get_LWZ() {
 	return lwsum;
 }
 
-void rigidbody::free_md(double tmp0, double tend) {
+void rigidbody::free_md(double tmp0, double tend, int nnu) {
 	int t;
 
 	// initialize velocities
@@ -534,6 +538,9 @@ void rigidbody::free_md(double tmp0, double tend) {
 
 	// if energy output open, output dt
 	enobj << dt << endl;
+
+	// update nearest neighbor update
+	nnupdate = nnu;
 
 	cout << "===== BEGINNING TIME LOOP ======" << endl;
 	cout << "NT = " << NT << endl;
@@ -564,7 +571,7 @@ void rigidbody::free_md(double tmp0, double tend) {
 	}
 }
 
-void rigidbody::free_fire(double tmp0, double tend) {
+void rigidbody::free_fire(double tmp0, double Utol, double tend, int nnu) {
 	int t;
 
 	// initialize velocities
@@ -577,6 +584,9 @@ void rigidbody::free_fire(double tmp0, double tend) {
 	int NT;
 	NT = round(tend / dt);
 	dt = tend / NT;
+
+	// update nearest neighbor update
+	nnupdate = nnu;
 
 	// if energy output open, output dt
 	enobj << dt << endl;
@@ -599,8 +609,8 @@ void rigidbody::free_fire(double tmp0, double tend) {
 		// update forces
 		this->force_update();
 
-		if (U < N * 1e-8)
-			this->rb_scale(phi + 0.001);
+		if (U < Utol)
+			break;
 
 		// include fire relaxation
 		this->rb_fire();
@@ -637,6 +647,9 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 	dUtol = 1e-8;
 	epc = 0;
 	epcN = 5e3;
+
+	// make nnupdate larger
+	nnupdate = 20;
 
 	// initialize velocities
 	this->rand_vel_init(tmp0);
@@ -742,6 +755,9 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 	// get final U
 	this->get_U(Ktol,nr);
 	Unew = U;
+
+	// make nnupdate larger
+	nnupdate = 20;
 
 	// get new guess for phiJ
 	tphinew1 = phinew - phiold*sqrt(Unew/Uold);
@@ -868,6 +884,9 @@ void rigidbody::rb_jamming_easy(double tmp0, int NT, double dphi, double Utol, d
 	dUtol = 1e-8;
 	epc = 0;
 	epcN = 5e3;
+
+	// make nnupdate larger
+	nnupdate = 20;
 
 	// initialize velocities
 	this->rand_vel_init(tmp0);
@@ -1607,8 +1626,8 @@ void rigidbody::rb_scale(double phinew) {
 		r[i] *= s;
 	}
 	ep *= pow(s, 2);
-	dt *= pow(s, -0.5 * NDIM);
-	dtmax *= pow(s, -0.5 * NDIM);
+	dt *= pow(s, 0.5 * (NDIM-2));
+	dtmax *= pow(s, 0.5 * (NDIM-2));
 	this->update_phi();
 
 	// if NLCL engaged, scale rcut
@@ -2233,14 +2252,15 @@ void rigidbody::rigidbody_md_monitor() {
 	// output to energy file if open
 	if (enobj.is_open()) {
 		cout << "Printing ENERGY" << endl;
-		enobj << setw(12) << U;
-		enobj << setw(12) << K;
-		enobj << setw(12) << Krot;
-		enobj << setw(12) << U + K;
+		enobj << setw(12) << U/N;
+		enobj << setw(12) << K/N;
+		enobj << setw(12) << Krot/N;
+		enobj << setw(12) << U/N + K/N;
 		enobj << setw(12) << lwx;
 		enobj << setw(12) << lwy;
 		enobj << setw(12) << lwz;
 		enobj << setw(12) << LCON;
+		enobj << setw(12) << phi;
 		enobj << endl;
 	}	
 

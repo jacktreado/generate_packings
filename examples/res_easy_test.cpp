@@ -24,11 +24,12 @@ int main(int argc, char *argv[]) {
 	// local variables for packing
 	string cfgstr = "res_easy_cfg.test";
 	string statstr = "res_easy_stat.test";
-	string enstr = "res_easy_en.test";
-	string xyzstr = "res_easy_test.xyz";
 	int dof = 6;
 	int nc = -1;
-	int seed = 1;
+	int seed = 5;
+
+	string enstr = "res_easy_en_seed5.test";
+	string xyzstr = "res_easy_test_seed5.xyz";
 
 	// initialize rigid body packing
 	rigidbody respack(input_str,N,dof,nc,seed);
@@ -43,10 +44,10 @@ int main(int argc, char *argv[]) {
 	NT = 5e8;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
 	tmp0 = 0.01;		// initial temperature
-	plotskip = 1000;	// # of steps to skip plotting
-	phi0 = 0.1;			// initial packing fraction
+	plotskip = 100;	// # of steps to skip plotting
+	phi0 = 0.001;			// initial packing fraction
 	dphi = 0.001;		// initial packing fraction step
-	Utol = N * 1e-16;
+	Utol = N * 1e-8;
 	Ktol = N * 1e-30;
 	respack.rb_scale(phi0);
 
