@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 	string enstr = "residue_Energy.test";
 	string xyzstr = "residue_test.xyz";
 	int dof = 6;
-	int nc = -1;
+	int nc = 3;
 	int seed = 1;
 
 	// initialize rigid body packing

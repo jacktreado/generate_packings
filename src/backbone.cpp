@@ -227,29 +227,18 @@ double backbone::bl_force(int i){
 	// potential
 	Ubb = 0.5*kbl*pow(rij-r0,2);
 
-	// diagnostic output
-	// cout << "** Distances and forces between (" << im1 << "," << cid << ") and (" << i << "," << nid << ") = " << endl;
-	// cout << "distance: ";
-	// cout << setw(10) << rij/r0;
-	// cout << setw(10) << dij[0];
-	// cout << setw(10) << dij[1];
-	// cout << setw(10) << dij[2];
-	// cout << endl;
-	// cout << "forces: ";
-	// cout << setw(10) << vfij[0];
-	// cout << setw(10) << vfij[1];
-	// cout << setw(10) << vfij[2];
-	// cout << endl << endl;
-
-
 	return Ubb;
 }
 
 
 // bond angle force
+
+// forces determined by angle i, i+1, AND i+2
 double backbone::ba_force(int i){
 	// local variables
 	double dx,dy,dz,Ubb;
+
+	// calculate connection vectors
 
 	return Ubb;
 }
