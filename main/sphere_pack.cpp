@@ -65,11 +65,11 @@ int main(int argc, char *argv[]){
 	// NLCL parameters
 	int nc,nnu;
 	nnu = 100;
-	if (N < 500)
+	if (N < 1000)
 		nc = -1;
-	else if (N < 800)
+	else if (N < 1e5)
 		nc = 3;
-	else if (N < 1e4)
+	else if (N < 1e7)
 		nc = 4;
 	else
 		nc = 5;	
