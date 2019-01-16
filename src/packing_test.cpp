@@ -133,6 +133,11 @@ void packing::md_monitor(int t, int nr, double phiH, double phiL){
 			cout << setw(4) << pc[i];		
 		}
 	}
+	cout << endl << endl;
+	cout << "FIRE data" << endl;
+	cout << "alpha = " << alpha << endl;
+	cout << "dt = " << dt << endl;
+	cout << "dtmax = " << dtmax << endl;
 }
 
 void packing::monitor_scale(double dphi, double phiH, double phiL) {
