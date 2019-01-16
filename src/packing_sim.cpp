@@ -425,11 +425,11 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 		// force update
 		this->hs_force();
 
-		// vel update
-		this->vel_update();
-
 		// fire update (inertial relaxer)
 		this->fire();
+
+		// vel update
+		this->vel_update();		
 
 		// check for rattlers if root search is on
 		if (check_rattlers){
@@ -453,11 +453,6 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 				else
 					this->print_xyz();
 			}
-		}
-
-		if (phi > 1.0){
-			this->print_vars();
-			throw "phi > 1, ending...\n";
 		}
 
 		// check for constant potential energy
@@ -518,7 +513,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 		}
 		else if (oc){				
 			phiH = phi;
-			dphi = -0.5*dphi0;
+			dphi = -dphi0;
 			check_rattlers = 1;
 
 			cout << endl;
@@ -640,19 +635,19 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 		}
 	}
 
-	// test for stalled growth
-	if (abs(dphi) < 1e-14){
-		phiL = -1;
-		phiH = -1;
-		dphi = 0.05 * (2 * drand48() - 1) * dphi0;
-		check_rattlers = 0;
+	// // test for stalled growth
+	// if (abs(dphi) < 1e-14){
+	// 	phiL = -1;
+	// 	phiH = -1;
+	// 	dphi = 0.05 * (2 * drand48() - 1) * dphi0;
+	// 	check_rattlers = 0;
 
-		cout << endl;
-		cout << "stalled growth found..." << endl;
-		cout << "root search reset at nt = " << t << endl;
-		this->monitor_scale(dphi,phiH,phiL);
-		cout << "marginal, so trying root search again..." << endl;
-	}
+	// 	cout << endl;
+	// 	cout << "stalled growth found..." << endl;
+	// 	cout << "root search reset at nt = " << t << endl;
+	// 	this->monitor_scale(dphi,phiH,phiL);
+	// 	cout << "marginal, so trying root search again..." << endl;
+	// }
 }
 
 
