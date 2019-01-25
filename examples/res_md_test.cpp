@@ -10,16 +10,14 @@ using namespace std;
 
 int main(){
 	// local variables for packing
-	string fstr = "/Users/JackTreado/_pv/cluster/res/io/res_input_N12_seed1.dat";
-	string cfgstr = "/Users/JackTreado/_pv/sim/output/res_cfg_test.dat";
-	string statstr = "/Users/JackTreado/_pv/sim/output/res_stat_test.dat";
-	string enstr = "/Users/JackTreado/_pv/sim/output/res_test_E.dat";
-	string xyzstr = "/Users/JackTreado/_pv/sim/xyz/res_test.xyz";
-	int N = 12;
+	string fstr = "/Users/JackTreado/_pv/cluster/rigidbody/rcp/config/res_rcp_config_N16_seed1.dat";
+	string enstr = "res_md_en.test";
+	string xyzstr = "res_md_test.xyz";
+	int N = 16;
 	int dof = 6;
 	int nc = -1;
-	if (nc >= 80)
-		nc = 4;
+	if (nc >= 64)
+		nc = 3;
 	int seed = 1;
 
 	// initialize rigid body packing
@@ -29,18 +27,14 @@ int main(){
 
 	// set MD parameters
 	double ep,dt,tmp0,phi0,dphi,Utol,Ktol;
-	int plotskip,NT;
+	int plotskip,NT,nnu;
 
 	ep = 10.0;			// energy scale (units of kbt)
-	NT = 5e8;			// total amount of time (units of sim time)
+	NT = 2e5;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
-	tmp0 = 0.01;		// initial temperature
-	plotskip = 1000;		// # of steps to skip plotting
-	phi0 = 0.1;		// initial packing fraction
-	dphi = 0.001;		// initial packing fraction step
-	Utol = N*1e-8;
-	Ktol = N*1e-20;
-	respack.rb_scale(phi0);
+	tmp0 = 1e-4;		// initial temperature
+	plotskip = 500;		// # of steps to skip plotting
+	nnu = 5;
 
 	// setup simulation
 	respack.set_ep(ep);
@@ -59,23 +53,6 @@ int main(){
 
 	// output final W frame positions, check if same
 	respack.rigidbody_xyz();
-
-	// run md	
-	if (nc > 0){
-		respack.update_neighborlist();
-		respack.print_neighborlist();
-	}
-	respack.rb_jamming_finder(tmp0,NT,dphi,Utol,Ktol);
-	// respack.free_fire(tmp0,t);
-	// respack.free_md(tmp0,t);
-
-	// output stat and config
-	respack.open_stat(statstr.c_str());
-	respack.open_config(cfgstr.c_str());
-
-	// print data
-	respack.print_stat();
-	respack.print_config();
 
 	return 0;
 }

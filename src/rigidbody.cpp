@@ -19,11 +19,9 @@
 #include <cmath>
 #include <vector>
 
-#define DEBUG_OFF
-
 using namespace std;
 
-const double PI = 3.1415926;
+const double PI = atan(1)*4;
 
 /*
 ==================================
@@ -37,7 +35,12 @@ const double PI = 3.1415926;
 // constructor for residues to be read in
 rigidbody::rigidbody(string &rbstr, int n, int dof, int nc, int s) : packing(n, dof, nc, s) {
 	cout << "Entering rigidbody constructor..." << endl;
-	cout << endl << endl;
+	cout << endl;
+
+	cout << "N = " << N << endl;
+	cout << "dof = " << dof << endl;
+	cout << "nc = " << nc << endl;
+	cout << "seed = " << seed << endl;
 
 	// read in particle information
 	cout << "getting info from file header" << endl;
@@ -71,8 +74,9 @@ rigidbody::rigidbody(string &rbstr, int n, int dof, int nc, int s) : packing(n, 
 	else
 		cout << "nc = -1, no nlcl for this simulation" << endl;
 
-	cout << endl << endl;
+	cout << endl;
 	cout << "... rigidbody constructor complete." << endl;
+	cout << endl << endl << endl;
 }
 
 rigidbody::~rigidbody() {
@@ -149,7 +153,7 @@ rigidbody::~rigidbody() {
 */
 
 void rigidbody::get_file_header(string &rbstr) {
-	int i,j,l;
+	int test,Ntest,i,j,l;
 	double val, Ltmp, nasum;
 	ifstream obj(rbstr.c_str());
 	if (!obj.is_open()){
@@ -157,22 +161,41 @@ void rigidbody::get_file_header(string &rbstr) {
 		throw;
 	}
 
-	// get number of particles
-	obj >> i;
-	obj >> N;
-	obj >> Ltmp;
-	obj >> phi;
+	// determine what type of file (input or config)
+	obj >> test;
+	if (test == N){
+		obj >> L[0] >> L[1] >> L[2];
+		obj >> phi;
 
-	// get L (already initialized through packing class);
-	for (i = 0; i < NDIM; i++)
-		L[i] = Ltmp;
+		// get rid of header
+		char ctr;
+		obj >> ctr;
+		string header(" ");
+		string equal_str(" ");
+		getline(obj, header);
+		getline(obj, equal_str);
+		cout << "header = " << header << endl << endl;
+		cout << equal_str << endl;
+	}
+	else{
+		// get number of particles
+		i = test;
+		obj >> N;
+		obj >> Ltmp;
+		obj >> phi;
 
-	// get rid of header
-	char ctr;
-	obj >> ctr;
-	string header(" ");
-	getline(obj, header);
-	cout << "header = " << header << endl << endl;
+		// get L (already initialized through packing class);
+		for (i = 0; i < NDIM; i++)
+			L[i] = Ltmp;
+
+		// get rid of header
+		char ctr;
+		obj >> ctr;
+		string header(" ");
+		string equal_str(" ");
+		getline(obj, header);
+		cout << "header = " << header << endl << endl;
+	}	
 
 	// loop over lines in data, get Na[i]
 	Na = new int[N];
@@ -181,11 +204,6 @@ void rigidbody::get_file_header(string &rbstr) {
 	Na[i] = 0;
 	while (!obj.eof()) {
 		obj >> i;
-		// Na[i]++;
-		// if (i != j){
-		// 	j = i;
-		// 	Na[i] = 1;
-		// }
 		obj >> val;
 		obj >> val;
 		obj >> val;
@@ -203,8 +221,7 @@ void rigidbody::get_file_header(string &rbstr) {
 		obj >> val;
 		// obj >> val;
 		obj >> Na[i];
-		cout << "l = " << l << "i = " << i << ", Na[" << i << "] = " << Na[i] << endl;
-
+		cout << "l = " << l << "; i = " << i << "; Na[" << i << "] = " << Na[i] << endl;
 
 		// increment l
 		l++;
@@ -315,21 +332,47 @@ void rigidbody::initialize_dynamics() {
 }
 
 void rigidbody::read_in_info(string &rbstr) {
-	int i, j, d;
+	int i,j,d,test;
+	double rscale = 1;
 	double val;
 	ifstream obj(rbstr.c_str());
 
-	// get number of particles
-	obj >> val;
-	obj >> val;
-	obj >> val;
-	obj >> val;
+	// determine what type of file (input or config)
+	obj >> test;
+	if (test == N){
+		obj >> val >> val >> val;
+		obj >> val;
 
-	// get rid of header
-	char ctr;
-	obj >> ctr;
-	string header(" ");
-	getline(obj, header);
+		// get rid of header
+		char ctr;
+		obj >> ctr;
+		string header(" ");
+		string equal_str(" ");
+		getline(obj, header);
+		getline(obj, equal_str);
+		cout << "header = " << header << endl << endl;
+		cout << equal_str << endl;
+
+		// do NOT half radius
+		rscale = 1;
+	}
+	else{
+		// get number of particles
+		obj >> val;
+		obj >> val;
+		obj >> val;
+
+		// get rid of header
+		char ctr;
+		obj >> ctr;
+		string header(" ");
+		string equal_str(" ");
+		getline(obj, header);
+		cout << "header = " << header << endl << endl;
+
+		// half radius
+		rscale = 0.5;
+	}
 
 	// max residue radius
 	double maxrad = 0;
@@ -339,12 +382,12 @@ void rigidbody::read_in_info(string &rbstr) {
 		for (j = 0; j < Na[i]; j++) {
 			obj >> val;
 			obj >> ar[i][j];
-			ar[i][j] = 0.5 * ar[i][j];
+			ar[i][j] = rscale * ar[i][j];
 			obj >> xW[i][j][0];
 			obj >> xW[i][j][1];
 			obj >> xW[i][j][2];
 			obj >> r[i];
-			r[i] = 0.5 * r[i];
+			r[i] = rscale * r[i];
 			obj >> x[i][0];
 			obj >> x[i][1];
 			obj >> x[i][2];
@@ -523,52 +566,6 @@ double rigidbody::get_LWZ() {
 		lwsum += LW[i][2];
 
 	return lwsum;
-}
-
-void rigidbody::free_md(double tmp0, double tend, int nnu) {
-	int t;
-
-	// initialize velocities
-	this->rand_vel_init(tmp0);
-
-	// get number of time steps
-	int NT;
-	NT = round(tend / dt);
-	dt = tend / NT;
-
-	// if energy output open, output dt
-	enobj << dt << endl;
-
-	// update nearest neighbor update
-	nnupdate = nnu;
-
-	cout << "===== BEGINNING TIME LOOP ======" << endl;
-	cout << "NT = " << NT << endl;
-	cout << "dt = " << dt << endl;
-	cout << "tend = " << tend << endl;
-
-	for (t = 0; t < NT; t++) {
-		// if NLCL, update
-		if (NCL > -1 && t % nnupdate == 0) {
-			this->update_cell();
-			this->update_neighborlist();
-		}
-
-		// advance quaternions, positions
-		this->verlet_first();
-
-		// update forces
-		this->force_update();
-
-		// advance angular momentum
-		this->verlet_second();
-
-		// output information
-		if (t % plotskip == 0) {
-			this->monitor_header(t);
-			this->rigidbody_md_monitor();
-		}
-	}
 }
 
 void rigidbody::free_fire(double tmp0, double Utol, double tend, int nnu) {
@@ -2256,11 +2253,6 @@ void rigidbody::rigidbody_md_monitor() {
 		enobj << setw(12) << K/N;
 		enobj << setw(12) << Krot/N;
 		enobj << setw(12) << U/N + K/N;
-		enobj << setw(12) << lwx;
-		enobj << setw(12) << lwy;
-		enobj << setw(12) << lwz;
-		enobj << setw(12) << LCON;
-		enobj << setw(12) << phi;
 		enobj << endl;
 	}	
 
@@ -2311,12 +2303,22 @@ void rigidbody::rigidbody_xyz() {
 	}
 	xyzobj << "\" ";
 	xyzobj << '\t';
-	xyzobj << "Properties=species:S:1:pos:R:" <<  NDIM << ":radius:R:1" << endl;
+	xyzobj << "Properties=residue:S:1:species:S:1:pos:R:" <<  NDIM << ":radius:R:1" << endl;
 
 	// print body
 	n_found = 0;
 	for (i = 0; i < N; i++) {
 		for (j = 0; j < Na[i]; j++) {
+			// print res name
+			switch (Na[i]){
+				case 10: xyzobj << setw(w) << "ALA"; break;
+				case 16: xyzobj << setw(w) << "VAL"; break;
+				case 17: xyzobj << setw(w) << "MET"; break;
+				case 19: xyzobj << setw(w) << "I/LEU"; break;
+				case 20: xyzobj << setw(w) << "PHE"; break;
+				default: xyzobj << setw(w) << "UKW"; break;
+			}
+
 			// determine atomic type
 			rtmp = ar[i][j] / rmin;
 			if (i==47)
@@ -2364,8 +2366,7 @@ void rigidbody::rigidbody_xyz() {
 					xyzobj << setw(w) << 'C';
 				else
 					xyzobj << setw(w) << 'S';				
-			}
-			
+			}			
 
 			xyzobj << setw(w) << xW[i][j][0] + x[i][0];
 			xyzobj << setw(w) << xW[i][j][1] + x[i][1];
@@ -2443,7 +2444,6 @@ void rigidbody::rigidbody_xyz(int p1, int p2) {
 		}
 	}
 }
-
 
 void rigidbody::rigidbody_print_vars() {
 	int i, j, d;

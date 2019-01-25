@@ -77,7 +77,7 @@ public:
 	void pos_brot();
 
 	// Molecular Dynamics
-	void free_md(double tmp0, double tend, int nnu);
+	void free_md(double tmp0, int NT, int nnu);
 	void free_fire(double tmp0, double Utol, double tend, int nnu);
 	void single_md(int t);
 	void single_fire(int t);

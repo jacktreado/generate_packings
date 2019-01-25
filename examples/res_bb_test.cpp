@@ -64,8 +64,6 @@ int main (int argc, char *argv[]){
 	cout << "scaling system to initial packing fraction phi0 = " << phi0 << endl;
 	bb_pack.rb_scale(phi0);
 
-	cout << "new rest length = " << bb_pack.get_l0() << endl;
-
 	// setup simulation
 	cout << "setting MD parameters" << endl;
 	bb_pack.set_ep(ep);
@@ -80,9 +78,6 @@ int main (int argc, char *argv[]){
 	// run md
 	cout << "relaxing topology of backbone" << endl;
 	bb_pack.top_relax();
-
-	cout << "set MD falpha to be " << falpha1 << endl;
-	bb_pack.set_falpha(falpha1);
 
 	// open stat and config files
 	cout << "opening stat and config files" << endl;
