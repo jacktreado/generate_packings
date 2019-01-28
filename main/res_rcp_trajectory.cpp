@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
 	// set parameters to initialize rigidbody packing
 	dof = 6;
 	nc = -1;
-	if (nc >= 64)
+	if (N >= 64)
 		nc = 3;
 
 	// instantiate rigidbody packing object
