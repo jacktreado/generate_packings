@@ -25,9 +25,18 @@ cfgstr=$xyzstr
 
 
 # run new vseed, print xyz and cfg
-NT=200000
-T0=0.0001
+NT=2e5
+T0=1e-4
 vseed=1
+
+# test parsing
+NTexp=${NT#*e*}
+T0exp=${T0#*e*}
+
+echo NTexp = $NTexp
+echo T0exp = $T0exp
+
+exit 1
 
 # finish output strings
 xyzstr=$xyzstr$vseed.xyz
@@ -57,9 +66,4 @@ rm -f $binf
 
 # ending
 echo finished running, hopefully no errors
-
-
-
-
-
 

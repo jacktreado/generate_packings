@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
 
 	// local variables
 	int N,NT,seed,dof,nc,nnu,plotskip;
-	double T0,ep,dt;
+	double NT_tmp,T0,ep,dt;
 
 	// read in options
 	string N_str = argv[1];				// NUMBER OF PARTICLES
@@ -35,10 +35,14 @@ int main(int argc, char *argv[]){
 	stringstream T0ss(T0_str);
 	stringstream seedss(seed_str);
 
+	// stream in values
 	Nss >> N;	
-	NTss >> NT;	
+	NTss >> NT_tmp;	
 	T0ss >> T0;	
 	seedss >> seed;
+
+	// cast NT value to integer, in case of scientific notation input
+	NT = (int)NT_tmp;
 
 	// set parameters to initialize rigidbody packing
 	dof = 6;

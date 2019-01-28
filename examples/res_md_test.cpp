@@ -5,10 +5,38 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>
+#include <sstream>
 
 using namespace std;
 
-int main(){
+int main(int argc, char *argv[]){
+	string ntstr = argv[1];
+	string t0str = argv[2];
+
+	// print strings
+	cout << "NT input = " << ntstr << endl;
+	cout << "T0 input = " << t0str << endl;
+
+	// read in using string stream
+	stringstream ntss(ntstr);
+	stringstream t0ss(t0str);	
+
+	// read in inputs
+	double NT_tmp;
+	double T0;
+	ntss >> NT_tmp;
+	t0ss >> T0;
+
+	cout << "NT val = " << NT_tmp << endl;
+	cout << "T0 val = " << T0 << endl;
+
+	// cast double NT to int
+	int NT;
+	NT = (int)NT_tmp;
+	cout <<"int NT val = " << NT << endl;
+
+	return 0;
+
 	// local variables for packing
 	string fstr = "/Users/JackTreado/_pv/cluster/rigidbody/rcp/config/res_rcp_config_N16_seed1.dat";
 	string enstr = "res_md_en.test";
@@ -26,13 +54,11 @@ int main(){
 	// Do short md to check if code is set up correctly
 
 	// set MD parameters
-	double ep,dt,tmp0,phi0,dphi,Utol,Ktol;
-	int plotskip,NT,nnu;
+	double ep,dt,phi0,dphi,Utol,Ktol;
+	int plotskip,nnu;
 
 	ep = 10.0;			// energy scale (units of kbt)
-	NT = 2e5;			// total amount of time (units of sim time)
 	dt = 0.05;			// time step (units of md time)
-	tmp0 = 1e-4;		// initial temperature
 	plotskip = 500;		// # of steps to skip plotting
 	nnu = 5;
 
