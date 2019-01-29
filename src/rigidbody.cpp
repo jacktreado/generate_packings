@@ -643,7 +643,7 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 	dU = 0;
 	dUtol = 1e-8;
 	epc = 0;
-	epcN = 5e3;
+	epcN = 5e2;
 
 	// make nnupdate larger
 	nnupdate = 20;
@@ -1640,7 +1640,7 @@ void rigidbody::rb_scale(double phinew) {
 // RIGIDBODY FIRE
 void rigidbody::rb_fire() {
 	int i, j, d;
-	double P = 0;
+	double P,Pi,Pimin;
 	double vstarnrm = 0;
 	double wstarnrm = 0;
 	double fstarnrm = 0;
@@ -1649,6 +1649,9 @@ void rigidbody::rb_fire() {
 	Quaternion qtmp, q1, q2;	
 
 	// calculate P
+	P = 0;
+	Pi = 0;
+	Pimin = 1e8;
 	for (i = 0; i < N; i++) {
 		// rotate torques into M frame
 		qtmp.set_x(TqW[i][0]);
@@ -1664,7 +1667,10 @@ void rigidbody::rb_fire() {
 		TqM[i][2] = qtmp.get_z();
 
 		for (d = 0; d < NDIM; d++) {
-			P += F[i][d] * v[i][d] + TqM[i][d] * wM[i][d];
+			Pi = F[i][d] * v[i][d] + TqM[i][d] * wM[i][d];
+			P += Pi;
+			if (Pi < Pimin)
+				Pimin = Pi;
 			vstarnrm += v[i][d] * v[i][d];
 			wstarnrm += wM[i][d] * wM[i][d];
 			fstarnrm += F[i][d] * F[i][d];
@@ -1703,7 +1709,9 @@ void rigidbody::rb_fire() {
 	}
 
 	// now update alphas for P
-	if (P >= 0 && np > Nmin) {
+	// if (P >= 0 && np > Nmin){
+	if (Pimin >= 0 && np > Nmin) {
+
 		// increase dt
 		if (dt * finc < dtmax)
 			dt *= finc;
@@ -1716,7 +1724,7 @@ void rigidbody::rb_fire() {
 		np++;
 	}
 	else if (P < 0) {
-		cout << "* ";
+	// else if (Pimin < 0) {
 		// reset K to measure based on new info
 		K = 0;
 
@@ -1750,6 +1758,7 @@ void rigidbody::rb_fire() {
 		np = 0;
 	}
 	else if (P >= 0 && np <= Nmin)
+	// else if (Pimin >= 0 && np <= Nmin)
 		np++;
 }
 

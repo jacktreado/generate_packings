@@ -27,7 +27,9 @@ int main(int argc, char *argv[]) {
 	string enstr = "residue_Energy.test";
 	string xyzstr = "residue_test.xyz";
 	int dof = 6;
-	int nc = 3;
+	int nc = -1;
+	if (N >= 64)
+		nc = 3;
 	int seed = 1;
 
 	// initialize rigid body packing
@@ -41,9 +43,9 @@ int main(int argc, char *argv[]) {
 
 	ep = 10.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
-	dt = 0.05;			// time step (units of md time)
+	dt = 0.1;			// time step (units of md time)
 	tmp0 = 0.01;		// initial temperature
-	plotskip = 1000;	// # of steps to skip plotting
+	plotskip = 100;	// # of steps to skip plotting
 	phi0 = 0.1;			// initial packing fraction
 	dphi = 0.001;		// initial packing fraction step
 	Utol = N * 1e-16;

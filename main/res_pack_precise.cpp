@@ -55,9 +55,9 @@ int main(int argc, char *argv[]){
 	NT = 1e8;			// total amount of time (units of sim time)
 	tmp0 = 0.01;		// initial temperature
 	dt = 0.05;			// time step (units of md time)
-	plotskip = 1e3;		// # of steps to skip plotting
-	Utol = N*1e-8;		// potential energy tolerance
-	Ktol = N*1e-20;		// kinetic energy tolerance
+	plotskip = 1e2;		// # of steps to skip plotting
+	Utol = N*1e-16;		// potential energy tolerance
+	Ktol = N*1e-30;		// kinetic energy tolerance
 
 	// rigid body object instantiation
 	cout << "@@ Instantiating packing object..." << endl;
