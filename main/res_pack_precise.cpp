@@ -54,8 +54,8 @@ int main(int argc, char *argv[]){
 	ep = 10.0;			// energy scale (units of kbt)
 	NT = 1e8;			// total amount of time (units of sim time)
 	tmp0 = 0.01;		// initial temperature
-	dt = 0.05;			// time step (units of md time)
-	plotskip = 1e2;		// # of steps to skip plotting
+	dt = 0.1;			// time step (units of md time)
+	plotskip = 5e2;		// # of steps to skip plotting
 	Utol = N*1e-16;		// potential energy tolerance
 	Ktol = N*1e-30;		// kinetic energy tolerance
 
