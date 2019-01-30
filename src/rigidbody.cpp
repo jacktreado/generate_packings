@@ -1709,8 +1709,8 @@ void rigidbody::rb_fire() {
 	}
 
 	// now update alphas for P
-	// if (P >= 0 && np > Nmin){
-	if (Pimin >= 0 && np > Nmin) {
+	if (P >= 0 && np > Nmin){
+	// if (Pimin >= 0 && np > Nmin) {
 
 		// increase dt
 		if (dt * finc < dtmax)
@@ -1729,7 +1729,7 @@ void rigidbody::rb_fire() {
 		K = 0;
 
 		// decrease time step
-		if (dt * fdec > 1e-4 * dtmax)
+		if (dt * fdec > 1e-2 * dtmax)
 			dt *= fdec;
 		else
 			dt = 1e-2 * dtmax;
