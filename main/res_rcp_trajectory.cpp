@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
 	// set parameters to initialize MD
 	ep = 10.0;			// energy scale (units of kbt)
 	dt = 0.05;			// time step (units of md time)
-	plotskip = 500;		// # of steps to skip plotting
+	plotskip = 50;		// # of steps to skip plotting
 	nnu = 5;			// NLCL update if needed
 
 	// expected MB USAGE
