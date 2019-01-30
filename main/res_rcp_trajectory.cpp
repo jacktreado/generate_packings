@@ -24,15 +24,17 @@ int main(int argc, char *argv[]){
 	string N_str = argv[1];				// NUMBER OF PARTICLES
 	string NT_str = argv[2];			// MAX # OF TIME STEPS
 	string T0_str = argv[3];			// TEMPERATURE
-	string seed_str = argv[4];			// VELOCITY SEED
-	string input_str = argv[5];			// INPUT CFG FILE
-	string xyz_str = argv[6];			// TRAJECTORY FILE
-	string final_cfg_str = argv[7];		// FINAL CONFIG FILE (EQUILIBRATED)
+	string pskip_str = argv[4];			// NUMBER OF FRAMES TO SKIP OUTPUT
+	string seed_str = argv[5];			// VELOCITY SEED
+	string input_str = argv[6];			// INPUT CFG FILE
+	string xyz_str = argv[7];			// TRAJECTORY FILE
+	string final_cfg_str = argv[8];		// FINAL CONFIG FILE (EQUILIBRATED)
 
 	// parse numeric options using stringstream
 	stringstream Nss(N_str);
 	stringstream NTss(NT_str);
 	stringstream T0ss(T0_str);
+	stringstream pskipss(pskip_str);
 	stringstream seedss(seed_str);
 
 	// stream in values
@@ -40,6 +42,7 @@ int main(int argc, char *argv[]){
 	NTss >> NT_tmp;	
 	T0ss >> T0;	
 	seedss >> seed;
+	pskipss >> plotskip;
 
 	// cast NT value to integer, in case of scientific notation input
 	NT = (int)NT_tmp;
@@ -47,7 +50,7 @@ int main(int argc, char *argv[]){
 	// set parameters to initialize rigidbody packing
 	dof = 6;
 	nc = -1;
-	if (N >= 64)
+	if (N >= 128)
 		nc = 3;
 
 	// instantiate rigidbody packing object
@@ -59,7 +62,6 @@ int main(int argc, char *argv[]){
 	// set parameters to initialize MD
 	ep = 10.0;			// energy scale (units of kbt)
 	dt = 0.05;			// time step (units of md time)
-	plotskip = 50;		// # of steps to skip plotting
 	nnu = 5;			// NLCL update if needed
 
 	// expected MB USAGE
