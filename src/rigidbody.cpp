@@ -1669,8 +1669,6 @@ void rigidbody::rb_fire() {
 		for (d = 0; d < NDIM; d++) {
 			Pi = F[i][d] * v[i][d] + TqM[i][d] * wM[i][d];
 			P += Pi;
-			if (Pi < Pimin)
-				Pimin = Pi;
 			vstarnrm += v[i][d] * v[i][d];
 			wstarnrm += wM[i][d] * wM[i][d];
 			fstarnrm += F[i][d] * F[i][d];
@@ -1710,7 +1708,6 @@ void rigidbody::rb_fire() {
 
 	// now update alphas for P
 	if (P >= 0 && np > Nmin){
-	// if (Pimin >= 0 && np > Nmin) {
 
 		// increase dt
 		if (dt * finc < dtmax)
@@ -1724,7 +1721,6 @@ void rigidbody::rb_fire() {
 		np++;
 	}
 	else if (P < 0) {
-	// else if (Pimin < 0) {
 		// reset K to measure based on new info
 		K = 0;
 
@@ -1757,8 +1753,7 @@ void rigidbody::rb_fire() {
 		// set np -> 0
 		np = 0;
 	}
-	else if (P >= 0 && np <= Nmin)
-	// else if (Pimin >= 0 && np <= Nmin)
+	else if (P >= 0 && np <= Nmin) 
 		np++;
 }
 

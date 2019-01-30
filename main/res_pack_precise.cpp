@@ -53,9 +53,9 @@ int main(int argc, char *argv[]){
 	dof = 6;			// number of degrees of freedom per particle
 	ep = 10.0;			// energy scale (units of kbt)
 	NT = 1e8;			// total amount of time (units of sim time)
-	tmp0 = 0.01;		// initial temperature
-	dt = 0.1;			// time step (units of md time)
-	plotskip = 5e2;		// # of steps to skip plotting
+	tmp0 = 0.001;		// initial temperature
+	dt = 0.05;			// time step (units of md time)
+	plotskip = 500;		// # of steps to skip plotting
 	Utol = N*1e-16;		// potential energy tolerance
 	Ktol = N*1e-30;		// kinetic energy tolerance
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
 	cout << "@@ Instantiating packing object..." << endl;
 
 	// NLCL parameters, if system is large enough
-	if (N < 50)
+	if (N < 200)
 		nc = -1;	
 	else
 		nc = 3;
