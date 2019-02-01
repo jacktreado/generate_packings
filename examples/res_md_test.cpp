@@ -35,8 +35,6 @@ int main(int argc, char *argv[]){
 	NT = (int)NT_tmp;
 	cout <<"int NT val = " << NT << endl;
 
-	return 0;
-
 	// local variables for packing
 	string fstr = "/Users/JackTreado/_pv/cluster/rigidbody/rcp/config/res_rcp_config_N16_seed1.dat";
 	string enstr = "res_md_en.test";
@@ -59,7 +57,7 @@ int main(int argc, char *argv[]){
 
 	ep = 10.0;			// energy scale (units of kbt)
 	dt = 0.05;			// time step (units of md time)
-	plotskip = 500;		// # of steps to skip plotting
+	plotskip = 10;		// # of steps to skip plotting
 	nnu = 5;
 
 	// setup simulation
@@ -79,6 +77,9 @@ int main(int argc, char *argv[]){
 
 	// output final W frame positions, check if same
 	respack.rigidbody_xyz();
+
+	// do free md
+	respack.free_md(T0,NT,5);
 
 	return 0;
 }

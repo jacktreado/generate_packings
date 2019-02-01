@@ -12,10 +12,11 @@ int main (int argc, char *argv[]){
 	cout << "starting bb test main!" << endl;
 
 	// number of particles
-	int N = 3;
+	int N = 12;
 
 	// input file path	
-	string inputstr = "/Users/JackTreado/_pv/backbone/bb_io/res_bb_input_N3_seed1.dat";
+	// string inputstr = "/Users/JackTreado/_pv/backbone/bb_io/res_bb_input_N3_seed1.dat";
+	string inputstr = "/Users/JackTreado/_pv/cluster/rigidbody/io/res_input_N12_seed1.dat";
 
 	// config and stat strings
 	string cfgstr = "bb_config.test";
@@ -36,22 +37,23 @@ int main (int argc, char *argv[]){
 	bb_pack.open_en(enstr);
 
 	// set MD parameters
-	double ep, dt, tmp0, phi0, dphi, Ktol, kbl, kba, kda, falpha0, falpha1;
+	double ep, dt, tmp0, phi0, dphi, Ktol, kbl, kba, kda, falpha0, falpha1, nnu;
 	int plotskip, NT;
 
 	ep = 10.0;			// energy scale (units of kbt)
-	NT = 5e8;			// total amount of time (units of sim time)
-	dt = 0.05;			// time step (units of md time)
-	tmp0 = 0.001;		// initial temperature
+	NT = 1e4;			// total amount of time (units of sim time)
+	dt = 0.01;			// time step (units of md time)
+	tmp0 = 1e-7;		// initial temperature
 	plotskip = 10;		// # of steps to skip plotting
 	phi0 = 0.01;			// initial packing fraction
 	dphi = 0.005;		// initial packing fraction step
 	Ktol = N * 1e-20;
 	falpha0 = 0.99;
 	falpha1 = 0.99;
+	nnu = 5;
 
 	cout << "set spring constants" << endl;
-	kbl = 1;
+	kbl = 10.0;
 	kba = 1;
 	kda = 1;	
 	bb_pack.set_kbl(kbl);
@@ -78,6 +80,9 @@ int main (int argc, char *argv[]){
 	// run md
 	cout << "relaxing topology of backbone" << endl;
 	bb_pack.top_relax();
+	// bb_pack.set_angles();
+	// bb_pack.print_angles();
+	bb_pack.bb_free_md(tmp0,NT,nnu);
 
 	// open stat and config files
 	cout << "opening stat and config files" << endl;

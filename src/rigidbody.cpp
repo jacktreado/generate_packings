@@ -1269,10 +1269,10 @@ void rigidbody::pos_brot() {
 	Quaternion q2;
 	Quaternion xtmp;
 
-	// rotate every particle position in M frame
+	// rotate every particle position in w frame
 	for (i = 0; i < N; i++) {
 		for (j = 0; j < Na[i]; j++) {
-			// rotate rel M frame to rel W frame
+			// rotate rel W frame to rel M frame
 			xtmp.set_s(0.0);
 			xtmp.set_x(xW[i][j][0]);
 			xtmp.set_y(xW[i][j][1]);
@@ -2307,75 +2307,86 @@ void rigidbody::rigidbody_xyz() {
 	}
 	xyzobj << "\" ";
 	xyzobj << '\t';
-	xyzobj << "Properties=residue:S:1:species:S:1:pos:R:" <<  NDIM << ":radius:R:1" << endl;
+	xyzobj << "Properties=particleID:R:1:MoleculeType:S:1:species:S:1:pos:R:3:radius:R:1:Velocity:R:3:AngularVelocity:R:3" << endl;
+
+	// rotate rotational velocity to world frame
+	Quaternion q1;
+	Quaternion q2;
+	Quaternion wtmp;
+	for (i=0; i<N; i++){
+		// rotate rel M frame to rel W frame
+		wtmp.set_s(0.0);
+		wtmp.set_x(wM[i][0]);
+		wtmp.set_y(wM[i][1]);
+		wtmp.set_z(wM[i][2]);
+
+		q1 *= q[i];
+		q2 = wtmp % q1;
+		wtmp = q[i] % q2;
+
+		wW[i][0] = wtmp.get_x();
+		wW[i][1] = wtmp.get_y();
+		wW[i][2] = wtmp.get_z();
+	}
 
 	// print body
 	n_found = 0;
 	for (i = 0; i < N; i++) {
 		for (j = 0; j < Na[i]; j++) {
+			// print particle (i.e. residue) id
+			xyzobj << setw(w) << i;
+
 			// print res name
 			switch (Na[i]){
-				case 10: xyzobj << setw(w) << "ALA"; break;
-				case 16: xyzobj << setw(w) << "VAL"; break;
-				case 17: xyzobj << setw(w) << "MET"; break;
-				case 19: xyzobj << setw(w) << "I/LEU"; break;
-				case 20: xyzobj << setw(w) << "PHE"; break;
-				default: xyzobj << setw(w) << "UKW"; break;
+				case 10: xyzobj << setw(w) << "A"; break;
+				case 16: xyzobj << setw(w) << "V"; break;
+				case 17: xyzobj << setw(w) << "M"; break;
+				case 19: xyzobj << setw(w) << "L"; break;
+				case 20: xyzobj << setw(w) << "P"; break;
+				default: xyzobj << setw(w) << "X"; break;
 			}
 
-			// determine atomic type
+			// determine atomic type based on radius
 			rtmp = ar[i][j] / rmin;
-			if (i==47)
-				xyzobj << setw(w) << 'Z';
-			else{
-				if (rtmp < 1.12) {
-					// print NLCL info
-					if (NCL > 0) {
-						nf = 0;
-						if (i == 0)
-							xyzobj << setw(w) << 'H';
-						else {
-							for (k = 0; k < neighborlist[0].size(); k++) {
-								if (i == neighborlist[0].at(k)) {
-									xyzobj << setw(w) << 'Y';
-									nf++;
-									if (nf > 1) {
-										this->print_cell();
-										this->print_neighborlist();
-										cout << "Error at i = " << i << ", nf = " << nf << ", double neighborlist..." << endl;
-										throw "Error with neighborlist\n";
-									}
-								}
-							}
-							if (nf == 0)
-								xyzobj << setw(w) << 'X';
-						}
-					}
-					else
-						xyzobj << setw(w) << 'H';
-				}			
-				else if (rtmp < 1.36) {
-					if (n_found == 0) {
-						xyzobj << setw(w) << 'N' << i;
-						n_found = 1;
-					}
-					else {
-						xyzobj << setw(w) << 'C' << i;
-						n_found = 0;
-					}
-				}
-				else if (rtmp < 1.44)
-					xyzobj << setw(w) << 'O';
-				else if (rtmp < 1.56)
-					xyzobj << setw(w) << 'C';
-				else
-					xyzobj << setw(w) << 'S';				
+			if (rtmp < 1.12) {
+				xyzobj << setw(w) << 'H';
 			}			
+			else if (rtmp < 1.36) {
+				if (n_found == 0) {
+					xyzobj << setw(w) << 'N' << i;
+					n_found = 1;
+				}
+				else {
+					xyzobj << setw(w) << 'C' << i;
+					n_found = 0;
+				}
+			}
+			else if (rtmp < 1.44)
+				xyzobj << setw(w) << 'O';
+			else if (rtmp < 1.56)
+				xyzobj << setw(w) << 'C';
+			else
+				xyzobj << setw(w) << 'S';				
 
+			// print com positions
 			xyzobj << setw(w) << xW[i][j][0] + x[i][0];
 			xyzobj << setw(w) << xW[i][j][1] + x[i][1];
 			xyzobj << setw(w) << xW[i][j][2] + x[i][2];
+
+			// print atomic radii
 			xyzobj << setw(w) << ar[i][j];
+
+			// print com translational velocities
+			xyzobj << setw(w) << v[i][0];
+			xyzobj << setw(w) << v[i][1];
+			xyzobj << setw(w) << v[i][2];
+
+			// print rigid body angular velocity in world frame
+			xyzobj << setw(w) << wW[i][0];
+			xyzobj << setw(w) << wW[i][1];
+			xyzobj << setw(w) << wW[i][2];
+
+			// print new line
 			xyzobj << endl;
 		}
 	}

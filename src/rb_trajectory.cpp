@@ -30,10 +30,7 @@ void rigidbody::free_md(double tmp0, int NT, int nnu) {
 
 	// initialize velocities
 	this->rand_vel_init(tmp0);
-
-	// if energy output open, output dt
-	enobj << dt << endl;
-
+	
 	// update nearest neighbor update
 	nnupdate = nnu;
 

@@ -65,6 +65,9 @@ public:
 	double get_psi_da(int r);
 	double get_omega_da(int r);
 
+	// simulation
+	void bb_free_md(double T0, int NT, int nnu);
+
 	// topology relax
 	void top_relax();	
 
@@ -72,11 +75,12 @@ public:
 	void rb_scale(double phinew);
 
 	// force update
-	double bb_force_update ();
+	double steric_force_update();
+	double bb_force_update (int choice);
 	double bl_force (int i);
 	double ba_force (int i);
 	double da_force (int i);
-	double C_prod(double a[], double b[]);
+	double dotp(double a[], double b[]);
 
 	// printing
 	void print_angles();
