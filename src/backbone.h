@@ -14,6 +14,13 @@ using namespace std;
 
 class backbone : public rigidbody {
 protected:
+	// energy termns
+	double Ubb;
+	double Ubl;
+	double Uba;
+	double Uda;
+	double Usteric;
+
 	// backbone atom ids
 	int nid;
 	int caid;
@@ -69,7 +76,7 @@ public:
 	void bb_free_md(double T0, int NT, int nnu);
 
 	// topology relax
-	void top_relax();	
+	void top_relax(int kmax);	
 
 	// scaling
 	void rb_scale(double phinew);
@@ -84,5 +91,6 @@ public:
 
 	// printing
 	void print_angles();
+	void bb_md_monitor();
 };
 #endif

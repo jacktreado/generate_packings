@@ -35,6 +35,13 @@ backbone::backbone(string &bbstr, int n, int dof, int nc, int s) : rigidbody(bbs
 	int i;
 	double len0=0, th0=0, da0=0;
 
+	// initialize potential energy terms
+	Ubb = 0;
+	Ubl = 0;
+	Uba = 0;
+	Uda = 0;
+	Usteric = 0;
+
 	// set indices
 	nid = 0;
 	caid = 1;
@@ -74,7 +81,7 @@ backbone::backbone(string &bbstr, int n, int dof, int nc, int s) : rigidbody(bbs
 
 	// set rest lengths/angle
 	cout << "initializing values of angle arrays to std values; ";	
-	len0 = 1.0;					// fraction of contact distance
+	len0 = 1.5;					// fraction of contact distance
 	this->bl0_init(len0);
 	th0 = 0.6*PI;				// theta0 (everything)
 	this->ba0_init(th0);	
@@ -83,7 +90,6 @@ backbone::backbone(string &bbstr, int n, int dof, int nc, int s) : rigidbody(bbs
 	cout << "bl0 = " << len0 << "; ";
 	cout << "ba0 = " << th0 << "; ";
 	cout << "da0 = " << da0 << endl;
-	cout << "PI = " << PI << endl;
 
 	cout << endl;
 	cout << "test backbone constructor complete." << endl;
@@ -283,14 +289,15 @@ double backbone::get_omega_da(int r){
 
 
 // BACKBONE: RELAX TOPOLOGY
-void backbone::top_relax(){
+void backbone::top_relax(int kmax){
 	// local variables
 	int k = 0;
-	int kmax = 2e3;
-	double Ubb = 0;
-	double Usteric = 0;
 	double Utol = 1e-16;
 	double T0 = 1e-2;
+
+	// energies
+	Usteric = 0;
+	Ubb = 0;
 
 	// initialize velocities
 	this->rand_vel_init(T0);
@@ -359,7 +366,7 @@ void backbone::top_relax(){
 		// print some stuff
 		if (k % plotskip == 0){
 			this->monitor_header(k);
-			this->rigidbody_md_monitor();
+			this->bb_md_monitor();
 			this->print_angles();
 			cout << endl;
 			cout << endl;
@@ -380,7 +387,6 @@ void backbone::top_relax(){
 
 void backbone::bb_free_md(double tmp0, int NT, int nnu) {
 	int t;
-	double Ubb,Usteric;
 
 	// initialize velocities
 	this->rand_vel_init(tmp0);
@@ -420,7 +426,7 @@ void backbone::bb_free_md(double tmp0, int NT, int nnu) {
 		// output information
 		if (t % plotskip == 0) {
 			this->monitor_header(t);
-			this->rigidbody_md_monitor();
+			this->bb_md_monitor();
 			this->print_angles();
 			cout << endl;
 			cout << endl;
@@ -470,8 +476,8 @@ double backbone::steric_force_update(){
 	double aij[NDIM];
 	double fij[NDIM];
 
-	// reset Usteric, LCON
-	double Usteric = 0;
+	// reset Usterictmp
+	double Usterictmp = 0;
 	this->reset_c();
 	this->reset_cm();
 
@@ -561,7 +567,7 @@ double backbone::steric_force_update(){
 								ac[j]++;								
 
 								// update potential energy
-								Usteric += (ep / 2) * pow(1 - da / rij, 2);
+								Usterictmp += (ep / 2) * pow(1 - da / rij, 2);
 							}
 						}
 					}
@@ -660,7 +666,7 @@ double backbone::steric_force_update(){
 								fiz += fij[2];		
 
 								// update potential energy
-								Usteric += (ep / 2) * pow(1 - da / rij, 2);
+								Usterictmp += (ep / 2) * pow(1 - da / rij, 2);
 							}							
 						}
 					}
@@ -677,7 +683,7 @@ double backbone::steric_force_update(){
 			}
 		}
 	}
-	return Usteric;
+	return Usterictmp;
 }
 
 
@@ -690,23 +696,38 @@ double backbone::steric_force_update(){
 double backbone::bb_force_update(int choice){
 	// local variables
 	int i,ip1;
-	double Ubb = 0;
+	double Ubbtmp = 0;
+	double Utmp = 0;
+
+	// bl, ba, da energies
+	Ubl = 0;
+	Uba = 0;
+	Uda = 0;
 
 	// loop over particles, calculate forces due to backbone connections
 	for (i=0; i<N; i++){
 		// bond length force (done pairwise)
-		if (i > 0)
-			Ubb = Ubb + this->bl_force(i);
+		if (i > 0){
+			Utmp = this->bl_force(i);
+			Ubl += Utmp;
+			Ubbtmp += Utmp;
+		}
 
 		// bond angle force
-		if (choice > 0)		
-			Ubb = Ubb + this->ba_force(i);
+		if (choice > 0){
+			Utmp = this->ba_force(i);
+			Uba += Utmp;
+			Ubbtmp += Utmp;
+		}
 
 		// // dihedral angle force
-		if (choice > 1)
-			Ubb = Ubb + this->da_force(i);
+		if (choice > 1){
+			Utmp = this->bl_force(i);
+			Uda += Utmp;
+			Ubbtmp += Utmp;
+		}
 	}
-	return Ubb;
+	return Ubbtmp;
 }
 
 // bond length force
@@ -714,7 +735,7 @@ double backbone::bl_force(int i){
 	// local variables
 	double dij[NDIM];
 	double vfij[NDIM];
-	double rij,fij,r0,Ubb;
+	double rij,fij,r0,Ubbtmp;
 	double qix,qiy,qiz,qjx,qjy,qjz;
 	int im1,d;
 
@@ -755,9 +776,9 @@ double backbone::bl_force(int i){
 	TqW[i][2] += -qjx * vfij[1] + qjy * vfij[0];
 
 	// potential
-	Ubb = 0.5*kbl*pow(rij-r0,2);
+	Ubbtmp = 0.5*kbl*pow(rij-r0,2);
 
-	return Ubb;
+	return Ubbtmp;
 }
 
 
@@ -768,7 +789,7 @@ double backbone::ba_force(int i){
 	// local variables
 	int im1,ip1;						// particle and atomic indices
 	int d;								// index for dimensions
-	double Ubb,Utheta,Ueta;				// potential energies
+	double Ubbtmp,Utheta,Ueta;				// potential energies
 	double fN[NDIM];					// force vector on N atom
 	double fC[NDIM];					// force vector on C atom
 	double qNx,qNy,qNz,qCx,qCy,qCz;		// branch vectors to atomic coordinates
@@ -928,17 +949,17 @@ double backbone::ba_force(int i){
 		Ueta = 0.5*kba*pow(eta[i]-eta0[i],2);
 
 	// total potential energy
-	Ubb = Utheta + Ueta;
-	return Ubb;
+	Ubbtmp = Utheta + Ueta;
+	return Ubbtmp;
 }
 
 
 // dihedral angle' force
 double backbone::da_force(int i){
 	// local variables
-	double dx,dy,dz,Ubb;
+	double dx,dy,dz,Ubbtmp;
 
-	return Ubb;
+	return Ubbtmp;
 }
 
 
@@ -1012,4 +1033,48 @@ void backbone::print_angles(){
 }
 
 
+void backbone::bb_md_monitor() {
+	cout << "** Packing:" << endl;
+	cout << "N = " << N << endl;
+	cout << "phi = " << phi << endl;
+	cout << endl;
+	cout << "** Energy:" << endl;
+	cout << "U = " << U/N << endl;
+	cout << "K = " << K/N << endl;
+	cout << "Krot = " << Krot/N << endl;
+	cout << "Ktrans = " << K/N - Krot/N << endl;
+	cout << "E = " << U/N + K/N << endl;
+	cout << endl;
+	cout << "** Contacts:" << endl;
+	cout << "sum c = " << this->get_c_sum() << endl;
+	cout << "sum ac = " << 0.5 * (this->get_ac_sum()) << endl;
+	cout << "niso max = " << DOF*N - NDIM + 1 << endl;
+	cout << endl;
+	cout << "** FIRE:" << endl;
+	cout << "alpha = " << alpha << endl;
+	cout << "dt = " << dt << endl;
+	cout << "dtmax = " << dtmax << endl;
+	cout << endl;
+
+	// output to energy file if open
+	if (enobj.is_open()) {
+		cout << "Printing ENERGY" << endl;
+		enobj << setw(12) << U/N;
+		enobj << setw(12) << Ubb/N;
+		enobj << setw(12) << Ubl/N;
+		enobj << setw(12) << Uba/N;
+		enobj << setw(12) << Uda/N;
+		enobj << setw(12) << K/N;
+		enobj << setw(12) << Krot/N;
+		enobj << setw(12) << U/N + K/N;
+		enobj << endl;
+	}	
+
+	// output to xyz file if open
+	if (xyzobj.is_open()) {
+		cout << "Printing XYZ" << endl;
+		this->rigidbody_xyz();
+		cout << endl;
+	}
+}
 

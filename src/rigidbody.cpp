@@ -814,7 +814,7 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 			cout << endl;
 			cout << endl;
 			cout << "Found jammed state!" << endl;
-			cout << "Writing config after s = " << s << "steps..." << endl;
+			cout << "Writing config after s = " << s << " steps..." << endl;
 			cout << "Final U = " << U << endl;
 			cout << "Final K = " << K << endl;
 			cout << "Final phi = " << setprecision(6) << phi << endl;
@@ -2223,11 +2223,6 @@ void rigidbody::print_config() {
 }
 
 void rigidbody::rigidbody_md_monitor() {
-	double lwx, lwy, lwz;
-	lwx = this->get_LWX();
-	lwy = this->get_LWY();
-	lwz = this->get_LWZ();
-
 	cout << "** Packing:" << endl;
 	cout << "N = " << N << endl;
 	cout << "phi = " << phi << endl;

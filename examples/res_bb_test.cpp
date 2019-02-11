@@ -12,11 +12,11 @@ int main (int argc, char *argv[]){
 	cout << "starting bb test main!" << endl;
 
 	// number of particles
-	int N = 12;
+	int N = 3;
 
 	// input file path	
-	// string inputstr = "/Users/JackTreado/_pv/backbone/bb_io/res_bb_input_N3_seed1.dat";
-	string inputstr = "/Users/JackTreado/_pv/cluster/rigidbody/io/res_input_N12_seed1.dat";
+	string inputstr = "/Users/JackTreado/_pv/backbone/bb_io/res_bb_input_N3_seed1.dat";
+	// string inputstr = "/Users/JackTreado/_pv/cluster/rigidbody/io/res_input_N12_seed1.dat";
 
 	// config and stat strings
 	string cfgstr = "bb_config.test";
@@ -38,11 +38,12 @@ int main (int argc, char *argv[]){
 
 	// set MD parameters
 	double ep, dt, tmp0, phi0, dphi, Ktol, kbl, kba, kda, falpha0, falpha1, nnu;
-	int plotskip, NT;
+	int plotskip, NT, kmax;
 
 	ep = 10.0;			// energy scale (units of kbt)
-	NT = 1e4;			// total amount of time (units of sim time)
-	dt = 0.01;			// time step (units of md time)
+	kmax = 5e3;			// topology relax max wait time
+	NT = 1e2;			// total amount of time (units of sim time)
+	dt = 0.001;			// time step (units of md time)
 	tmp0 = 1e-7;		// initial temperature
 	plotskip = 10;		// # of steps to skip plotting
 	phi0 = 0.01;			// initial packing fraction
@@ -79,10 +80,10 @@ int main (int argc, char *argv[]){
 
 	// run md
 	cout << "relaxing topology of backbone" << endl;
-	bb_pack.top_relax();
+	bb_pack.top_relax(kmax);
 	// bb_pack.set_angles();
 	// bb_pack.print_angles();
-	bb_pack.bb_free_md(tmp0,NT,nnu);
+	// bb_pack.bb_free_md(tmp0,NT,nnu);
 
 	// open stat and config files
 	cout << "opening stat and config files" << endl;

@@ -10,12 +10,12 @@ using namespace std;
 
 int main() {
 	// local variables for packing
-  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/rigidbody/io/res_input_N64_seed1.dat";
+  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/rigidbody/io/res_input_N32_seed1.dat";
 	string cfgstr = "residue_cfg.test";
 	string statstr = "residue_stat.test";
 	string enstr = "residue_Energy.test";
 	string xyzstr = "residue_test.xyz";
-	int N = 64;
+	int N = 32;
 	int dof = 6;
 	int nc = -1;
 	int seed = 1;
@@ -31,9 +31,9 @@ int main() {
 
 	ep = 10.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
-	dt = 0.05;			// time step (units of md time)
+	dt = 0.02;			// time step (units of md time)
 	tmp0 = 0.001;		// initial temperature
-	plotskip = 20;		// # of steps to skip plotting
+	plotskip = 200;		// # of steps to skip plotting
 	Utol = N * 1e-16;
 	Ktol = N * 1e-30;
 	phiJguess = 0.52;
