@@ -21,6 +21,36 @@ using namespace std;
 
 const double PI = 3.1415926;
 
+// FUNCTION to populate entries in dynamical matrix
+// assuming that forces are already calculated
+
+void packing::populate_dynamical_matrix(){
+	// local variables
+	int i;
+	vector<double> Fi_pj(3,0);	// vector force on i, perturbed i
+	vector<double> Fj_pi(3,0);	// vector force on j, perturbed i
+
+	// loop over particles, get forces as a function of particle perturbations
+	for (i=0; i<N; i++){
+
+		
+
+
+
+
+
+	}
+
+
+
+
+
+}
+
+
+
+
+
 void packing::calc_dm(string& fstr){
 	// local variables
 	int i,k,j,l,d,nr,kr;

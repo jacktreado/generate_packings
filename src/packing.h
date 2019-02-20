@@ -239,6 +239,7 @@ public:
 	// printers
 	void md_monitor(int t, int nr, double phiH, double phiL);
 	void monitor_scale(double dphi, double phiH, double phiL);
+	void print_en(int t);
 	void print_xyz();
 	void print_c_mat();
 	void print_c_mat(std::ofstream &obj);

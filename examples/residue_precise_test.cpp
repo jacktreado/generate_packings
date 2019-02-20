@@ -10,12 +10,12 @@ using namespace std;
 
 int main() {
 	// local variables for packing
-  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/rigidbody/io/res_input_N32_seed1.dat";
+  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/rigidbody/io/res_input_N8_seed1.dat";
 	string cfgstr = "residue_cfg.test";
 	string statstr = "residue_stat.test";
 	string enstr = "residue_Energy.test";
 	string xyzstr = "residue_test.xyz";
-	int N = 32;
+	int N = 8;
 	int dof = 6;
 	int nc = -1;
 	int seed = 1;

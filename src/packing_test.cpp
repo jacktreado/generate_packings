@@ -40,8 +40,8 @@ void packing::print_config(){
 
 	// local variables
 	int w,p,i,d;
-	w = 12;
-	p = 6;	
+	w = 25;
+	p = 14;	
 
 	// print basic info
 	configobj << setw(w) << N << endl;
@@ -53,8 +53,16 @@ void packing::print_config(){
 	// print header
 	configobj << right << setw(w) << "id";
 	configobj << right << setw(w) << "r";
-	for (d=0; d<NDIM; d++)
-		configobj << right << setw(w) << "x[" << d << "]";
+	for (d=0; d<NDIM; d++){
+		if (d == 0)
+			configobj << right << setw(w) << "x";
+		else if (d == 1)
+			configobj << right << setw(w) << "y";
+		else if (d == 2)
+			configobj << right << setw(w) << "z";
+		else
+			configobj << right << setw(w) << "w" << d;
+	}
 	configobj << right << setw(w) << "m";
 	configobj << endl;
 	for (i=0; i<w*(NDIM+3); i++)
@@ -397,6 +405,16 @@ void packing::print_neighborlist(){
 	}
 }
 
+void packing::print_en(int t){
+	int w = 12;
+	enobj << setw(w) << t;
+	enobj << setw(w) << U;
+	enobj << setw(w) << K;
+	enobj << setw(w) << U+K;
+	enobj << setw(w) << alpha;
+	enobj << endl;
+}
+
 void packing::print_nl_xyz(){
 	int i,d,dd,w;
 	w = 20;	
@@ -588,6 +606,7 @@ void packing::monitor_header(int t){
 	cout << "=================" << endl;
 	cout << endl;
 }
+
 
 
 

@@ -377,7 +377,7 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 	int check_rattlers;
 
 	// set initial temperature
-	tmp0 = 1.0;
+	tmp0 = 0.01;
 
 	// initialize particle velocities
 	cout << "* initializing velocities in jamming_finder()..." << endl;
@@ -398,7 +398,7 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 	dU = 0;
 	dUtol = 1e-8;
 	epc = 0;
-	epcN = 5e3;
+	epcN = 5e2;
 
 	// get number of time steps
 	int NT;
@@ -451,8 +451,10 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 				if (NCL > -1)
 					this->print_nl_xyz();
 				else
-					this->print_xyz();
+					this->print_xyz();				
 			}
+			if (enobj.is_open())
+				this->print_en(t);
 		}
 
 		// check for constant potential energy
@@ -740,7 +742,10 @@ void packing::fire(){
 		K = 0;
 
 		// decrease time step
-		dt *= fdec;
+		if (dt * fdec > 1e-2 * dtmax)
+			dt *= fdec;
+		else
+			dt = 1e-2 * dtmax;
 		
 		// set global velocity vector to zero
 		for (i=0; i<N; i++){
@@ -792,8 +797,8 @@ void packing::scale_sys(double dphi){
 	phi = msum/vol;
 
 	ep *= pow(s, 2);
-	dt *= pow(s, -0.5 * NDIM);
-	dtmax *= pow(s, -0.5 * NDIM);
+	dt *= pow(s, 0.5 * (NDIM-2));
+	dtmax *= pow(s, 0.5 * (NDIM-2));
 
 	// if NLCL engaged, scale rcut
 	if (NCL > -1) {

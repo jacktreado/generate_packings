@@ -56,37 +56,37 @@ backbone::backbone(string &bbstr, int n, int dof, int nc, int s) : rigidbody(bbs
 	cout << "allocating memory to angle and rest angle arrays..." << endl;
 
 	// arrays of values
-	theta = new double [N];
-	eta = new double [N];
-	phi_da = new double [N];
-	psi_da = new double [N];
-	omega_da = new double [N];
+	ctheta = new double [N];
+	ceta = new double [N];
+	cphi = new double [N];
+	cpsi = new double [N];
+	comega = new double [N];
 
 	// set initial values to -1
 	for (i=0; i<N; i++){
-		theta[i] = -1.0;
-		eta[i] = -1.0;
-		phi_da[i] = -1.0;
-		psi_da[i] = -1.0;
-		omega_da[i] = -1.0;
+		ctheta[i] = -1.0;
+		ceta[i] = -1.0;
+		cphi[i] = -1.0;
+		cpsi[i] = -1.0;
+		comega[i] = -1.0;
 	}
 
 	// rest angles
 	l0 = new double [N];
-	theta0 = new double [N];
-	eta0 = new double [N];
-	phi0_da = new double [N];
-	psi0_da = new double [N];
-	omega0_da = new double [N];
+	ctheta0 = new double [N];
+	ceta0 = new double [N];
+	cphi0 = new double [N];
+	cpsi0 = new double [N];
+	comega0 = new double [N];
 
 	// set rest lengths/angle
 	cout << "initializing values of angle arrays to std values; ";	
 	len0 = 1.5;					// fraction of contact distance
 	this->bl0_init(len0);
 	th0 = 0.6*PI;				// theta0 (everything)
-	this->ba0_init(th0);	
-	da0 = 0.6*PI;				// da0 (everything)
-	this->da0_init(da0);
+	this->ba0_init(cos(th0));	
+	da0 = 0;				// da0 (everything)
+	this->da0_init(cos(da0));
 	cout << "bl0 = " << len0 << "; ";
 	cout << "ba0 = " << th0 << "; ";
 	cout << "da0 = " << da0 << endl;
@@ -99,18 +99,18 @@ backbone::backbone(string &bbstr, int n, int dof, int nc, int s) : rigidbody(bbs
 // DESTRUCTOR
 backbone::~backbone(){
 	// free memory for values
-	delete [] theta;
-	delete [] eta;
-	delete [] phi_da;
-	delete [] psi_da;
-	delete [] omega_da;
+	delete [] ctheta;
+	delete [] ceta;
+	delete [] cphi;
+	delete [] cpsi;
+	delete [] comega;
 
 	// free memory for rest values
-	delete [] theta0;
-	delete [] eta0;
-	delete [] phi0_da;
-	delete [] psi0_da;
-	delete [] omega0_da;
+	delete [] ctheta0;
+	delete [] ceta0;
+	delete [] cphi0;
+	delete [] cpsi0;
+	delete [] comega0;
 }
 
 
@@ -137,8 +137,8 @@ void backbone::ba0_init(double val){
 
 	// loop over indices
 	for (i=0; i<N; i++){
-		theta0[i] = val;
-		eta0[i] = val;
+		ctheta0[i] = val;
+		ceta0[i] = val;
 	}
 }
 
@@ -147,9 +147,9 @@ void backbone::da0_init(double val){
 
 	// loop over indices
 	for (i=0; i<N; i++){
-		phi0_da[i] = val;
-		psi0_da[i] = val;
-		omega_da[i] = val;
+		cphi0[i] = val;
+		cpsi0[i] = val;
+		comega[i] = val;
 	}
 }
 
@@ -181,18 +181,18 @@ void backbone::set_angles(){
 	int i;
 
 	// loop over particles, measure angles
-	eta[0] = this->get_eta(0);					// eta depends on i+1, so has i=0 value
-	psi_da[0] = this->get_psi_da(0);			// psi depends on i+1, so has i=0 value
+	ceta[0] = this->get_ceta(0);				// eta depends on i+1, so has i=0 value
+	cpsi[0] = this->get_cpsi(0);				// psi depends on i+1, so has i=0 value
 	for (i=1; i<N-1; i++){
-		eta[i] = this->get_eta(i);
-		theta[i] = this->get_theta(i);		
-		phi_da[i] = this->get_phi_da(i);
-		psi_da[i] = this->get_psi_da(i);
-		omega_da[i] = this->get_omega_da(i);
+		ceta[i] = this->get_ceta(i);
+		ctheta[i] = this->get_ctheta(i);		
+		cphi[i] = this->get_cphi(i);
+		cpsi[i] = this->get_cpsi(i);
+		comega[i] = this->get_comega(i);
 	}
-	theta[N-1] = this->get_theta(N-1);			// theta depends on i-1, so has i=N-1 value
-	phi_da[N-1] = this->get_phi_da(N-1);		// phi depends on i-1, so has i=N-1 value
-	omega_da[N-1] = this->get_omega_da(N-1);	// omega depends on i-1, so has i=N-1 value
+	ctheta[N-1] = this->get_ctheta(N-1);			// theta depends on i-1, so has i=N-1 value
+	cphi[N-1] = this->get_cphi(N-1);			// phi depends on i-1, so has i=N-1 value
+	comega[N-1] = this->get_comega(N-1);		// omega depends on i-1, so has i=N-1 value
 }
 
 
@@ -200,11 +200,11 @@ void backbone::set_angles(){
 // GETTERS
 
 // get theta angle for residue r
-double backbone::get_theta(int r){
+double backbone::get_ctheta(int r){
 	// connection vectors
 	double v1[NDIM];
 	double v2[NDIM];
-	double num,v1norm,v2norm,denom,costheta,val;
+	double num,v1norm,v2norm,denom,val;
 	int rm1,d;
 
 	// set indices
@@ -221,21 +221,18 @@ double backbone::get_theta(int r){
 	denom = v1norm*v2norm;
 
 	// get cosine
-	costheta = -1*num/denom;
-
-	// use inverse cosine to get eta
-	val = acos(costheta);
+	val = -1*num/denom;
 
 	// return value
 	return val;
 }
 
 // get eta angle for residue r
-double backbone::get_eta(int r){
+double backbone::get_ceta(int r){
 	// connection vector
 	double v1[NDIM];
 	double v2[NDIM];
-	double num,v1norm,v2norm,denom,coseta,val;
+	double num,v1norm,v2norm,denom,val;
 	int rp1,d;
 
 	// set indices
@@ -252,28 +249,25 @@ double backbone::get_eta(int r){
 	denom = v1norm*v2norm;
 
 	// get cosine
-	coseta = -1*num/denom;
-
-	// use inverse cosine to get eta
-	val = acos(coseta);
+	val = -1*num/denom;
 
 	// return value
 	return val;
 }
 
 // get phi dihedral angle for residue r (WORK IN PROGRESS)
-double backbone::get_phi_da(int r){
-	return 0;
+double backbone::get_cphi(int r){
+	return cos(0);
 }
 
 // get psi dihedral angle for residue r (WORK IN PROGRESS)
-double backbone::get_psi_da(int r){
-	return 0;
+double backbone::get_cpsi(int r){
+	return cos(0);
 }
 
 // get omega dihedral angle for residue r (WORK IN PROGRESS)
-double backbone::get_omega_da(int r){
-	return 0;
+double backbone::get_comega(int r){
+	return cos(0);
 }
 
 
@@ -309,7 +303,7 @@ void backbone::top_relax(int kmax){
 	U = Ubb;
 
 	// loop while backbone has a high potential energy
-	while (k < kmax){
+	while (k < kmax && U > Utol){
 		// advance quaternions, positions
 		this->verlet_first();
 
@@ -329,7 +323,7 @@ void backbone::top_relax(int kmax){
 		// print some stuff
 		if (k % plotskip == 0){
 			this->monitor_header(k);
-			this->rigidbody_md_monitor();
+			this->bb_md_monitor();
 			this->print_angles();
 			cout << endl;
 			cout << endl;
@@ -339,8 +333,16 @@ void backbone::top_relax(int kmax){
 		k++;
 	}
 
-	cout << "Loop completed! topology of backbone sufficiently relaxed..." << endl;
+	// report on success or failure of loop
+	if (k == kmax){
+		cout << "ERROR: Loop did not relax the backbone potential energy, ending..." << endl;
+		throw;
+	}
+	else
+		cout << "Loop completed! topology of backbone sufficiently relaxed..." << endl;
 
+	cout << "Loop completed! topology of backbone sufficiently relaxed..." << endl;
+	/*
 	// Now do hard sphere steric relaxation with bond length constraints
 	k = 0;	
 	do {
@@ -383,6 +385,7 @@ void backbone::top_relax(int kmax){
 	}
 	else
 		cout << "Loop completed! topology of backbone sufficiently relaxed..." << endl;
+		*/
 }
 
 void backbone::bb_free_md(double tmp0, int NT, int nnu) {
@@ -715,9 +718,11 @@ double backbone::bb_force_update(int choice){
 
 		// bond angle force
 		if (choice > 0){
-			Utmp = this->ba_force(i);
-			Uba += Utmp;
-			Ubbtmp += Utmp;
+			if (i < N-1){
+				Utmp = this->ba_force(i);
+				Uba += Utmp;
+				Ubbtmp += Utmp;
+			}			
 		}
 
 		// // dihedral angle force
@@ -784,169 +789,90 @@ double backbone::bl_force(int i){
 
 // bond angle force
 
-// forces determined by angle i, i+1, AND i+2
+// forces determined by forces on Ci
 double backbone::ba_force(int i){
-	// local variables
-	int im1,ip1;						// particle and atomic indices
-	int d;								// index for dimensions
-	double Ubbtmp,Utheta,Ueta;				// potential energies
-	double fN[NDIM];					// force vector on N atom
-	double fC[NDIM];					// force vector on C atom
-	double qNx,qNy,qNz,qCx,qCy,qCz;		// branch vectors to atomic coordinates
+	// indx variables
+	int d;
+	int ip1 = i+1;
 
-	// connection vectors
-	double wim1[NDIM];
-	double ui[NDIM];
-	double vi[NDIM];
-	double wi[NDIM];
-	double uip1[NDIM];
-	double vip1[NDIM];
+	// force and potential variables
+	double f[NDIM];							// f vector, force on Ci atom due to bond-angle force
+	double Utheta, Ueta, Ubbtmp;			// potential energies
 
-	// magnitude of connection vectors
-	double wim1_mag, ui_mag, vi_mag, wi_mag, uip1_mag, vip1_mag;
+	// constants in force term
+	double delceta, delctheta;				// distances to rest angle
+	double Cww_i, Cuu_ip1, Cvv_ip1;			// dot product terms
+	double Mwu_i, Muv_ip1;					// sqrt terms
+	double K1, K2, K3;						// constants in force term (see latex doc, section 3)
+	double wi_mag, uip1_mag, vip1_mag;		// vector magnitudes
+	double wi[NDIM];						// wi vector, Cai -> Ci
+	double uip1[NDIM];						// uip1 vector, Ci -> Nip1
+	double vip1[NDIM];						// vip1 vector, Nip1 -> Caip1	
 
-	// dot product terms
-	double Cww_im1, Cwu_im1, Cuu_i, Cvv_i, Cuv_i, Cww_i, Cwu_i, Cuu_ip1, Cvv_ip1, Cuv_ip1;
+	// branch vectors for torque calc
+	double qix, qiy, qiz;
+	double qip1x, qip1y, qip1z;
 
-	// composite terms
-	double Dwu_im1, Duv_i, Dwu_i, Duv_ip1;
-
-	// constants in force calculation
-	double K1, K2, K3, K4;	// force Konstants
-	double R1, R2, R3, R4;	// Ratio of constants
-
-	// get residue indices
-	im1 = i-1;
-	ip1 = i+1;	
-
-	// calculate connection vectors
+	// calculate distances from rest angle
+	delceta = ceta[i] - ceta0[i];
+	delctheta = ctheta[ip1] - ctheta0[ip1];
 	
-	// vectors with prevous atomic positions (do not exist for i = 0)
-	if (i>0){
-		// wim1[d] = xW[im1][cid][d] - xW[im1][caid][d];
-		wim1_mag = this->get_atomic_distance(im1,im1,caid,cid,wim1);
-		// ui[d] = xW[i][nid][d] - xW[im1][cid][d];
-		ui_mag = this->get_atomic_distance(im1,i,cid,nid,ui);
-	}
-
-	// vectors with atoms of residue i
-	// vi[d] = xW[i][caid][d] - xW[i][nid][d];
-	vi_mag = this->get_atomic_distance(i,i,nid,caid,vi);
-	// wi[d] = xW[i][cid][d] - xW[i][caid][d];
+	// calculate vectors and magnitudes
 	wi_mag = this->get_atomic_distance(i,i,caid,cid,wi);
-
-	// vectors with next atom positions (do not exist for i = N-1)
-	if (i<N-1){
-		// uip1[d] = xW[ip1][nid][d] - xW[i][cid][d];
-		uip1_mag = this->get_atomic_distance(i,ip1,cid,nid,uip1);
-		// vip1[d] = xW[ip1][caid][d] - xW[ip1][nid][d];
-		vip1_mag = this->get_atomic_distance(ip1,ip1,nid,caid,vip1);
-	}
+	uip1_mag = this->get_atomic_distance(i,ip1,cid,nid,uip1);
+	vip1_mag = this->get_atomic_distance(ip1,ip1,nid,caid,vip1);
 
 	// calculate dot product terms
-	// involving i-1
-	if (i>0){
-		// Cww_im1 = this->dotp(wim1,wim1);
-		Cww_im1 = wim1_mag*wim1_mag;
-		Cwu_im1 = this->dotp(wim1,ui);
-		// Cuu_i = this->dotp(ui,ui);
-		Cuu_i = ui_mag*ui_mag;
-		Cuv_i = this->dotp(ui,vi);
-	}
-
-	// involving only i	
-	// Cvv_i = this->dotp(vi,vi);
-	Cvv_i = vi_mag*vi_mag;
-	// Cww_i = this->dotp(wi,wi);
 	Cww_i = wi_mag*wi_mag;
+	Cuu_ip1 = uip1_mag*uip1_mag;
+	Cvv_ip1 = vip1_mag*vip1_mag;
 
-	// involving i+1
-	if (i<N-1){
-		Cwu_i = this->dotp(wi,uip1);
-		// Cuu_ip1 = this->dotp(uip1,uip1);
-		Cuu_ip1 = uip1_mag*uip1_mag;
-		// Cvv_ip1 = this->dotp(vip1,vip1);
-		Cvv_ip1 = vip1_mag*vip1_mag;
-		Cuv_ip1 = this->dotp(uip1,vip1);
-	}
+	// calculate sqrt terms
+	Mwu_i = 1/sqrt(Cww_i*Cuu_ip1);
+	Muv_ip1 = 1/sqrt(Cuu_ip1*Cvv_ip1);
 
-	// calculate composite terms
-	// involving i-1
-	if (i>0){
-		Dwu_im1 = Cww_im1*Cuu_i - Cwu_im1*Cwu_im1;
-		Duv_i = Cuu_i*Cvv_i - Cuv_i*Cuv_i;
-	}
-
-	// involving i+1
-	if (i<N-1){
-		Dwu_i = Cww_i*Cuu_ip1 - Cwu_i*Cwu_i;
-		Duv_ip1 = Cuu_ip1*Cvv_ip1 - Cuv_ip1*Cuv_ip1;
-	}
-	
-	// get constants for force terms (K is stiffness, R is ratio of C terms)
-	if (i>0){
-		K1 = (eta[im1]-eta0[im1])/(sqrt(Dwu_im1));
-		R1 = Cwu_im1/Cuu_i;
-		K2 = (theta[i]-theta0[i])/(sqrt(Duv_i));
-		R2 = (Cuv_i/Cuu_i);
-	}		
-	if (i<N-1){
-		K3 = (eta[i]-eta0[i])/(sqrt(Dwu_i));
-		R3 = (Cwu_i/Cuu_ip1);
-		K4 = (theta[ip1]-theta0[ip1])/(sqrt(Duv_ip1));
-		R4 = Cuv_ip1/Cuu_ip1;
-	}
+	// calculate larger constants
+	K1 = (delceta*ceta[i] + delctheta*ctheta[ip1])/Cuu_ip1;
+	K2 = delceta*Mwu_i;
+	K3 = delctheta*Muv_ip1;
 
 	// calculate force
 	for (d=0; d<NDIM; d++){
-		// force on N and C atoms
-		fN[d] = 0;
-		fC[d] = 0;
+		// force on Ci (and therefore Ni+1)
+		f[d] = kba*(K1*uip1[d] + K2*wi[d] + K3*vip1[d]);	
 
-		if (i>0){
-			fN[d] += kba*K1*(R1*ui[d]-wim1[d]);
-			fN[d] += kba*K2*(R2*ui[d]-vi[d]);
-		}
-		
-		if (i<N-1){
-			fC[d] += kba*K3*(wi[d]-R3*uip1[d]);
-			fC[d] += kba*K4*(vip1[d]-R4*uip1[d]);
-		}
+		// add to net force on i (due to atom Ci)
+		F[i][d] += f[d];
 
-		// add to net force
-		F[i][d] += fN[d]+fC[d];
+		// by reciprocity, add to net force on ip1 (due to atom Nip1)
+		F[ip1][d] -= f[d];
 	}	
 
-	// get branches to N and C atoms (used below when calculating torques)
-	qNx = xW[i][nid][0];
-	qNy = xW[i][nid][1];
-	qNz = xW[i][nid][2];
+	// get branches to Ci and Nip1 atoms (used below when calculating torques)
+	qix = xW[i][cid][0];
+	qiy = xW[i][cid][1];
+	qiz = xW[i][cid][2];
 
-	qCx = xW[i][cid][0];
-	qCy = xW[i][cid][1];
-	qCz = xW[i][cid][2];
-
-
-	// calculate torques due to theta angle
-	TqW[i][0] += qNy * fN[2] - qNz * fN[1];
-	TqW[i][1] += -qNx * fN[2] + qNz * fN[0];
-	TqW[i][2] += qNx * fN[1] - qNy * fN[0];
-
-	// calculate torques due to eta angle
-	TqW[i][0] += qCy * fC[2] - qCz * fC[1];
-	TqW[i][1] += -qCx * fC[2] + qCz * fC[0];
-	TqW[i][2] += qCx * fC[1] - qCy * fC[0];
+	qip1x = xW[ip1][nid][0];
+	qip1y = xW[ip1][nid][1];
+	qip1z = xW[ip1][nid][2];
 
 
-	// theta angle contribution
-	Utheta = 0;
-	if (i>0)
-		Utheta = 0.5*kba*pow(theta[i]-theta0[i],2);
+	// calculate torques due to force on Ci
+	TqW[i][0] += qiy * f[2] - qiz * f[1];
+	TqW[i][1] += -qix * f[2] + qiz * f[0];
+	TqW[i][2] += qix * f[1] - qiy * f[0];
+
+	// calculate torques due to force on Nip1
+	TqW[ip1][0] -= qip1y * f[2] - qip1z * f[1];
+	TqW[ip1][1] -= -qip1x * f[2] + qip1z * f[0];
+	TqW[ip1][2] -= qip1x * f[1] - qip1y * f[0];
 
 	// eta angle contribution
-	Ueta = 0;
-	if (i<N-1)
-		Ueta = 0.5*kba*pow(eta[i]-eta0[i],2);
+	Ueta = 0.5*kba*delceta*delceta;
+
+	// theta angle contribution
+	Utheta = 0.5*kba*delctheta*delctheta;	
 
 	// total potential energy
 	Ubbtmp = Utheta + Ueta;
@@ -995,11 +921,11 @@ void backbone::print_angles(){
 	w = 10;
 
 	cout << "\n**\n  printing angles" << endl;
-	cout << setw(w) << "theta";
-	cout << setw(w) << "eta";
-	cout << setw(w) << "phi_da";
-	cout << setw(w) << "psi_da";
-	cout << setw(w) << "omega_da";
+	cout << setw(w) << "ctheta";
+	cout << setw(w) << "ceta";
+	cout << setw(w) << "cphi";
+	cout << setw(w) << "cpsi";
+	cout << setw(w) << "comega";
 	cout << endl;
 	for (i=0; i<5*w; i++)
 		cout << "=";
@@ -1007,29 +933,96 @@ void backbone::print_angles(){
 
 	// i=0
 	cout << setw(w) << "/";
-	cout << setw(w) << eta[0];
+	cout << setw(w) << ceta[0];
 	cout << setw(w) << "/";
-	cout << setw(w) << psi_da[0];
+	cout << setw(w) << cpsi[0];
 	cout << setw(w) << "/";
 	cout << endl;
 	for (i=1; i<N-1; i++){
-		cout << setw(w) << theta[i];
-		cout << setw(w) << eta[i];
-		cout << setw(w) << phi_da[i];
-		cout << setw(w) << psi_da[i];
-		cout << setw(w) << omega_da[i];
+		cout << setw(w) << ctheta[i];
+		cout << setw(w) << ceta[i];
+		cout << setw(w) << cphi[i];
+		cout << setw(w) << cpsi[i];
+		cout << setw(w) << comega[i];
 		cout << endl;
 	}
-	cout << setw(w) << theta[N-1];
+	cout << setw(w) << ctheta[N-1];
 	cout << setw(w) << "/";
-	cout << setw(w) << phi_da[N-1];
+	cout << setw(w) << cphi[N-1];
 	cout << setw(w) << "/";
-	cout << setw(w) << omega_da[N-1];
+	cout << setw(w) << comega[N-1];
+	cout << endl;	
+	cout << endl;
+
+	cout << "\n**\n  printing rest cosine angles" << endl;
+	cout << setw(w) << "ctheta0";
+	cout << setw(w) << "ceta0";
+	cout << setw(w) << "cphi0";
+	cout << setw(w) << "cpsi0";
+	cout << setw(w) << "comega0";
+	cout << endl;
+	for (i=0; i<5*w; i++)
+		cout << "=";
+	cout << endl;
+
+	// i=0
+	cout << setw(w) << "/";
+	cout << setw(w) << ceta0[0];
+	cout << setw(w) << "/";
+	cout << setw(w) << cpsi0[0];
+	cout << setw(w) << "/";
+	cout << endl;
+	for (i=1; i<N-1; i++){
+		cout << setw(w) << ctheta0[i];
+		cout << setw(w) << ceta0[i];
+		cout << setw(w) << cphi0[i];
+		cout << setw(w) << cpsi0[i];
+		cout << setw(w) << comega0[i];
+		cout << endl;
+	}
+	cout << setw(w) << ctheta0[N-1];
+	cout << setw(w) << "/";
+	cout << setw(w) << cphi0[N-1];
+	cout << setw(w) << "/";
+	cout << setw(w) << comega0[N-1];
+	cout << endl;	
+	cout << endl;
+
+	cout << "\n**\n  printing angle distance to rest" << endl;
+	cout << setw(w) << "ctheta";
+	cout << setw(w) << "ceta";
+	cout << setw(w) << "cphi";
+	cout << setw(w) << "cpsi";
+	cout << setw(w) << "comega";
+	cout << endl;
+	for (i=0; i<5*w; i++)
+		cout << "=";
+	cout << endl;
+
+	// i=0
+	cout << setw(w) << "/";
+	cout << setw(w) << ceta[0]-ceta0[0];
+	cout << setw(w) << "/";
+	cout << setw(w) << cpsi[0]-cpsi0[0];
+	cout << setw(w) << "/";
+	cout << endl;
+	for (i=1; i<N-1; i++){
+		cout << setw(w) << ctheta[i]-ctheta0[i];
+		cout << setw(w) << ceta[i]-ceta0[i];
+		cout << setw(w) << cphi[i]-cphi0[i];
+		cout << setw(w) << cpsi[i]-cpsi0[i];
+		cout << setw(w) << comega[i]-comega0[i];
+		cout << endl;
+	}
+	cout << setw(w) << ctheta[N-1]-ctheta0[N-1];
+	cout << setw(w) << "/";
+	cout << setw(w) << cphi[N-1]-cphi0[N-1];
+	cout << setw(w) << "/";
+	cout << setw(w) << comega[N-1]-comega0[N-1];
 	cout << endl;	
 	cout << endl;
 
 	cout << "\n**\n leaving angle printing" << endl;
-
 }
 
 
@@ -1064,6 +1057,7 @@ void backbone::bb_md_monitor() {
 		enobj << setw(12) << Ubl/N;
 		enobj << setw(12) << Uba/N;
 		enobj << setw(12) << Uda/N;
+		enobj << setw(12) << Usteric/N;
 		enobj << setw(12) << K/N;
 		enobj << setw(12) << Krot/N;
 		enobj << setw(12) << U/N + K/N;

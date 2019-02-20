@@ -2252,6 +2252,7 @@ void rigidbody::rigidbody_md_monitor() {
 		enobj << setw(12) << K/N;
 		enobj << setw(12) << Krot/N;
 		enobj << setw(12) << U/N + K/N;
+		enobj << setw(12) << alpha;
 		enobj << endl;
 	}	
 

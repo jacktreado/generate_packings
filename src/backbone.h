@@ -31,20 +31,20 @@ protected:
 	double kba;
 	double kda;
 
-	// angle values
-	double* theta;
-	double* eta;
-	double* phi_da;
-	double* psi_da;
-	double* omega_da; 
+	// cosine of angle values
+	double* ctheta;
+	double* ceta;
+	double* cphi;
+	double* cpsi;
+	double* comega; 
 
-	// rest lengths/angles
+	// rest lengths/cosines
 	double* l0; 
-	double* theta0;
-	double* eta0;
-	double* phi0_da;
-	double* psi0_da;
-	double* omega0_da;
+	double* ctheta0;
+	double* ceta0;
+	double* cphi0;
+	double* cpsi0;
+	double* comega0;
 public:
 	// constructor and destructor	
 	backbone(string &bbstr, int n, int dof, int nc, int s);
@@ -66,11 +66,11 @@ public:
 	void set_kda(double val) {kbl = val;};
 	void set_angles();
 
-	double get_theta(int r);
-	double get_eta(int r);
-	double get_phi_da(int r);
-	double get_psi_da(int r);
-	double get_omega_da(int r);
+	double get_ctheta(int r);
+	double get_ceta(int r);
+	double get_cphi(int r);
+	double get_cpsi(int r);
+	double get_comega(int r);
 
 	// simulation
 	void bb_free_md(double T0, int NT, int nnu);

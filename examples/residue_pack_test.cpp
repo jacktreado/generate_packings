@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 	NT = 5e8;			// total amount of time (units of sim time)
 	dt = 0.025;			// time step (units of md time)
 	tmp0 = 0.01;		// initial temperature
-	plotskip = 1000;	// # of steps to skip plotting
+	plotskip = 100;	// # of steps to skip plotting
 	phi0 = 0.1;			// initial packing fraction
 	dphi = 0.001;		// initial packing fraction step
 	Utol = N * 1e-16;
