@@ -43,20 +43,22 @@ int main(int argc, char *argv[]) {
 
 	ep = 10.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
-	dt = 0.025;			// time step (units of md time)
+	dt = 0.01;			// time step (units of md time)
 	tmp0 = 0.01;		// initial temperature
 	plotskip = 100;	// # of steps to skip plotting
-	phi0 = 0.1;			// initial packing fraction
+	phi0 = 0.001;			// initial packing fraction
 	dphi = 0.001;		// initial packing fraction step
 	Utol = N * 1e-16;
-	Ktol = N * 1e-30;
-	respack.rb_scale(phi0);
+	Ktol = N * 1e-30;	
 
 	// setup simulation
 	respack.set_ep(ep);
-	respack.set_md_time(dt);
+	respack.set_md_time(dt);	
 	respack.set_dtmax(10.0); // ADD FROM res_pack_nlcl
 	respack.set_plotskip(plotskip);
+
+	// scale particles (this used to be above setup simulation)
+	respack.rb_scale(phi0);
 
 	// setup energy & viz output
 	respack.open_en(enstr.c_str());

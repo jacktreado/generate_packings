@@ -23,7 +23,7 @@ const double PI = 3.1415926;
 
 // FUNCTION to populate entries in dynamical matrix
 // assuming that forces are already calculated
-
+/*
 void packing::populate_dynamical_matrix(){
 	// local variables
 	int i;
@@ -46,7 +46,7 @@ void packing::populate_dynamical_matrix(){
 
 
 }
-
+*/
 
 
 

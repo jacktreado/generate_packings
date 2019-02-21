@@ -28,12 +28,12 @@ int main(){
 	int N,NDIM,seed;
 	double dphi,phi0,alpha;
 
-	N = 500;
+	N = 15;
 	NDIM = 3;
 	seed = 1;
 	dphi = 0.001;
-	phi0 = 0.1;
-	alpha = 1;
+	phi0 = 0.05;
+	alpha = 1.26;
 
 	// jamming variables
 	int plotskip;
@@ -42,7 +42,7 @@ int main(){
 	// set parameters
 	ep = 10.0;			// energy scale (units of kbt)
 	t = 5e3;			// total amount of time (units of sim time)
-	dt = 0.025;			// time step (units of md time)
+	dt = 0.01;			// time step (units of md time)
 	plotskip = 500;		// # of steps to skip plotting
 	Utol = N*1e-16;		// potential energy tolerance
 	Ktol = N*1e-30;		// kinetic energy tolerance
@@ -68,6 +68,7 @@ int main(){
 	pack.set_md_time(dt);
 	pack.set_dtmax(10.0);
 	pack.set_plotskip(plotskip);
+	pack.scale_sys(dphi);
 
 	// open xyz and energy files
 	pack.open_xyz(xyz_str);

@@ -797,8 +797,8 @@ void packing::scale_sys(double dphi){
 	phi = msum/vol;
 
 	ep *= pow(s, 2);
-	dt *= pow(s, 0.5 * (NDIM-2));
-	dtmax *= pow(s, 0.5 * (NDIM-2));
+	dt *= pow(s, 0.5 * NDIM);
+	dtmax *= pow(s, 0.5 * NDIM);
 
 	// if NLCL engaged, scale rcut
 	if (NCL > -1) {
