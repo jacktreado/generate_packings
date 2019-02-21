@@ -75,6 +75,7 @@ public:
 	packing(std::string &str, int ndim, int s);										// N spheres, read from file
 	packing(int n, int ndim, double alpha, double phi0,
 	        int nc, int nnu, int seed);												// N spheres w/ neighbor list
+	packing(std::string &str, int n, int ndim, double dphi);						// N spheres for DM calculation
 	~packing();
 
 	// initialization
@@ -227,6 +228,9 @@ public:
 	void scale_sys(double dphi);
 
 	// measurements
+	void populate_dynamical_matrix(double h0, std::string &dmstr);
+	void perturbed_force(int i, int d, double h);
+
 	void calc_vacf(int NT, int vsave, std::ofstream& obj);
 	void get_vacf(int t, int vsave, std::vector<double>** vlist, std::vector<double>& numer, std::vector<double>& denom);
 	void finish_vacf(int NT, int vsave, std::vector<double>& numer, std::vector<double>& denom, std::vector<double>& vacf);

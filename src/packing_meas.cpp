@@ -8,6 +8,9 @@
 */
 
 #include "packing.h"
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
+#include <Eigen/Eigenvalues>
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>
@@ -23,30 +26,131 @@ const double PI = 3.1415926;
 
 // FUNCTION to populate entries in dynamical matrix
 // assuming that forces are already calculated
+
 /*
-void packing::populate_dynamical_matrix(){
+void packing::populate_dynamical_matrix(double h0, string& dmstr){
 	// local variables
-	int i;
-	vector<double> Fi_pj(3,0);	// vector force on i, perturbed i
-	vector<double> Fj_pi(3,0);	// vector force on j, perturbed i
+	int i,j,d,k,l,e,d1,d2,h;
+	double Mkl;
+	h = h0/L;
 
-	// loop over particles, get forces as a function of particle perturbations
+	int Nentries = (NDIM*N*(NDIM*N+1))/2; 				// number of unique entries in dynamical matrix
+	vector<double> Fk(NDIM*N,0);						// vector of all unperturbed forces
+	Eigen::MatrixXd P(NDIM*N,NDIM*N);			// matrix of all perturbed forces	
+	vector<double> M(Nentries,1);						// dynamical matrix M
+
+	// store all unperturbed forces first
 	for (i=0; i<N; i++){
+		for (d=0; d<NDIM; d++){
+			k = NDIM*i + d;
+			Fk.at(k) = F[i][d];
+		}
+	}
 
-		
+	// get all perturbed forces
+	for (j=0; j<N; j++){
 
+		// loop over perturbation directions
+		for (d2=0; d2<NDIM; d2++){
 
+			// get linear index
+			l = NDIM*j+d2;
 
+			// perturb particle j in d2 direction, get updated forces
+			this->perturbed_force(j,d2,h);
 
+			// loop over to extract forces to perturb
+			for (i=0; i<N; i++){
+				// perturb in NDIM dimensions
+				for (d1=0; d1<NDIM; d1++){
+					// get linear index
+					k = NDIM*i+d1;
 
+					// add forces to matrix
+					P(k,l) = F[i][d1];
+				}
+			}
+
+		}
 	}
 
 
+	// loop over particles, get forces as a function of particle perturbations
+	// definition from: https://v8doc.sas.com/sashtml/ormp/chap5/sect28.htm
+	for (i=0; i<N; i++){
 
+		// loop over particles j
+		for (j=i; i<N; j++){
 
+			// loop over dimensions
+			for (d1=1; d1<NDIM; d1++){
+				for (d2=1; d2<NDIM; d2++){
+
+					// entry in force matrix Pkl
+					k = NDIM*i + d1;
+					l = NDIM*j + d2;
+
+					// calculate entry in dynamical matrix
+					if (k > l)
+						e = (3*NDIM)*l + k - ((l+1)*l)/2;
+					else
+						e = (3*NDIM)*k + l - ((k+1)*k)/2;
+
+					// calculate single matrix entry
+					Mkl = (Fk(k) - P(k,l) + Fk(l) - P(l,k))/(2*h);
+
+					// update matrix entry
+					M.at(e) = P(k,l);
+				}
+			}
+		}
+	}
+
+	// print dynamical matrix to file
 
 }
+
+
+void packing::perturbed_force(int i, int d, double h){
+	// local variables
+	double V,x0;
+
+	// perturb particle
+	x0 = x[i][d];
+	x[i][d] += h;
+
+	// calc new force
+	this->hs_force();
+
+	// reverse perturbation
+	x[i][d] = x0;
+}
+
+
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1623,8 +1623,8 @@ void rigidbody::rb_scale(double phinew) {
 		r[i] *= s;
 	}
 	ep *= pow(s, 2);
-	dt *= pow(s, 0.5 * (NDIM));
-	dtmax *= pow(s, 0.5 * (NDIM));
+	dt *= pow(s, 0.5 * (NDIM-2));
+	dtmax *= pow(s, 0.5 * (NDIM-2));
 	this->update_phi();
 
 	// if NLCL engaged, scale rcut

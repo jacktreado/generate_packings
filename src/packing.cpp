@@ -246,10 +246,6 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 }
 
 
-
-
-
-
 packing::~packing(){
 	cout << "~entering packing destructor" << endl;
 
