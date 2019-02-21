@@ -66,9 +66,9 @@ int main(int argc, char *argv[]){
 	cout << "@@ Instantiating packing object..." << endl;
 
 	// NLCL parameters, if system is large enough
-	if (N < 100)
+	if (N < 300)
 		nc = -1;	
-	else if (N < 500)
+	else if (N < 1000)
 		nc = 3;
 	else if (N < 5000)
 		nc = 4;

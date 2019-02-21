@@ -723,6 +723,10 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 		// break if jamming found
 		if (isjammed == 1)
 			break;
+		else if (isjammed == -1){
+			cout << "isjammed was found to be -1, ending..." << endl;
+			break;
+		}
 	}
 }
 
@@ -1911,18 +1915,12 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 		}
 	}
 
-	// // test for stalled growth
-	// if (abs(dphi) < 1e-14) {
-	// 	phiL = -1;
-	// 	phiH = -1;
-	// 	dphi = 0.05 * (2 * drand48() - 1) * dphi0;
-	// 	check_rattlers = 0;
-
-	// 	cout << endl;
-	// 	cout << "stalled growth found..." << endl;
-	// 	cout << "root search reset at nt = " << t << endl;
-	// 	this->monitor_scale(phi + dphi, phiL, phiH);
-	// }
+	// test for stalled growth
+	if (abs(dphi) < 1e-14) {
+		cout << " ** broken jamming found, no state found..." << endl;
+		cout << " ** setting isjammed to -1, ending..." << endl;
+		isjammed = -1;
+	}
 }
 
 void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &epconst, int nr, double dphi0, double Ktol, double &Utol, int t, bool &min) {
