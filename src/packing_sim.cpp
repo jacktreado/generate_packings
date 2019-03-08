@@ -369,8 +369,96 @@ int packing::rmv_rattlers(int& krcrs) {
 ================================== 
 */
 
+// minimize energy using FIRE to kinetic energy Ktol
+void packing::fire_umin(int NTmax, double Ktol){
+	// local variables
+	int t,kr;	
+
+	// constant energy checking
+	double Uold, dU, dUtol;
+	int epc, epcN, epconst;
+	epconst = 0;
+	Uold = 0;
+	dU = 0;
+	dUtol = 1e-12;
+	epc = 0;
+	epcN = 5e3;
+
+	// initial K and U to 0
+	K = 10*Ktol;
+	U = 0;
+
+	// start iterate at 0
+	t = 0;
+	
+	// Minimize energy using FIRE
+	while ((K > Ktol || epconst != 1) && t < NTmax) {
+		// update nearest neighbor lists if applicable
+		if (t % nnupdate == 0 && NCL > -1){
+			cout << "^ ";
+			this->update_nlcl(t);
+		}
+
+		// verlet step 1
+		this->pos_update();
+
+		// update forces
+		this->hs_force();		
+
+		// include fire relaxation
+		this->fire();
+
+		// verlet step 2
+		this->vel_update();		
+
+		// check for rattlers
+		kr = 0;
+		nr = this->rmv_rattlers(kr);
+
+		// check for constant potential energy
+		dU = abs(Uold - U);
+		if (dU < dUtol) {
+			epc++;
+			if (epc > epcN)
+				epconst = 1;
+		}
+		else {
+			epconst = 0;
+			epc = 0;
+		}
+		Uold = U;		
+
+		if (t % plotskip == 0){
+			cout << "=============" << endl;
+			cout << "    t = " << t << endl;
+			cout << "=============" << endl;
+			cout << "U = " << U << endl;
+			cout << "K = " << K << endl;
+			cout << "epconst = " << epconst << endl;
+			cout << "nr = " << nr << endl;
+			cout << "alpha = " << alpha << endl;	
+			cout << endl << endl;
+			if (xyzobj.is_open()){				
+				if (NCL > -1)
+					this->print_nl_xyz();
+				else
+					this->print_xyz();				
+			}
+			if (enobj.is_open())
+				this->print_en(t);
+		}
+
+		// update iterate		
+		t++;
+	}
+	if (t == NTmax){
+		cout << "** COULD NOT FIND ENERGY MINIMUM IN NT', ENDING WITH ERROR..." << endl;
+		throw;
+	}
+}
+
 // generate jammed packing using fire
-void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol) {
+void packing::jamming_finder(int NT, double dphi, double Utol, double Ktol) {
 	// local variables
 	int t,kr;
 	double dphi0,tmp0,phiL,phiH;
@@ -400,15 +488,9 @@ void packing::jamming_finder(double tend, double dphi, double Utol, double Ktol)
 	epc = 0;
 	epcN = 5e2;
 
-	// get number of time steps
-	int NT;
-	NT = round(tend/dt);
-	dt = tend/NT;
-
 	cout << "===== BEGINNING TIME LOOP ======" << endl;
 	cout << " NT = " << NT << endl;
 	cout << " dt = " << dt << endl;
-	cout << " tend = " << tend << endl;
 	cout << "================================" << endl << endl;
 
 	// loop over time
@@ -709,7 +791,7 @@ void packing::fire(){
 			P += F[i][d]*v[i][d];
 			vstarnrm += v[i][d]*v[i][d];
 			fstarnrm += F[i][d]*F[i][d];
-		}		
+		}
 	}
 
 	vstarnrm = sqrt(vstarnrm);

@@ -1,7 +1,8 @@
 /*
 
-	file to do res rigid body MD
-	and output trajectory file in .xyz format
+	file to find a jammed packing,
+	the run res rigid body MD
+	and output config
 
 */
 
@@ -17,23 +18,24 @@ int main(int argc, char *argv[]){
 	cout << "@@ BEGINNING main for res md trajectory ... " << endl;
 
 	// local variables
-	int N,NT,seed,dof,nc,nnu,plotskip,dphi;
+	int N,NT,seed,dof,nc,nnu,plotskip;
 	double NT_tmp,T0,ep,dt;
 
 	// read in options
 	string N_str = argv[1];				// NUMBER OF PARTICLES
 	string NT_str = argv[2];			// MAX # OF TIME STEPS
 	string T0_str = argv[3];			// TEMPERATURE
-	string dphi_str = argv[4];			// DELTA PHI STEP
+	string pskip_str = argv[4];			// NUMBER OF FRAMES TO SKIP OUTPUT
 	string seed_str = argv[5];			// VELOCITY SEED
 	string input_str = argv[6];			// INPUT CFG FILE
+	string xyz_str = argv[7];			// TRAJECTORY FILE
 	string final_cfg_str = argv[8];		// FINAL CONFIG FILE (EQUILIBRATED)
 
 	// parse numeric options using stringstream
 	stringstream Nss(N_str);
 	stringstream NTss(NT_str);
 	stringstream T0ss(T0_str);
-	stringstream dphiss(pskip_str);
+	stringstream pskipss(pskip_str);
 	stringstream seedss(seed_str);
 
 	// stream in values
@@ -41,7 +43,7 @@ int main(int argc, char *argv[]){
 	NTss >> NT_tmp;	
 	T0ss >> T0;	
 	seedss >> seed;
-	dphiss >> dphi;
+	pskipss >> plotskip;
 
 	// cast NT value to integer, in case of scientific notation input
 	NT = (int)NT_tmp;
@@ -60,9 +62,8 @@ int main(int argc, char *argv[]){
 
 	// set parameters to initialize MD
 	ep = 10.0;			// energy scale (units of kbt)
-	dt = 0.025;			// time step (units of md time)
+	dt = 0.05;			// time step (units of md time)
 	nnu = 5;			// NLCL update if needed
-	plotskip = 1e4; 	// plotskip high, little output
 
 	// expected MB USAGE
 	cout << "@@ Expect " << 0.002*(NT/plotskip)*N << " MB for the trajectory file..." << endl;
@@ -80,6 +81,15 @@ int main(int argc, char *argv[]){
 
 	// output final W frame positions, check if same
 	trajobj.rigidbody_xyz();
+
+	/*
+		MD + EM SCHEME:
+		1. Scale particle sizes
+		2. Run MD for NT
+		3. minimize energy
+		4. If U > Utol, run again
+		5. If U < Utol, print config, reset run ctr, increase phi, repeat
+	*/
 
 	// run free md	
 	if (nc > 0){

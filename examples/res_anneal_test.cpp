@@ -5,45 +5,64 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>
+#include <sstream>
 
 using namespace std;
 
-int main() {
+int main(int argc, char *argv[]) {
+	// N
+	int N;
+
+	// input args
+	string N_str = argv[1];			// number of particles
+	string input_str = argv[2];		// input file
+
+	// get int for number of particles
+	stringstream Nss(N_str);
+	Nss >> N;
+
 	// local variables for packing
-  	string fstr = "/Users/JackTreado/Jamming/ProteinVoids/cluster/rigidbody/io/res_input_N8_seed1.dat";
-	string cfgstr = "res_precise_cfg.test";
-	string statstr = "res_precise_stat.test";
-	string enstr = "res_precise_Energy.test";
-	string xyzstr = "res_precise_test.xyz";
-	int N = 8;
+	string cfgstr = "residue_cfg.test";
+	string statstr = "residue_stat.test";
+	string enstr = "residue_Energy.test";
+	string xyzstr = "residue_test.xyz";
 	int dof = 6;
 	int nc = -1;
+	if (N >= 64)
+		nc = 3;
 	int seed = 1;
 
 	// initialize rigid body packing
-	rigidbody respack(fstr, N, dof, nc, seed);
+	rigidbody respack(input_str,N,dof,nc,seed);
 
 	// Do short md to check if code is set up correctly
 
 	// set MD parameters
-	double ep, dt, tmp0, Utol, Ktol, phiJguess;
-	int plotskip, NT;
+	double ep, dt, tmp0, phi0, dphi, Utol, Ktol, phimin;
+	int plotskip, NT, fskip;
 
 	ep = 10.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
-	dt = 0.02;			// time step (units of md time)
-	tmp0 = 0.001;		// initial temperature
-	plotskip = 100;		// # of steps to skip plotting
+	dt = 0.025;			// time step (units of md time)	
+	plotskip = 200;	// # of steps to skip plotting
+	phi0 = 0.01;			// initial packing fraction
+	dphi = 0.001;		// initial packing fraction step
 	Utol = N * 1e-16;
-	Ktol = N * 1e-30;
-	phiJguess = 0.52;
-	respack.rb_scale(2*phiJguess);
+	Ktol = N * 1e-30;	
+
+	// ANNEALING PARAMETERS
+	tmp0 = 0.01;		// initial temperature (and 10*kick temperature)
+	fskip = 100;			// number of steps between fire minimizations
+	phimin = 0.3;		// minimum packing fraction to try to anneal
+
+	// scale particles
+	respack.rb_scale(phi0);
 
 	// setup simulation
 	respack.set_ep(ep);
-	respack.set_md_time(dt);
+	respack.set_md_time(dt);	
 	respack.set_dtmax(10.0); // ADD FROM res_pack_nlcl
-	respack.set_plotskip(plotskip);
+	respack.set_plotskip(plotskip);		
 
 	// setup energy & viz output
 	respack.open_en(enstr.c_str());
@@ -59,7 +78,7 @@ int main() {
 	respack.rigidbody_xyz();
 
 	// run md
-	respack.rb_jamming_precise(phiJguess, tmp0, NT, Utol, Ktol);
+	respack.rb_anneal(tmp0, NT, fskip, phimin, dphi, Utol, Ktol);
 	// respack.free_fire(tmp0,t);
 	// respack.free_md(tmp0,t);
 

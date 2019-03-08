@@ -84,11 +84,16 @@ packing::packing(string &str, int ndim, int s){
 	// set parameters to member variables
 	NDIM = ndim;
 	DOF = NDIM;
-	seed = s;
-	this->initialize_NC();
+	seed = s;	
 
 	// read in particle positions
+	cout << "reading in file str" << endl;
 	this->read_spheres(str);
+	cout << "file str read-in complete" << endl;
+	cout << "N = " << N << endl;
+
+	// initialize number of unique contacts
+	this->initialize_NC();
 
 	// initial dt = 1
 	dt = 1.0;
@@ -116,7 +121,8 @@ packing::packing(string &str, int ndim, int s){
 	K = 0.0;
 
 	// initialize contact matrix
-	c = new double[NC];
+	cout << "NC = " << NC << endl;
+	c = new int[NC];
 	for (i=0; i<NC; i++)
 		c[i] = 0;
 
@@ -156,6 +162,7 @@ packing::packing(string &str, int ndim, int s){
 
 	// set default plot value to 1
 	plotit = 1;
+
 }
 
 // N particles using neighbor list
@@ -422,7 +429,7 @@ void packing::initialize_particles(){
 	}
 
 	// initialize contact matrix
-	c = new double[NC];
+	c = new int[NC];
 	for (i=0; i<NC; i++)
 		c[i] = 0;
 }
@@ -465,7 +472,7 @@ void packing::initialize_particles(int seed, double rad, double alpha){
 	}
 
 	// initialize contact matrix
-	c = new double[NC];
+	c = new int[NC];
 	for (i=0; i<NC; i++)
 		c[i] = 0;
 

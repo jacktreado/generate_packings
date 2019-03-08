@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 	dt = 0.025;			// time step (units of md time)
 	tmp0 = 0.01;		// initial temperature
 	plotskip = 100;	// # of steps to skip plotting
-	phi0 = 0.1;			// initial packing fraction
+	phi0 = 0.01;			// initial packing fraction
 	dphi = 0.001;		// initial packing fraction step
 	Utol = N * 1e-16;
 	Ktol = N * 1e-30;	

@@ -568,6 +568,19 @@ double rigidbody::get_LWZ() {
 	return lwsum;
 }
 
+
+/*
+
+==================================
+
+			MD/PACKING
+			PROTOCOLS
+
+==================================
+
+*/
+
+
 void rigidbody::free_fire(double tmp0, double Utol, double tend, int nnu) {
 	int t;
 
@@ -729,6 +742,156 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 		}
 	}
 }
+
+void rigidbody::rb_anneal(double tmp0, int NT, int fskip, double phimin, double dphi, double Utol, double Ktol){
+	// local variables
+	int t, kr, check_rattlers, kskip, anneal, checkphi;
+	double dphi0, phiL, phiH;
+
+	// initialize variables
+	kr = 0;
+	dphi0 = dphi;
+	phiL = -1;
+	phiH = -1;
+	check_rattlers = 0;
+
+	// constant energy checking
+	double Uold, dU, dUtol;
+	int epc, epcN, epconst;
+	epconst = 0;
+	Uold = 0;
+	dU = 0;
+	dUtol = 1e-12;
+	epc = 0;
+	epcN = 5e3;
+
+	// annealing procedure: skip fire/growth after fskip annealing steps
+	kskip = 0;
+	anneal = 0;
+	checkphi = 1;
+
+	// initialize velocities
+	this->rand_vel_init(tmp0);
+
+	// setup dtmax for FIRE
+	this->set_dtmax(10.0);
+
+	cout << "===== BEGINNING TIME LOOP ======" << endl;
+	cout << "NT = " << NT << endl;
+	cout << "dt = " << dt << endl;
+	cout << "================================" << endl << endl;
+
+	for (t = 0; t < NT; t++) {
+		// update nearest neighbor lists if applicable
+		if (t % nnupdate == 0 && NCL > -1){
+			cout << "^ ";
+			this->update_nlcl(t);
+		}
+
+		// only begin annealing after phi > phimin
+		if (phi > phimin && checkphi == 1){
+			anneal = 1;
+			checkphi = 0;
+		}
+
+		// advance quaternions, positions
+		this->verlet_first();
+
+		// update forces
+		this->force_update();
+
+		// include fire relaxation (if not annealing)
+		if (anneal == 0)
+			this->rb_fire();
+
+		// advance angular momentum
+		this->verlet_second();
+
+		// check for rattlers
+		if (check_rattlers) {
+			kr = 0;
+			nr = this->rmv_rattlers(kr);
+		}
+		else
+			nr = 0;
+
+		// check for constant potential energy
+		dU = abs(Uold - U);
+		if (dU < dUtol) {
+			epc++;
+			if (epc > epcN)
+				epconst = 1;
+		}
+		else {
+			epconst = 0;
+			epc = 0;
+		}
+		Uold = U;
+
+		if (epconst == 1)
+			check_rattlers = 1;
+
+		// run root search routine (if not annealing)
+		if (anneal == 0){
+			this->rb_root_search(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t);
+
+			// if still growing, and energy relaxed, go back to annealing
+			if (phiH < 0 && U < Utol && checkphi ==  0){
+				anneal = 1;
+
+				// give random velocity kick
+				this->rand_vel_init(0.1*tmp0);
+			}
+		}
+		else{
+			kskip++;
+			if (kskip == fskip){
+				anneal = 0;
+				kskip = 0;
+			}
+		}
+
+		// output information
+		if (t % plotskip == 0) {
+			this->monitor_header(t);
+			this->rigidbody_md_monitor();
+			cout << "** ROOT SEARCH: " << endl;
+			cout << "phi = " << phi << endl;
+			cout << "phiL = " << phiL << endl;
+			cout << "phiH = " << phiH << endl;
+			cout << "epconst = " << epconst << endl;
+			cout << "check_rattlers = " << check_rattlers << endl;
+			cout << "nr = " << nr << endl;
+			cout << endl;
+			cout << endl;
+		}
+
+		// break if jamming found
+		if (isjammed == 1)
+			break;
+		else if (isjammed == -1){
+			cout << "isjammed was found to be -1, ending..." << endl;
+			break;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double Utol, double Ktol) {
 	// local variables
@@ -1040,6 +1203,19 @@ void rigidbody::get_U(double Ktol, int& nr){
 	if (t==NT)
 		cout << "** COULD NOT FIND ENERGY MINIMUM IN NT', ENDING AND SETTING UNEW = U..." << endl;
 }
+
+
+/*
+
+==================================
+
+			MD/PACKING
+		      CODE
+
+==================================
+
+*/
+
 
 void rigidbody::verlet_first() {
 	// update translational pos first, to get kinetic energy rolling
@@ -1595,6 +1771,21 @@ int rigidbody::id_rattlers() {
 	return nr;
 }
 
+
+
+
+
+/*
+
+==================================
+
+			GROWTH/EM
+		      CODE
+
+==================================
+
+*/
+
 // GROWTH methods
 void rigidbody::rb_scale(double phinew) {
 	int i, j, d;
@@ -2112,6 +2303,28 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+==================================
+
+			PRINTING
+
+==================================
+
+*/
+
 // PRINT methods
 void rigidbody::print_stat() {
 	// throw error if file not opened
@@ -2165,8 +2378,8 @@ void rigidbody::print_config() {
 
 	// local variables
 	int w, p, i, j, d;
-	w = 16;
-	p = 6;
+	w = 30;
+	p = 16;
 
 	// update euler angles, given quaternions
 	this->update_euler();
@@ -2182,12 +2395,12 @@ void rigidbody::print_config() {
 	configobj << setw(w) << "id";
 	configobj << setw(w) << "arad";
 	for (d = 0; d < NDIM; d++)
-		configobj << setw(w) << "ax[" << d << "]";
+		configobj << setw(w) << "ax" << d << "";
 	configobj << setw(w) << "prad";
 	for (d = 0; d < NDIM; d++)
-		configobj << setw(w) << "px[" << d << "]";
+		configobj << setw(w) << "px" << d << "";
 	for (d = 0; d < NDIM; d++)
-		configobj << setw(w) << "Inn[" << d << "]";
+		configobj << setw(w) << "Inn" << d << "";
 	configobj << setw(w) << "phi";
 	configobj << setw(w) << "theta";
 	configobj << setw(w) << "psi";

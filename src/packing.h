@@ -28,7 +28,7 @@ protected:
 	double** aold;					//!< Pointer to two-dimensional array containing particle acceleration from previous time step (for velocity verlet)
 	double* r;						//!< Particle radii
 	double* m; 						//!< Particle masses
-	double* c;						//!< Pointer to contact matrix (stored in 1d array)
+	int* c;							//!< Pointer to contact matrix (stored in 1d array)
 	int* pc; 						//!< Pointer to particle contact list
 
 	// packing information
@@ -193,7 +193,7 @@ public:
 
 	// time evolution
 	void md_evol_hs(double tmp0, int NT);
-	void jamming_finder(double tend, double dphi, double Utol, double Ktol);
+	void jamming_finder(int NT, double dphi, double Utol, double Ktol);
 	void jamming_finder_nn(double tend, double dphi, double Utol, double Ktol);
 	void fire();
 	void root_search(double& phiH, double& phiL, int& check_ratterls, int epconst,
@@ -228,7 +228,9 @@ public:
 	void scale_sys(double dphi);
 
 	// measurements
-	void populate_dynamical_matrix(double h0, std::string &dmstr);
+	void fire_umin(int NTmax, double Ktol);	
+	void dynamical_matrix(std::string& dmstr, double h0);
+	void analytical_dm(std::string& dmstr);
 	void perturbed_force(int i, int d, double h);
 
 	void calc_vacf(int NT, int vsave, std::ofstream& obj);
