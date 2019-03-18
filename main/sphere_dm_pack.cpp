@@ -57,8 +57,8 @@ int main(int argc, char *argv[]){
 	s1ss >> seed;
 
 	// jamming variables
-	int plotskip,NT;
-	double ep,dt,Utol,Ktol;
+	int plotskip,NT,vsave;
+	double ep,dt,Utol,Ktol,T0;
 
 	// set parameters
 	ep = 10.0;			// energy scale (units of kbt)
@@ -100,6 +100,8 @@ int main(int argc, char *argv[]){
 
 	// print to analytical form as well, just to check
 	string dm2_str = "/Users/JackTreado/Jamming/ProteinVoids/vdos/mixed/analytical_check.dat";
+	string vacf_str = "/Users/JackTreado/Jamming/ProteinVoids/vdos/mixed/sphere_vacf.dat";
+	ofstream vacf_obj(vacf_str.c_str());
 
 	if (isjammed == 1){
 			// open output files
@@ -120,14 +122,22 @@ int main(int argc, char *argv[]){
 		pack.fire_umin(NTmax,Ktol);
 		cout << "energy minimization complete!" << endl;
 
-		cout << "starting to calcualte the dynamical matrix..." << endl;
+		cout << "starting to calculate the dynamical matrix..." << endl;
 		pack.dynamical_matrix(dm_str,h);
 		cout << "calc complete! printed to " << dm_str << ". " << endl;
 
 		// analytical DM, to compare
 		cout << "calculating DM using analytical form..." << endl;
 		pack.analytical_dm(dm2_str);
-		cout << "calc complete! printed to " << dm2_str << ", now ending program." << endl; 	
+		cout << "calc complete! printed to " << dm2_str << ", now ending program." << endl;
+
+		// output also the velocity autocorrelation function
+		NT = 163840;
+		T0 = 1e-20;
+		vsave = NT/32768;	// make sure a power of 2 for FFT
+		cout << "Calculating VACF for comparison..." << endl;	
+		pack.calc_vacf(NT,vsave,T0,vacf_obj);
+		cout << "VACF calculation complete!" << endl;
 	}	
 
 

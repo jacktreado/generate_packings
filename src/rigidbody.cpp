@@ -448,6 +448,34 @@ void rigidbody::initialize_quaternions() {
 	this->pos_brot();
 }
 
+void rigidbody::rand_vel_init(double T1) {
+	int i,d;
+	double ek,vs;
+	vector<double> pmean(NDIM,0.0);
+	srand48(seed);
+
+	// get initial velocities
+	for (i=0; i<N; i++){
+    	for (d=0; d<NDIM; d++){
+        	v[i][d] = drand48();
+        	pmean[d] += m[i]*v[i][d];        	
+    	}
+    }
+
+    // get CoM momentum
+    for (d=0; d<NDIM; d++)
+		pmean[d] /= N;
+
+	// subtract off CoM momentum
+	for (i=0; i<N; i++){
+    	for (d=0; d<NDIM; d++)
+        	v[i][d] -= pmean[d]/m[i];
+    }
+
+    // rescale velocities
+    this->rescale_velocities(T1);
+}
+
 
 /*
 ==================================
@@ -481,6 +509,7 @@ void rigidbody::update_phi() {
 void rigidbody::update_euler() {
 	int i;
 	double qs, qx, qy, qz;
+	double se1,ce1,se2,ce2,se3,ce3;
 
 	for (i = 0; i < N; i++) {
 		// store quaternion values
@@ -489,11 +518,50 @@ void rigidbody::update_euler() {
 		qy = q[i].get_y();
 		qz = q[i].get_z();
 
-		// update euler angles based on https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-		eulang1[i] = atan2(2 * (qs * qx + qy * qz), 1 - 2 * (pow(qx, 2) + pow(qy, 2)));
-		eulang2[i] = asin(2 * (qs * qy - qz * qx));
-		eulang3[i] = atan2(2 * (qs * qz + qx * qy), 1 - 2 * (pow(qy, 2) + pow(qz, 2)));
+		// get euler angle cosines and sines
+
+		// polar angle
+	    se2 = 2*sqrt((qx*qx + qy*qy)*(1-qx*qx-qy*qy));
+	    ce2 = 1 - 2*(qx*qx+qy*qy);
+	    
+	    // azimuthal angle
+	    se1 = 2*(qx*qz+qs*qy)/se2;
+	    ce1 = 2*(qs*qx-qy*qz)/se2;
+	    
+	    // spin angle
+	    se3 = 2*(qx*qz - qs*qy)/se2;
+	    ce3 = 2*(qs*qx + qy*qz)/se2;
+
+	    // update euler angles
+	    eulang1[i] = atan2(se1,ce1);
+	    eulang2[i] = atan2(se2,ce2);
+	    eulang3[i] = atan2(se3,ce3);
 	}
+}
+
+void rigidbody::update_quaternions() {
+	// local variables
+	int i, j;
+	double qs, qx, qy, qz;
+
+	// loop over particles
+	for (i = 0; i < N; i++) {
+		qs = cos(0.5 * eulang2[i]) * cos(0.5 * (eulang1[i] + eulang3[i]));
+		qx = sin(0.5 * eulang2[i]) * cos(0.5 * (eulang1[i] - eulang3[i]));
+		qy = sin(0.5 * eulang2[i]) * sin(0.5 * (eulang1[i] - eulang3[i]));
+		qz = cos(0.5 * eulang2[i]) * sin(0.5 * (eulang1[i] + eulang3[i]));
+
+		q[i].set_s(qs);
+		q[i].set_x(qx);
+		q[i].set_y(qy);
+		q[i].set_z(qz);
+
+		// normalize each quaternion
+		q[i].normalize();
+	}
+
+	// update xW based on quaternions and xM
+	this->pos_frot();
 }
 
 int rigidbody::get_ac_sum() {
@@ -579,7 +647,6 @@ double rigidbody::get_LWZ() {
 ==================================
 
 */
-
 
 void rigidbody::free_fire(double tmp0, double Utol, double tend, int nnu) {
 	int t;
@@ -803,9 +870,12 @@ void rigidbody::rb_anneal(double tmp0, int NT, int fskip, double phimin, double 
 		// include fire relaxation (if not annealing)
 		if (anneal == 0)
 			this->rb_fire();
+		else
+			this->rescale_velocities(tmp0);
+			
 
 		// advance angular momentum
-		this->verlet_second();
+		this->verlet_second();		
 
 		// check for rattlers
 		if (check_rattlers) {
@@ -840,7 +910,7 @@ void rigidbody::rb_anneal(double tmp0, int NT, int fskip, double phimin, double 
 				anneal = 1;
 
 				// give random velocity kick
-				this->rand_vel_init(0.1*tmp0);
+				this->rand_vel_init(tmp0);
 			}
 		}
 		else{
@@ -875,12 +945,6 @@ void rigidbody::rb_anneal(double tmp0, int NT, int fskip, double phimin, double 
 		}
 	}
 }
-
-
-
-
-
-
 
 
 
@@ -1470,6 +1534,46 @@ void rigidbody::pos_brot() {
 	}
 }
 
+void rigidbody::rotate_single_particle(int i, int angle, double dtheta){
+
+	// first make sure euler angles are up to date
+	this->update_euler();
+
+	// rotate given angle by dtheta
+	if (angle == 1)
+		eulang1[i] += dtheta;
+	else if (angle == 2)
+		eulang2[i] += dtheta;
+	else if (angle == 3)
+		eulang3[i] += dtheta;
+	else{
+		cout << "not applicable angle = " << angle << "..." << endl;
+		throw;
+	}
+
+	// update quaternions accordingly
+	this->update_quaternions();
+}
+
+void rigidbody::rotate_single_particle_xyz(int i, int axis, double dtheta){
+	// local variables
+	double ci,si; 	// cosines of angle
+	int j,k,a;		// other directions
+
+	ci = cos(dtheta);
+	si = sin(dtheta);
+
+	// get other indices
+	j = (axis+1) % NDIM;
+	k = (axis+2) % NDIM;
+
+	// calculate new positions
+	for (a=0; a<Na[i]; a++){
+		xW[i][a][j] = ci*xW[i][a][j] - si*xW[i][a][k];
+		xW[i][a][k] = ci*xW[i][a][k] + si*xW[i][a][j];
+	}
+}
+
 void rigidbody::force_update() {
 	int i, j, jj, ai, aj, d, cind, M, pc_found;
 	double sij, rij, dx, da;
@@ -1829,6 +1933,91 @@ void rigidbody::rb_scale(double phinew) {
 			this->update_cell();
 
 		this->update_neighborlist();
+	}
+}
+
+// rescale system by length len
+void rigidbody::rb_rescale(double len) {
+	int i,j,d;
+
+	for (d=0; d<NDIM; d++){
+		L[d] /= len;
+	}
+
+	// loop over system, scale everything
+	for (i = 0; i < N; i++) {
+		for (j = 0; j < Na[i]; j++) {
+			// scale positions (need to subtract off position increase)
+			for (d = 0; d < NDIM; d++) {
+				xM[i][j][d] /= len;
+				xW[i][j][d] /= len;
+			}
+
+			// scale radii
+			ar[i][j] /= len;
+		}
+		// scale residue mass
+		m[i] /= pow(len, NDIM);
+
+		// scale moment of inertia tensor
+		for (d = 0; d < NDIM; d++)
+			Inn[i][d] /= pow(len, NDIM+2);
+
+		// scale shell radii
+		r[i] /= len;
+
+		// scale center of mass position
+		for (d=0; d<NDIM; d++)
+			x[i][d] /= len;
+	}
+
+	// if NLCL engaged, scale rcut
+	if (NCL > -1) {
+		this->scale_rcut(1.0/len);
+		if (NCL > 3)
+			this->update_cell();
+
+		this->update_neighborlist();
+	}
+}
+
+void rigidbody::rescale_velocities(double T1){
+	// local variables
+	int i,d;
+	double T0,tmpScale;
+	Quaternion qtmp, q1, q2;	
+
+	// get current kinetic energy
+	T0 = 0.0;
+	for (i=0; i<N; i++){
+		for (d=0; d<NDIM; d++)
+			T0 += 0.5*m[i]*v[i][d]*v[i][d] + 0.5*Inn[i][d]*wM[i][d]*wM[i][d];
+	}
+
+	// get scale for new kinetic energy
+	tmpScale = sqrt(T1/T0);
+
+	// rescale velocities and angular momenta
+	for (i=0; i<N; i++){
+		for (d=0; d<NDIM; d++){
+			v[i][d] *= tmpScale;
+			wM[i][d] *= tmpScale;
+			LM[i][d] = Inn[i][d]*wM[i][d];
+
+			// rotate LM into LW
+			qtmp.set_x(LM[i][0]);
+			qtmp.set_y(LM[i][1]);
+			qtmp.set_z(LM[i][2]);
+
+			q1 *= q[i];
+			q2 = qtmp % q1;
+			qtmp = q[i] % q2;
+
+			// update molecule frame
+			LWhalf[i][0] = qtmp.get_x();
+			LWhalf[i][1] = qtmp.get_y();
+			LWhalf[i][2] = qtmp.get_z();
+		}			
 	}
 }
 

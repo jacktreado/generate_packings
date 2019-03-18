@@ -17,6 +17,10 @@ int main(int argc, char *argv[]) {
 	string N_str = argv[1];			// number of particles
 	string input_str = argv[2];		// input file
 
+	// dynamical matrix variables
+	string dm_str = "/Users/JackTreado/_pv/vdos/mixed/res_dm.dat"; 		// dynamical matrix file
+	double dphiDM = 1e-14;
+
 	// get int for number of particles
 	stringstream Nss(N_str);
 	Nss >> N;
@@ -38,22 +42,18 @@ int main(int argc, char *argv[]) {
 	// Do short md to check if code is set up correctly
 
 	// set MD parameters
-	double ep, dt, tmp0, phi0, dphi, Utol, Ktol, phimin;
-	int plotskip, NT, fskip;
+	double ep, dt, tmp0, phi0, dphi, Utol, Ktol;
+	int plotskip, NT;
 
-	ep = 1.0;			// energy scale (units of kbt)
+	ep = 10.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
-	dt = 0.01;			// time step (units of md time)	
-	plotskip = 10;	// # of steps to skip plotting
-	phi0 = 0.01;			// initial packing fraction
+	dt = 0.025;			// time step (units of md time)
+	tmp0 = 0.01;		// initial temperature
+	plotskip = 1000;	// # of steps to skip plotting
+	phi0 = 0.1;			// initial packing fraction
 	dphi = 0.001;		// initial packing fraction step
-	Utol = N * 1e-16;
+	Utol = N * 1e-20;
 	Ktol = N * 1e-30;	
-
-	// ANNEALING PARAMETERS
-	tmp0 = 1e-16;		// initial temperature (and 10*kick temperature)
-	fskip = 100;			// number of steps between fire minimizations
-	phimin = 0.3;		// minimum packing fraction to try to anneal
 
 	// scale particles
 	respack.rb_scale(phi0);
@@ -78,20 +78,40 @@ int main(int argc, char *argv[]) {
 	respack.rigidbody_xyz();
 
 	// run md
-	respack.rb_anneal(tmp0, NT, fskip, phimin, dphi, Utol, Ktol);
-	// respack.free_fire(tmp0,t);
-	// respack.free_md(tmp0,t);
+	respack.rb_jamming_finder(tmp0, NT, dphi, Utol, Ktol);
 
-	// output stat and config
-	respack.open_stat(statstr.c_str());
-	respack.open_config(cfgstr.c_str());
+	// print config, dynamical matrix
+	int isjammed = 0;
+	isjammed = respack.get_isjammed();
+	double h = 1e-8;
 
-	// print data
-	respack.print_stat();
-	respack.print_config();
 
-	// print xyz
-	respack.rigidbody_xyz();
+	if (isjammed == 1){
+			// open output files
+		respack.open_config(cfgstr.c_str());
+		respack.open_stat(statstr.c_str());	
 
+		// print output to files
+		respack.print_stat();
+		respack.print_config();
+
+		// scale system slightly
+		phi0 = respack.get_phi();
+		cout << "scaling phi from phi = " << phi0 << " to phi = " << phi0 + dphiDM << endl;
+		respack.rb_scale(phi0 + dphiDM);
+
+		int NTmax = 5e5;
+		cout << "minimizing potential energy..." << endl;
+		respack.rb_fire_umin(NTmax,Ktol);
+		cout << "energy minimization complete!" << endl;
+
+		cout << "starting to calculate the dynamical matrix..." << endl;
+		respack.rb_dynamical_matrix(dm_str,h);
+		cout << "calc complete! printed to " << dm_str << ". " << endl;	
+	}
+
+
+
+	cout << "@@ Leaving main for residue packing!" << endl;
 	return 0;
 }

@@ -17,7 +17,7 @@ using namespace std;
 int main(){
 
 	// We are going to solve the generalized eigenvalue problem A * x = lambda * B * x
-    const int n = 400;
+    const int n = 10;
 
 
     // Define the A matrix
@@ -40,7 +40,7 @@ int main(){
     Eigen::MatrixXd Bdense = B;
     Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> es(A, Bdense);
     cout << "Generalized eigenvalues (verify):\n" << es.eigenvalues() << endl;
-    cout << "Generalized eigenvectors (verify):\n" << es.eigenvectors().rightCols(3).topRows(10) << endl;
+    cout << "Generalized eigenvectors (verify):\n" << es.eigenvectors().rightCols(n).topRows(n) << endl;
 
 
 	return 0;

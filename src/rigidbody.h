@@ -68,6 +68,8 @@ public:
 	void initialize_dynamics();
 	void read_in_info(string &rbstr);
 	void initialize_quaternions();
+	void update_quaternions();
+	void rand_vel_init(double T1);
 
 	// quaternions
 	void q_step();
@@ -75,8 +77,11 @@ public:
 	void euler_q();
 	void pos_frot();
 	void pos_brot();
+	void rotate_single_particle(int i, int angle, double dtheta);
+	void rotate_single_particle_xyz(int i, int axis, double dtheta);
 
 	// Molecular Dynamics
+	void rescale_velocities(double T1);
 	void free_md(double tmp0, int NT, int nnu);
 	void free_fire(double tmp0, double Utol, double tend, int nnu);
 	void single_md(int t);
@@ -96,9 +101,15 @@ public:
 	void rb_anneal(double tmp0, int NT, int fskip, double phimin, double dphi, double Utol, double Ktol);
 	void get_U(double Ktol, int& nr);
 	void rb_scale(double phinew);
+	void rb_rescale(double len);
 	void rb_root_search(double& phiH, double& phiL, int& check_rattlers, int epconst, int nr, double dphi0, double Ktol, double &Utol, int t);
 	void rb_easy(double& phiH, double& phiL, int& check_rattlers, int &epconst, int nr, double dphi0, double Ktol, double &Utol, int t, bool &min);
 	void rb_fire();
+
+	// VDOS
+	void rb_dynamical_matrix(string& dmstr, double h0);
+	void rb_perturbation(int i, int d, double h);
+	void rb_fire_umin(int NTmax, double Ktol);
 
 	// Printing
 	void print_stat();

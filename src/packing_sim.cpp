@@ -90,10 +90,9 @@ void grnf (double& x)
 void packing::rand_vel_init(double tmp0){
 	int i,d;
 	double ek,vs;
-	double* pmean;
+	vector<double> pmean(3,0.0);
 	srand48(seed);
 
-	pmean = new double[NDIM];
 	for (d=0; d<NDIM; d++)
 		pmean[d] = 0.0;
 
@@ -107,21 +106,19 @@ void packing::rand_vel_init(double tmp0){
     for (d=0; d<NDIM; d++)
 		pmean[d] /= N;
 
+	ek = 0.0;
 	for (i=0; i<N; i++){
     	for (d=0; d<NDIM; d++){
-        	v[i][d] -= pmean[d]/m[i];
-        	ek = 0.0;
+        	v[i][d] -= pmean[d]/m[i];        	
         	ek += 0.5*m[i]*v[i][d]*v[i][d];
     	}
     }
 
-    vs = sqrt(ek/tmp0);
+    vs = sqrt(tmp0/ek);
     for (i=0; i<N; i++){
     	for (d=0; d<NDIM; d++)
         	v[i][d] /= vs;
     }
-
-    delete [] pmean;
 }
 
 
@@ -392,7 +389,7 @@ void packing::fire_umin(int NTmax, double Ktol){
 	t = 0;
 	
 	// Minimize energy using FIRE
-	while ((K > Ktol || epconst != 1) && t < NTmax) {
+	while ((K > Ktol || epconst != 1) && t < NTmax){
 		// update nearest neighbor lists if applicable
 		if (t % nnupdate == 0 && NCL > -1){
 			cout << "^ ";
@@ -554,8 +551,9 @@ void packing::jamming_finder(int NT, double dphi, double Utol, double Ktol) {
 
 		this->root_search(phiH,phiL,check_rattlers,epconst,nr,dphi0,Ktol,Utol,t);
 
-		if (isjammed == 1)
+		if (isjammed == 1){
 			break;
+		}
 	}
 }
 

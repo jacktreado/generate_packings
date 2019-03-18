@@ -61,6 +61,9 @@ protected:
 	double falpha;					// increase alpha factor
 	int np;							// number of positive P in a row
 
+	// measurement information
+	std::vector<double>** vlist;
+
 	// output information
 	int plotskip;
 	int plotit;
@@ -233,9 +236,9 @@ public:
 	void analytical_dm(std::string& dmstr);
 	void perturbed_force(int i, int d, double h);
 
-	void calc_vacf(int NT, int vsave, std::ofstream& obj);
-	void get_vacf(int t, int vsave, std::vector<double>** vlist, std::vector<double>& numer, std::vector<double>& denom);
-	void finish_vacf(int NT, int vsave, std::vector<double>& numer, std::vector<double>& denom, std::vector<double>& vacf);
+	void calc_vacf(int NT, int vsave, double T0, std::ofstream& obj);
+	void get_vacf(int t, int vsave, std::vector<double>& numer, double& denom);
+	void finish_vacf(int NT, int vsave, std::vector<double>& numer, double& denom, std::vector<double>& vacf);
 	void print_vacf(int NT, int vsave, std::vector<double>& vacf, std::ofstream& obj);
 
 	void calc_dm(std::string& fstr);

@@ -162,7 +162,6 @@ packing::packing(string &str, int ndim, int s){
 
 	// set default plot value to 1
 	plotit = 1;
-
 }
 
 // N particles using neighbor list
@@ -250,6 +249,18 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	cout << "setting to phi0 = " << phi0 << endl;
 	cout << "dphi = " << dphi << endl;
 	this->scale_sys(dphi);
+
+	// initialize measurement info
+	vlist = new vector<double>*[N];
+	cout << "Printing memory locations in double array of vectors vlist..." << endl;
+	for (i=0; i<N; i++){
+		vlist[i] = new vector<double>[NDIM];
+		for (d=0; d<NDIM; d++){
+			cout << setw(10) << &vlist[i][d] << ":    ";			
+		}
+		cout << endl;
+	}
+	cout << "vlist initialized!" << endl;
 }
 
 
@@ -269,11 +280,16 @@ packing::~packing(){
 		delete [] x[i];
 		delete [] v[i];
 		delete [] F[i];
-		neighborlist[i].clear();		
+		neighborlist[i].clear();
+		for (int d=0; d<NDIM; d++){
+			vlist[i][d].clear();
+		}
+		delete [] vlist[i];
 	}
 	delete [] x;
 	delete [] v;
 	delete [] F;
+	delete [] vlist;
 
 	// delete cell list/neighbor list variables
 	if (NCL > -1){

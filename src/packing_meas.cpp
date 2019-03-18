@@ -31,8 +31,14 @@ const double PI = 3.1415926;
 void packing::dynamical_matrix(string& dmstr, double h0){
 	// local variables
 	int i,j,d,k,l,e,d1,d2,nr,kr;
-	double Mkl,h;
+	double Mkl,h,dt0;
 	h = h0*L[0];
+	dt0 = 0.1;
+
+	// set ep to 1.0, change time scale
+	this->set_ep(1.0);
+	this->set_md_time(dt0);
+
 
 	// remove any rattlers
 	kr = 0;
@@ -41,7 +47,8 @@ void packing::dynamical_matrix(string& dmstr, double h0){
 
 	int Nentries = (NDIM*N*((NDIM*N)+1))/2; 			// number of unique entries in dynamical matrix
 	vector<double> Fk(NDIM*N,0);						// vector of all unperturbed forces
-	Eigen::MatrixXd P(NDIM*N,NDIM*N);					// matrix of all perturbed forces	
+	Eigen::MatrixXd Pplus(NDIM*N,NDIM*N);				// matrix of all perturbed force (+h)
+	Eigen::MatrixXd Pminus(NDIM*N,NDIM*N);				// matrix of all perturbed force (-h)
 
 	// store all unperturbed forces first
 	cout << "getting forces..." << endl;	
@@ -69,18 +76,18 @@ void packing::dynamical_matrix(string& dmstr, double h0){
 	for (j=0; j<N; j++){
 
 		// cout << "perturbing particle j = " << j << endl;
-		if (pc[j] == 0){
-			for (d2=0; d2<NDIM; d2++){
-				l = NDIM*j+d2;
-				for (i=0; i<N; i++){
-					for (d1=0; d1<NDIM; d1++){
-						k = NDIM*i+d1;
-						P(k,l) = 0.0;
-					}
-				}
-			}
-			continue;
-		}
+		// if (pc[j] == 0){
+		// 	for (d2=0; d2<NDIM; d2++){
+		// 		l = NDIM*j+d2;
+		// 		for (i=0; i<N; i++){
+		// 			for (d1=0; d1<NDIM; d1++){
+		// 				k = NDIM*i+d1;
+		// 				P(k,l) = 0.0;
+		// 			}
+		// 		}
+		// 	}
+		// 	continue;
+		// }
 
 		// loop over perturbation directions
 		for (d2=0; d2<NDIM; d2++){
@@ -88,25 +95,68 @@ void packing::dynamical_matrix(string& dmstr, double h0){
 			// get linear index
 			l = NDIM*j+d2;
 
-			// perturb particle j in d2 direction, get updated forces
+			// perturb particle j in d2 (+h) direction, get updated forces
 			this->perturbed_force(j,d2,h);
 
 			// loop over to extract forces to perturb
 			for (i=0; i<N; i++){
+
 				// perturb in NDIM dimensions
-				// cout << "New force on particle i = " << i << ": ";
 				for (d1=0; d1<NDIM; d1++){
 					// get linear index
 					k = NDIM*i+d1;
 
 					// add forces to matrix
-					P(k,l) = F[i][d1];
-					// cout << setw(20) << setprecision(6) << "k = " << k << "; l = " << l << ": " << F[i][d1];
+					Pplus(k,l) = F[i][d1];
 				}
-				// cout << endl;
+			}
+
+			// perturb particle j in d2 (+h) direction, get updated forces
+			this->perturbed_force(j,d2,-h);
+
+			// loop over to extract forces to perturb
+			for (i=0; i<N; i++){
+
+				// perturb in NDIM dimensions
+				for (d1=0; d1<NDIM; d1++){
+					// get linear index
+					k = NDIM*i+d1;
+
+					// add forces to matrix
+					Pminus(k,l) = F[i][d1];
+				}
 			}
 
 		}
+	}
+
+	// store all unperturbed forces first
+	cout << "outputting forces again to check if perturbations remain..." << endl;
+	U = 0;
+	for (i=0; i<N; i++){
+		for (d=0; d<NDIM; d++){
+			F[i][d] = 0;
+		}
+	}
+	cout << "reprinting forces after perturbation..." << endl;	
+	this->hs_force();
+	cout << "total potential energy U = " << U << endl;
+	for (i=0; i<N; i++){		
+
+		cout << "Force on particle i = " << i << ": ";
+		for (d=0; d<NDIM; d++){
+			k = NDIM*i + d;
+
+			// only count force if not a rattler	
+			// if (pc[i] > 0)		
+			// 	Fk.at(k) = F[i][d];
+			// else
+			// 	Fk.at(k) = 0;
+			// Fk.at(k) = F[i][d];
+
+			cout << setw(20) << setprecision(6) << F[i][d];
+		}
+		cout << endl;
 	}
 
 
@@ -130,7 +180,8 @@ void packing::dynamical_matrix(string& dmstr, double h0){
 			e = (N*NDIM)*k + l - (((k+1)*k)/2);
 
 			// calculate single matrix entry
-			Mkl = (Fk.at(k) - P(k,l) + Fk.at(l) - P(l,k))/(2*h);
+			// Mkl = (Fk.at(k) - P(k,l) + Fk.at(l) - P(l,k))/(2*h);
+			Mkl = (Pminus(k,l) - Pplus(k,l) + Pminus(l,k) - Pplus(l,k))/(4*h);
 
 			// print matrix
 			obj << setw(8) << k << setw(8) << l << setw(30) << setprecision(20) << Mkl << endl;
@@ -264,7 +315,137 @@ void packing::analytical_dm(string& dmstr){
 	obj.close();
 }
 
+// calculate vacf from already initialized system
+void packing::calc_vacf(int NT, int vsave, double T0, ofstream& obj){
+	// get number of time steps
+	int i,d,t;
 
+	// give initial velocities
+	this->rand_vel_init(T0);
+	
+	// initialize vacf arrays
+	int vsamp = NT/vsave;
+	vector<double> vacf;
+	vector<double> numer;
+	double denom = 0.0;
+	for (i=0; i<vsamp; i++){
+		numer.push_back(0.0);
+		vacf.push_back(0.0);
+	}
+
+	// loop over time
+	cout << "* looping over time, saving velocities" << endl;
+	for (t=0; t<NT; t++){
+		// first md step
+		this->pos_update();
+
+		// force update
+		this->hs_force();
+
+		// vel update
+		this->vel_update();
+
+		// print info
+		if (t % plotskip == 0){
+			this->md_monitor(t,-1,-1,-1);
+			cout << endl << endl;
+			if (xyzobj.is_open())
+				this->print_xyz();
+		}
+
+		// get vacf at right time
+		if (t % vsave == 0){
+			this->get_vacf(t,vsave,numer,denom);
+		}
+	}
+
+	// finish off the vacf!
+	this->finish_vacf(NT,vsave,numer,denom,vacf);
+
+	cout << "VACF MD completed!" << endl;
+	this->print_vacf(NT,vsave,vacf,obj);
+
+	// close object
+	obj.close();
+}
+
+// get vacf from previous velocities
+void packing::get_vacf(int t, int vsave, vector<double>& numer, double& denom){	
+	int i,j,d,tcurrent,t0,dt;
+	double v0,vplusdt;
+
+	// push back current velocities
+	for (i=0; i<N; i++){
+		for (d=0; d<NDIM; d++){
+			vlist[i][d].push_back(v[i][d]);
+		}
+	}
+
+	// loop over previous velocities, calc vacf
+	dt = 0;
+	tcurrent = t/vsave;
+	while (dt < tcurrent){
+		// get dt, time between two points
+		t0 = tcurrent - dt;
+
+		// add to numerator
+		for (i=0; i<N; i++){
+			for (d=0; d<NDIM; d++){
+				// velocity at current time t
+				v0 = vlist[i][d].at(t0);
+
+				// velocity at time t + dt
+				vplusdt = vlist[i][d].at(tcurrent);
+
+				// add to numerator
+				numer.at(dt) += v0*vplusdt;
+			}
+		}
+
+		// increment time 
+		dt++;
+	}
+
+	// add to denominator
+	for (i=0; i<N; i++){
+		for (d=0; d<NDIM; d++)
+			denom += v[i][d]*v[i][d];
+	}	
+}
+
+void packing::finish_vacf(int NT, int vsave, vector<double>& numer, double& denom, vector<double>& vacf){
+	int i,j,d,dt,vsamp;
+
+	// average denominator
+	denom /= NT*N;
+
+	// loop over previous velocities, calc vacf
+	dt = 0;
+	vsamp = NT/vsave;	
+
+	while (dt < vsamp){
+		// average denominator
+		numer.at(dt) /= NT*N;
+
+		// get quotient
+		vacf.at(dt) = numer.at(dt)/denom;
+
+		// increase dt	
+		dt++;			
+	}
+}
+
+void packing::print_vacf(int NT, int vsave, vector<double>& vacf, ofstream& obj){
+	int s = vacf.size();
+	int i,nsamp;
+	nsamp = NT/vsave;
+
+	obj << nsamp << endl;
+	obj << dt*nsamp << endl;
+	obj << dt << endl;
+	for (i=0; i<s; i++)
+		obj << setw(30) << setprecision(16) << vacf.at(i) << endl;
+}
 
 
 
@@ -408,123 +589,6 @@ double packing::perturb_two_particles(int i, int j, int k, int l, double h){
 
 	// return V
 	return V;
-}
-
-// calculate vacf from already initialized system
-void packing::calc_vacf(int NT, int vsave, ofstream& obj){
-	// get number of time steps
-	int i,d,t;
-
-	// initialize array to save velocities
-	vector<double>** vlist;
-	vlist = new vector<double>*[N];
-	for (i=0; i<N; i++)
-		vlist[i] = new vector<double>[NDIM];
-
-	// initialize vacf array
-	int vsamp = NT/vsave;
-	vector<double> vacf;
-	vector<double> numer;
-	vector<double> denom;
-	for (i=0; i<vsamp; i++){
-		numer.push_back(0.0);
-		denom.push_back(0.0);
-		vacf.push_back(0.0);
-	}
-
-	// loop over time
-	cout << "* looping over time, saving velocities" << endl;
-	for (t=0; t<NT; t++){
-		// first md step
-		this->pos_update();
-
-		// force update
-		this->hs_force();
-
-		// vel update
-		this->vel_update();
-
-		// get vacf at right time
-		if (t % vsave == 0){
-			this->get_vacf(t,vsave,vlist,numer,denom);			
-		}
-
-		// print info
-		if (t % plotskip == 0){
-			this->md_monitor(t,-1,-1,-1);
-			cout << endl << endl;
-			if (xyzobj.is_open())
-				this->print_xyz();
-		}
-	}
-
-	this->finish_vacf(NT,vsave,numer,denom,vacf);
-
-	// delete vlist (velocity saver)
-	for (i=0; i<N; i++){
-		for (d=0; d<NDIM; d++)
-			vlist[i][d].clear();
-
-		delete [] vlist[i];
-	}
-	delete [] vlist;
-
-	cout << "VACF MD completed!" << endl;
-	this->print_vacf(NT,vsave,vacf,obj);
-}
-
-// get vacf from previous velocities
-void packing::get_vacf(int t, int vsave, vector<double>** vlist, vector<double>& numer, vector<double>& denom){	
-	int i,j,d,dt,dtmaxtmp;
-
-	// push back current velocities
-	for (i=0; i<N; i++){
-		for (d=0; d<NDIM; d++)
-			vlist[i][d].push_back(v[i][d]);
-	}
-
-	// loop over previous velocities, calc vacf
-	dt = 1;
-	dtmax = t/vsave+1;	
-	while (dt < dtmax){		
-		for (i=0; i<N; i++){
-			for (d=0; d<NDIM; d++){
-				numer.at(dt-1) += (vlist[i][d].at(dtmax-1)*vlist[i][d].at(dtmax-dt-1));
-				denom.at(dt-1) += (vlist[i][d].at(dtmax-dt-1)*vlist[i][d].at(dtmax-dt-1));
-			}
-		}
-
-		// increase dt	
-		dt++;
-	}
-}
-
-void packing::finish_vacf(int NT, int vsave, vector<double>& numer, vector<double>& denom, vector<double>& vacf){
-	int i,j,d,dt,dtmaxtmp;
-
-	// loop over previous velocities, calc vacf
-	dt = 1;
-	dtmax = NT/vsave;	
-
-	while (dt < dtmax){				
-		// get quotient
-		vacf.at(dt-1) = numer.at(dt-1)/denom.at(dt-1);
-
-		// increase dt	
-		dt++;			
-	}
-}
-
-void packing::print_vacf(int NT, int vsave, vector<double>& vacf, ofstream& obj){
-	int s = vacf.size();
-	int i,nsamp;
-	nsamp = NT/vsave;
-
-	obj << nsamp << endl;
-	obj << dt*vsave << endl;
-	obj << dt << endl;
-	for (i=0; i<s; i++)
-		obj << vacf.at(i) << endl;
 }
 
 
