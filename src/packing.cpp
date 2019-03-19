@@ -73,6 +73,9 @@ packing::packing(int n, int dof, int nc, int s){
 
 	// set default plot value to 1
 	plotit = 1;
+
+	// initialize measurement stuff to null
+	vlist = nullptr;
 }
 
 // N particles, from file (need NDIM)
@@ -280,11 +283,7 @@ packing::~packing(){
 		delete [] x[i];
 		delete [] v[i];
 		delete [] F[i];
-		neighborlist[i].clear();
-		for (int d=0; d<NDIM; d++){
-			vlist[i][d].clear();
-		}
-		delete [] vlist[i];
+		neighborlist[i].clear();		
 	}
 	delete [] x;
 	delete [] v;
@@ -306,6 +305,20 @@ packing::~packing(){
 		delete [] cellneighbors;
 		delete [] cell;
 		delete [] neighborlist;
+	}
+
+	// only clear vlist if allocated
+	if (!vlist)
+		cout << "vlist pointing at null, so nothing to free..." << endl;
+	else{
+		for (int i=0; i<N; i++){
+			if (vlist[i]){
+				for (int d=0; d<NDIM; d++){
+					vlist[i][d].clear();
+				}
+			}
+			delete [] vlist[i];
+		}
 	}
 
 	xyzobj.close();
