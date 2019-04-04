@@ -3,6 +3,10 @@
 
 #include "Quaternion.h"
 #include "packing.h"
+#include "vec3.h"
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 #include <iostream>
 #include <cmath>
 #include <fstream>
@@ -110,6 +114,10 @@ public:
 	void rb_dynamical_matrix(string& dmstr, double h0);
 	void rb_perturbation(int i, int d, double h);
 	void rb_fire_umin(int NTmax, double Ktol);
+	void rb_analytical_dm(string& dmstr);
+	void populate_Pmatrix(Eigen::MatrixXd& P, int mu, int i);
+	void calculate_vec_mat_cp(Eigen::MatrixXd& outMat, vec3& rightVec, vec3& leftMat);
+	void calculate_mass_matrix(Eigen::MatrixXd& massMatrix);
 
 	// Printing
 	void print_stat();

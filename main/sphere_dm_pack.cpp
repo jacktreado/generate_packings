@@ -61,9 +61,9 @@ int main(int argc, char *argv[]){
 	double ep,dt,Utol,Ktol,T0;
 
 	// set parameters
-	ep = 10.0;			// energy scale (units of kbt)
+	ep = 1.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
-	dt = 0.025;			// time step (units of md time)
+	dt = 0.01;			// time step (units of md time)
 	plotskip = 5e3;		// # of steps to skip plotting
 	Utol = N*1e-16;		// potential energy tolerance
 	Ktol = N*1e-30;		// kinetic energy tolerance
@@ -126,18 +126,13 @@ int main(int argc, char *argv[]){
 		pack.dynamical_matrix(dm_str,h);
 		cout << "calc complete! printed to " << dm_str << ". " << endl;
 
-		// analytical DM, to compare
-		cout << "calculating DM using analytical form..." << endl;
-		pack.analytical_dm(dm2_str);
-		cout << "calc complete! printed to " << dm2_str << ", now ending program." << endl;
-
-		// output also the velocity autocorrelation function
-		NT = 163840;
-		T0 = 1e-20;
-		vsave = NT/32768;	// make sure a power of 2 for FFT
-		cout << "Calculating VACF for comparison..." << endl;	
-		pack.calc_vacf(NT,vsave,T0,vacf_obj);
-		cout << "VACF calculation complete!" << endl;
+		// // output also the velocity autocorrelation function
+		// NT = 163840;
+		// T0 = 1e-20;
+		// vsave = NT/32768;	// make sure a power of 2 for FFT
+		// cout << "Calculating VACF for comparison..." << endl;	
+		// pack.calc_vacf(NT,vsave,T0,vacf_obj);
+		// cout << "VACF calculation complete!" << endl;
 	}	
 
 

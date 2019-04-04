@@ -31,14 +31,14 @@ const double PI = 3.1415926;
 void packing::dynamical_matrix(string& dmstr, double h0){
 	// local variables
 	int i,j,d,k,l,e,d1,d2,nr,kr;
-	double Mkl,h,dt0;
+	double Mkl,h,dt0,len;
+
+	// rescale all lengths to smaller radius
+	len = r[0];
+	this->rescale_lengths(len);
+
+	// set h scale
 	h = h0*L[0];
-	dt0 = 0.1;
-
-	// set ep to 1.0, change time scale
-	this->set_ep(1.0);
-	this->set_md_time(dt0);
-
 
 	// remove any rattlers
 	kr = 0;
@@ -49,6 +49,10 @@ void packing::dynamical_matrix(string& dmstr, double h0){
 	vector<double> Fk(NDIM*N,0);						// vector of all unperturbed forces
 	Eigen::MatrixXd Pplus(NDIM*N,NDIM*N);				// matrix of all perturbed force (+h)
 	Eigen::MatrixXd Pminus(NDIM*N,NDIM*N);				// matrix of all perturbed force (-h)
+	Eigen::MatrixXd numHessian(NDIM*N,NDIM*N);			// numerical hessian
+	Eigen::MatrixXd massMatrix(NDIM*N,NDIM*N);			// mass matrix
+	Eigen::MatrixXd anHessian(NDIM*N,NDIM*N);			// analytical hessian
+
 
 	// store all unperturbed forces first
 	cout << "getting forces..." << endl;	
@@ -74,20 +78,6 @@ void packing::dynamical_matrix(string& dmstr, double h0){
 
 	// get all perturbed forces
 	for (j=0; j<N; j++){
-
-		// cout << "perturbing particle j = " << j << endl;
-		// if (pc[j] == 0){
-		// 	for (d2=0; d2<NDIM; d2++){
-		// 		l = NDIM*j+d2;
-		// 		for (i=0; i<N; i++){
-		// 			for (d1=0; d1<NDIM; d1++){
-		// 				k = NDIM*i+d1;
-		// 				P(k,l) = 0.0;
-		// 			}
-		// 		}
-		// 	}
-		// 	continue;
-		// }
 
 		// loop over perturbation directions
 		for (d2=0; d2<NDIM; d2++){
@@ -181,21 +171,33 @@ void packing::dynamical_matrix(string& dmstr, double h0){
 
 			// calculate single matrix entry
 			// Mkl = (Fk.at(k) - P(k,l) + Fk.at(l) - P(l,k))/(2*h);
-			Mkl = (Pminus(k,l) - Pplus(k,l) + Pminus(l,k) - Pplus(l,k))/(4*h);
+			Mkl = (Pminus(k,l) - Pplus(k,l) + Pminus(l,k) - Pplus(l,k))/((4.0/5.0)*h);
 
-			// print matrix
-			obj << setw(8) << k << setw(8) << l << setw(30) << setprecision(20) << Mkl << endl;
-
-			// print matrix entry
-			// cout << setw(8) << "k = " << k;
-			// cout << setw(8) << "l = " << l;
-			// cout << setw(8) << "e = " << e;
-			// cout << setw(8) << "h = " << h;
-			// cout << setw(12) << "Mkl = " << setprecision(4) << right << Mkl;
-			// cout << endl;
+			// store matrix element in dynamical matrix
+			numHessian(k,l) = Mkl;
+			numHessian(l,k) = Mkl;
 		}
-	}	
 
+		// also populate mass matrix
+		i = k % NDIM;
+		massMatrix(k,k) = m[i];
+	}
+
+	// solve generalized eigenvalue problem for numerical hessian
+	cout << "doing eigenvalue decomposition for numerical hessian" << endl;
+	Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> num_eigs(numHessian, massMatrix);
+    cout << "Generalized eigenvalues for numerical hessian (verify):\n" << num_eigs.eigenvalues() << endl;
+
+    cout << "compare to analytical hessian:" << endl;
+    compute_analytical_hessian(anHessian);
+	Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> an_eigs(anHessian, massMatrix);
+	cout << "Generalized eigenvalues for analytical hessian:\n" << an_eigs.eigenvalues() << endl;
+
+	// print everything to object
+	obj << num_eigs.eigenvalues() << endl;
+	obj << an_eigs.eigenvalues() << endl;
+
+	// close object
 	obj.close();
 }
 
@@ -225,28 +227,16 @@ void packing::perturbed_force(int i, int d, double h){
 
 
 // analytical method to calculate the DM, to check mixed numerical method
-void packing::analytical_dm(string& dmstr){
+void packing::compute_analytical_hessian(Eigen::MatrixXd& hessian){
 	// local variables
 	int i,j,jj,l,k,e,d1,d2,Nentries,DF;
 	double sij,hij,K1,K2;
 	double rij[NDIM];
 	double Mkl = 0;
 
-	// print dynamical matrix to file
-	ofstream obj(dmstr.c_str());
-	if (!obj.is_open()){
-		cout << "could not open file " << dmstr << endl;
-		throw;
-	}
-
 	// get number of total entries
 	DF = N*NDIM;
 	Nentries = (DF*(DF+1))/2;
-
-	// print header to analytical file
-	obj << N << endl;
-	obj << NDIM << endl;
-	obj << nr << endl;
 
 	// loop over pairwise particles & directions
 	for (k=0; k<DF; k++){
@@ -283,7 +273,9 @@ void packing::analytical_dm(string& dmstr){
 
 					if (hij < sij){
 						K1 = ep/(hij*sij);
-						K2 = rij[d2]*rij[d1] + (1 - (hij/sij));
+						K2 = rij[d2]*rij[d1];
+						if (d2 == d1)
+							K2 += (1 - (hij/sij));
 						Mkl += K1*K2;
 					}
 				}
@@ -299,20 +291,18 @@ void packing::analytical_dm(string& dmstr){
 
 				if (hij < sij){
 					K1 = ep/(hij*sij);
-					K2 = rij[d2]*rij[d1] + (1 - (hij/sij));
+					K2 = rij[d2]*rij[d1];
+					if (d2 == d1)
+						K2 += (1 - (hij/sij));
 					Mkl = -1*K1*K2;
 				}
 			}
 
-			// print matrix element
-			obj << setw(8) << e << setw(8) << k << setw(8) << l;
-			obj << setw(30) << setprecision(16) << Mkl;
-			obj << endl;
+			// store matrix element in analytical hessian
+			hessian(k,l) = Mkl;
+			hessian(l,k) = Mkl;
 		}
 	}
-
-	// close printing object
-	obj.close();
 }
 
 // calculate vacf from already initialized system

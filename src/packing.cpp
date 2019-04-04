@@ -254,16 +254,17 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	this->scale_sys(dphi);
 
 	// initialize measurement info
-	vlist = new vector<double>*[N];
-	cout << "Printing memory locations in double array of vectors vlist..." << endl;
-	for (i=0; i<N; i++){
-		vlist[i] = new vector<double>[NDIM];
-		for (d=0; d<NDIM; d++){
-			cout << setw(10) << &vlist[i][d] << ":    ";			
-		}
-		cout << endl;
-	}
-	cout << "vlist initialized!" << endl;
+	// vlist = new vector<double>*[N];
+	// cout << "Printing memory locations in double array of vectors vlist..." << endl;
+	// for (i=0; i<N; i++){
+	// 	vlist[i] = new vector<double>[NDIM];
+	// 	for (d=0; d<NDIM; d++){
+	// 		cout << setw(10) << &vlist[i][d] << ":    ";			
+	// 	}
+	// 	cout << endl;
+	// }
+	// cout << "vlist initialized!" << endl;
+	vlist = nullptr;
 }
 
 
@@ -311,14 +312,27 @@ packing::~packing(){
 	if (!vlist)
 		cout << "vlist pointing at null, so nothing to free..." << endl;
 	else{
+		// print out memory contents
 		for (int i=0; i<N; i++){
-			if (vlist[i]){
-				for (int d=0; d<NDIM; d++){
+			for (int d=0; d<NDIM; d++){
+				cout << setw(10) << "  size = " << vlist[i][d].size();
+				cout << setw(30) << &vlist[i][d];
+			}
+			cout << endl;
+		}
+
+		for (int i=N-1; i>=0; i--){
+			for (int d=0; d<NDIM; d++){	
+				if (vlist[i][d].size() > 0){
 					vlist[i][d].clear();
+					vlist[i][d].resize(0);
 				}
 			}
 			delete [] vlist[i];
+			cout << "vlist[" << i << "] = " << &vlist[i] << endl;
 		}
+
+		delete [] vlist;
 	}
 
 	xyzobj.close();

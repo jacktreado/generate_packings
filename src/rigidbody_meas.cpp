@@ -9,6 +9,7 @@
 */
 
 #include "rigidbody.h"
+#include "vec3.h"
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
@@ -28,6 +29,322 @@ using namespace std;
 const double PI = 4*atan(1);
 
 
+// functions for analytical dm
+void rigidbody::populate_Pmatrix(Eigen::MatrixXd& P, int mu, int i){
+	// populate matrix with position values
+	P(0,0) = 0.0;
+	P(1,0) = -xW[mu][i][2];
+	P(2,0) = xW[mu][i][1];
+
+	P(0,1) = xW[mu][i][2];
+	P(1,1) = 0.0;
+	P(2,1) = -xW[mu][i][0];
+
+	P(0,2) = -xW[mu][i][1];
+	P(1,2) = xW[mu][i][0];
+	P(2,2) = 0.0;	
+}
+
+void rigidbody::calculate_vec_mat_cp(Eigen::MatrixXd& outMat, vec3& rightVec, vec3& matVec){
+	// calculate column-wise cross product of vector with matrix (see math in Sec 4.5 of notes)
+
+	// local variables
+	int d1,d2;
+	double vecDotP;
+
+	// get dot product of vectors
+	vecDotP = rightVec*matVec;
+
+	// loop over matrix elements, compute outer product
+	for (d1=0; d1<NDIM; d1++){
+		for (d2=0; d2<NDIM; d2++){
+			outMat(d1,d2) = rightVec.at(d1)*matVec.at(d2);
+			if (d1 == d2)
+				outMat(d1,d2) -= vecDotP;
+		}
+	}
+}
+
+void rigidbody::calculate_mass_matrix(Eigen::MatrixXd& massMatrix){
+	// local variables
+	int i,j,k,d1,d2;
+	double Iij,Sij,am,dnorm;
+
+	// NOW print out mass matrix	
+	for (i=0; i<N; i++){
+
+		// counter
+		k = DOF*i;
+
+		// get first block in mass matrix
+		for (d1=0; d1<NDIM; d1++)
+			massMatrix(k+d1,k+d1) = m[i];
+
+		// now print out upper triangle of moment of inertia tensor IN WORLD FRAME
+		for (d1=0; d1<NDIM; d1++){
+			for (d2=d1; d2<NDIM; d2++){
+				Iij = 0;
+				if (d1==d2){
+					// get diagonal element
+					for (j=0; j<Na[i]; j++){
+						// atomic mass
+						am = (4.0/3.0) * PI * pow(ar[i][j],3);
+
+						// lever arm length
+						dnorm = sqrt(xW[i][j][0]*xW[i][j][0] + xW[i][j][1]*xW[i][j][1] + xW[i][j][2]*xW[i][j][2]);
+
+						// MoI for sphere rotating around its own axis
+						Sij = (2.0/5.0)*am*pow(ar[i][j],2);
+
+						// Iij element from parallel axis theorem: https://en.wikipedia.org/wiki/Parallel_axis_theorem
+						Iij += Sij + am*(dnorm - xW[i][j][d1]*xW[i][j][d1]);
+					}
+				}
+				else{
+					// get off-diagonal element
+					for (j=0; j<Na[i]; j++){
+						// atomic mass
+						am = (4.0/3.0) * PI * pow(ar[i][j],3);
+
+						// Iij element from parallel axis theorem: https://en.wikipedia.org/wiki/Parallel_axis_theorem
+						Iij -= am*xW[i][j][d1]*xW[i][j][d2];
+
+					}
+				}
+
+				// save to massMatrix
+				massMatrix(k+NDIM+d1,k+NDIM+d2) = Iij;
+				massMatrix(k+NDIM+d2,k+NDIM+d1) = Iij;
+			}
+		}		
+	}
+}
+
+// Analytical form of the rigidbody dynamical matrix
+void rigidbody::rb_analytical_dm(string& dmstr){
+	// local variables
+	int mu,nu,alpha,fd,qd;
+	int i,j,k,l,kreal,lreal,k2real,l2real;
+	double Rij,Sij,rij,sij,kij,hij;
+	double aij[NDIM];
+
+	// open dynamical matrix file
+	ofstream obj(dmstr.c_str());
+	if (!obj.is_open()){
+		cout << "could not open file " << dmstr << endl;
+		throw;
+	}
+
+	// matrices
+	Eigen::MatrixXd M_translation_force(NDIM,NDIM);  		// matrix of derivatives of force wrt translations
+	Eigen::MatrixXd M_rotation_force(NDIM,NDIM);			// matrix of derivatives of force wrt rotations
+	Eigen::MatrixXd M_translation_torque(NDIM,NDIM);		// matrix of derivatives of torque wrt translations
+	Eigen::MatrixXd M_rotation_torque(NDIM,NDIM);			// matrix of derivatives of torque wrt rotations
+	Eigen::MatrixXd M_rotation_torque_diag(NDIM,NDIM);		// matrix of derivatives of torque wrt rotations: SPECIFICALLY FOR DIAGONAL CASE
+	Eigen::MatrixXd P_mu_i(NDIM,NDIM);						// P matrix, made of cross product of r_mu_i with Id.
+	Eigen::MatrixXd P_nu_j(NDIM,NDIM);						// P matrix, made of cross product of r_nu_j with Id.
+	Eigen::MatrixXd cP_mu_i(NDIM,NDIM);						// matrix of rel pos of atom(mu,i) crossed into columns of P(mu,i) matrix
+	Eigen::MatrixXd cP_nu_j(NDIM,NDIM);						// matrix of rel pos of atom(mu,i) crossed into columns of P(nu,j) matrix
+	Eigen::MatrixXd cP_mu_ij(NDIM,NDIM);					// matrix of columns of P matrix crossed into rij connection vector 
+
+	// dynamical matrix
+	Eigen::MatrixXd dynMatrix(DOF*N,DOF*N);					// The Big Cheese Herself, the full dynamical matrix
+	Eigen::MatrixXd massMatrix(DOF*N,DOF*N);				// The Big Cheese's little sister, the mass matrix
+
+	// vec3 objects
+	vec3 rij_uvec; 											// vector between atom (mu,i) and (nu,j)
+	vec3 mu_rel_vec;										// position of (mu,i) relative to com
+	vec3 nu_rel_vec;										// position of (nu,j) relative to com
+	vec3 c_mu_ij;											// cross product with rel position of atom (mu,i) and rij
+	vec3 c_nu_ij;											// cross product with rel position of atom (nu,j) and rij
+
+	// loop over pairwise particles
+	cout << "Looping over particles to update matrix entries..." << endl;
+	for (mu=0; mu<N; mu++){
+
+		// first loop over all particles, and calculate contribution 
+		// to sum for diagonal block matrix
+		for (nu=mu+1; nu<N; nu++){
+
+			// check if in contact
+			Rij = this->get_distance(mu,nu);
+
+			// contact distance
+			Sij = r[mu] + r[nu];
+
+			// only check couplings if in contact
+			if (Rij < Sij){
+
+				// reset block matrices
+				for (fd=0; fd<NDIM; fd++){
+					for (qd=0; qd<NDIM; qd++){
+						M_translation_force(fd,qd) = 0.0;
+						M_rotation_force(fd,qd) = 0.0;
+						M_translation_torque(fd,qd) = 0.0;
+						M_rotation_torque(fd,qd) = 0.0;
+						M_rotation_torque_diag(fd,qd) = 0.0;
+					}
+				}
+
+				for (i=0; i<Na[mu]; i++){
+					for (j=0; j<Na[nu]; j++){
+						// distance between atoms
+						rij = this->get_atomic_distance(mu,nu,i,j,aij);
+
+						// contact distance
+						sij = ar[mu][i] + ar[nu][j];						
+
+						// only check coupling if atoms in contact
+						if (rij < sij){
+
+							// populate vec3 objects
+							rij_uvec.reset(aij);
+							rij_uvec.normalize();				
+							mu_rel_vec.reset(xW[mu][i]);	
+							nu_rel_vec.reset(xW[nu][i]);								
+
+							// calculate cross products
+							c_mu_ij = mu_rel_vec % rij_uvec;
+							c_nu_ij = nu_rel_vec % rij_uvec;
+
+							// populate P matrices		
+							populate_Pmatrix(P_mu_i,mu,i);
+							populate_Pmatrix(P_nu_j,nu,j);
+
+							// calculate vector/matrix cross products
+							calculate_vec_mat_cp(cP_nu_j,mu_rel_vec,nu_rel_vec);
+							calculate_vec_mat_cp(cP_mu_i,mu_rel_vec,mu_rel_vec);
+							calculate_vec_mat_cp(cP_mu_ij,rij_uvec,mu_rel_vec);							
+
+							// calculate overlap
+							hij = (1-(rij/sij));
+
+							// effective spring constant
+							kij = ep/(rij*sij);
+							
+							// fill block matrices (compute outer products)
+							for (fd=0; fd<NDIM; fd++){
+								for (qd=0; qd<NDIM; qd++){
+									// 1. Translation-Force derivative
+									M_translation_force(fd,qd) += kij*rij_uvec.at(fd)*rij_uvec.at(qd);
+									if (fd == qd)
+										M_translation_force(fd,qd) += kij*hij;
+
+									// 2. Rotation-Force derivative
+									M_rotation_force(fd,qd) += kij*(rij_uvec.at(fd)*c_nu_ij.at(qd) + hij*P_nu_j(fd,qd));
+
+									// 3. Translation-Torque derivative
+									M_translation_torque(fd,qd) += kij*(c_mu_ij.at(fd)*rij_uvec.at(qd) - hij*P_mu_i(fd,qd));
+
+									// 4. Rotation-Torque derivatives (case where mu \neq nu)
+									M_rotation_torque(fd,qd) += kij*(c_nu_ij.at(fd)*c_mu_ij.at(qd) + hij*cP_nu_j(fd,qd));
+
+									// 4b. Rotation-Torque derivative (case where mu = nu)
+									M_rotation_torque_diag(fd,qd) += kij*(c_mu_ij.at(fd)*c_mu_ij.at(qd) + hij*(cP_mu_i(fd,qd) - rij*cP_mu_ij(fd,qd)));
+								}
+							}
+						}
+					}
+				}
+
+				// update off-diagonal and diagonal blocks from sums over atoms
+
+				// NOTE: since k,l both start at 0, this is a loop over the whole block matrix
+				// D_mu_nu, so diagonal blocks are completely accounted for
+
+				// ALSO NOTE: we access by k-NDIM and l-NDIM below when k,l > NDIM (for rotational dofs)
+				// because above we allocate each block matrix as 3x3
+				for (k=0; k<DOF; k++){
+					for (l=0; l<DOF; l++){
+						// entries in actual dynamical matrix
+						kreal = DOF*mu + k;			// row of off-diagonal(upper T)
+						lreal = DOF*nu + l;			// column of off-diagonal (upper T)
+						k2real = DOF*mu + l;		// diagonal row
+						l2real = DOF*nu + k;		// diagonal column
+
+						// add elements from correct matrix, and calculate contribution to case when mu = nu
+						if (k < NDIM){
+							// translation-force
+							if (l < NDIM){
+								// off diagonal (= D_mu_nu)
+								dynMatrix(kreal,lreal) = M_translation_force(k,l);
+
+								// add to diagonal D_mu_mu
+								dynMatrix(kreal,k2real) -= M_translation_force(k,l);
+
+								// add TRANSPOSE to diagonal D_nu_nu
+								dynMatrix(lreal,l2real) -= M_translation_force(k,l);
+							}
+							// rotation-force
+							else{
+								// off diagonal (= D_mu_nu)
+								dynMatrix(kreal,lreal) = M_rotation_force(k,l-NDIM);
+
+								// add to diagonal D_mu_mu
+								dynMatrix(kreal,k2real) -= M_rotation_force(k,l-NDIM);
+
+								// add TRANSPOSE of translation-torque to diagonal D_nu_nu
+								dynMatrix(lreal,l2real) -= M_translation_torque(k,l-NDIM);
+							}
+						}
+						else{
+							// translation-torque
+							if (l < NDIM){
+								// off diagonal (= D_mu_nu)
+								dynMatrix(kreal,lreal) = M_translation_torque(k-NDIM,l);
+
+								// add to diagonal D_mu_mu
+								dynMatrix(kreal,k2real) -= M_translation_torque(k-NDIM,l);
+
+								// add TRANSPOSE of rotation-force to diagonal D_nu_nu
+								dynMatrix(lreal,l2real) -= M_rotation_force(k-NDIM,l);
+							}
+							// rotation-torque
+							else{
+								// off diagonal (= D_mu_nu)
+								dynMatrix(kreal,lreal) = M_rotation_torque(k-NDIM,l-NDIM);
+
+								// add to diagonal D_mu_mu (slightly different than off-diag matrix)
+								dynMatrix(kreal,k2real) -= M_rotation_torque_diag(k-NDIM,l-NDIM);
+
+								// add TRANSPOSE to diagonal D_nu_nu (slightly different than off-diag matrix)
+								dynMatrix(lreal,l2real) -= M_rotation_torque_diag(k-NDIM,l-NDIM);
+							}
+						}
+
+						// make sure matrix is symmetric
+						dynMatrix(lreal,kreal) = dynMatrix(kreal,lreal);
+					}
+				}				
+
+			}
+		}
+	}
+
+	// calculate mass matrix
+	cout << "calculating mass matrix..." << endl;
+	this->calculate_mass_matrix(massMatrix);
+
+	// solve generalized eigenvalue equation
+	cout << "doing eigenvalue decomposition" << endl;
+	Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> es(dynMatrix, massMatrix);
+    cout << "Generalized eigenvalues (verify):\n" << es.eigenvalues() << endl;
+
+    // print eigenvalues of dynamical matrix info to file
+    obj << N << endl;
+	obj << DOF << endl;
+	obj << nr << endl;
+	obj << ((N-nr)*DOF + NDIM - 1) - this->get_c_sum() << endl;
+	obj << dynMatrix << endl;
+	obj << massMatrix << endl;
+    obj << es.eigenvalues() << endl;
+
+    // close object
+    obj.close();
+}
+
+
+// numerical form
 void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 	// local variables
 	int i,j,d,k,l,e,d1,d2,nr,kr;
@@ -158,7 +475,7 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 
 			// calculate single matrix entry
 			// Mkl = (Fk.at(k) - P(k,l) + Fk.at(l) - P(l,k))/(2*h);
-			Mkl = (Pminus(k,l) - Pplus(k,l) + Pminus(l,k) - Pplus(l,k))/(4*h);
+			Mkl = (Pminus(k,l) - Pplus(k,l) + Pminus(l,k) - Pplus(l,k))/(4.0*h);
 			dynMatrix(k,l) = Mkl;
 			dynMatrix(l,k) = Mkl;
 

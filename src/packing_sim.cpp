@@ -855,6 +855,45 @@ void packing::fire(){
 ================================== 
 */
 
+
+void packing::rescale_lengths(double len){
+	int i,d;
+
+	// scale boundaries
+	for (d=0; d<NDIM; d++)
+		L[d] /= len;
+
+	// loop over particles, scale all length-y things
+	for (i=0; i<N; i++){
+		// scale radii	
+		r[i] /= len;
+
+		// scale volumes
+		m[i] /= pow(len,NDIM);
+
+		// scale positions
+		for (d=0; d<NDIM; d++)
+			x[i][d] /= len;
+
+		// scale velocities
+		for (d=0; d<NDIM; d++)
+			v[i][d] /= len;
+	}
+
+	// scale time, ASSUMING ENERGY STAYS FIXED
+	dt /= pow(len,1+(NDIM/2.0));
+	dtmax /= pow(len,1+(NDIM/2.0));
+
+	// if NLCL engaged, scale rcut
+	if (NCL > -1) {
+		this->scale_rcut(1/len);
+		if (NCL > 3)
+			this->update_cell();
+
+		this->update_neighborlist();
+	}
+}
+
 void packing::scale_sys(double dphi){
 	int i,d;
 	double s,msum,vol;	

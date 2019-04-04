@@ -10,6 +10,7 @@
 #include "Quaternion.h"
 #include "rigidbody.h"
 #include "packing.h"
+#include "vec3.h"
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>

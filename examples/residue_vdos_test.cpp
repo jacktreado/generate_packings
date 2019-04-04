@@ -1,6 +1,7 @@
 // test for reading in info to rigid body class
 
 #include "rigidbody.h"
+#include "vec3.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -18,8 +19,8 @@ int main(int argc, char *argv[]) {
 	string input_str = argv[2];		// input file
 
 	// dynamical matrix variables
-	string dm_str = "/Users/JackTreado/_pv/vdos/mixed/res_dm.dat"; 		// dynamical matrix file
-	double dphiDM = 1e-14;
+	string dm_str = "/Users/JackTreado/_pv/vdos/mixed/res_analytical_dm.dat"; 		// dynamical matrix file
+	double dphiDM = 1e-3;
 
 	// get int for number of particles
 	stringstream Nss(N_str);
@@ -106,7 +107,8 @@ int main(int argc, char *argv[]) {
 		cout << "energy minimization complete!" << endl;
 
 		cout << "starting to calculate the dynamical matrix..." << endl;
-		respack.rb_dynamical_matrix(dm_str,h);
+		// respack.rb_dynamical_matrix(dm_str,h);
+		respack.rb_analytical_dm(dm_str);
 		cout << "calc complete! printed to " << dm_str << ". " << endl;	
 	}
 

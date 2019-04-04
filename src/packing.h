@@ -2,6 +2,9 @@
 #define PACKING_H
 
 #include <iostream>
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
+#include <Eigen/Eigenvalues>
 #include <cmath>
 #include <fstream>
 #include <string>
@@ -228,12 +231,13 @@ public:
 	void nlcl_check(int t);
 
 	// growth
+	void rescale_lengths(double len);
 	void scale_sys(double dphi);
 
 	// measurements
 	void fire_umin(int NTmax, double Ktol);	
 	void dynamical_matrix(std::string& dmstr, double h0);
-	void analytical_dm(std::string& dmstr);
+	void compute_analytical_hessian(Eigen::MatrixXd& hessian);
 	void perturbed_force(int i, int d, double h);
 
 	void calc_vacf(int NT, int vsave, double T0, std::ofstream& obj);
