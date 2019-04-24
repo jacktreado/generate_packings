@@ -107,8 +107,8 @@ int main(int argc, char *argv[]) {
 		cout << "energy minimization complete!" << endl;
 
 		cout << "starting to calculate the dynamical matrix..." << endl;
-		// respack.rb_dynamical_matrix(dm_str,h);
-		respack.rb_analytical_dm(dm_str);
+		respack.rb_dynamical_matrix(dm_str,h);
+		// respack.rb_analytical_dm(dm_str);
 		cout << "calc complete! printed to " << dm_str << ". " << endl;	
 	}
 

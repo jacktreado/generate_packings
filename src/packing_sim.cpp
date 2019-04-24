@@ -8,14 +8,6 @@
 */
 
 #include "packing.h"
-#include <stdio.h>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <cmath>
-#include <vector>
 
 using namespace std;
 
@@ -117,7 +109,7 @@ void packing::rand_vel_init(double tmp0){
     vs = sqrt(tmp0/ek);
     for (i=0; i<N; i++){
     	for (d=0; d<NDIM; d++)
-        	v[i][d] /= vs;
+        	v[i][d] *= vs;
     }
 }
 
@@ -275,11 +267,18 @@ void packing::hs_force(){
 }
 
 
-void packing::vel_update(){
+void packing::vel_update(bool neglect_rattlers){
 	int i,d;
 	double vel, anew;
 
 	for (i=0; i<N; i++){
+
+		// ngelect rattlers if the input exists and is true
+		if (neglect_rattlers){
+			if (pc[i] == 0)
+				continue;
+		}
+
 		for (d=0; d<NDIM; d++){
 			vel = v[i][d];
 
@@ -291,7 +290,6 @@ void packing::vel_update(){
 		}
 	}
 }
-
 
 // remove particles with unconstranted dof
 int packing::rmv_rattlers(int& krcrs) {	

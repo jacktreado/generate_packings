@@ -8,14 +8,6 @@
 */
 
 #include "packing.h"
-#include <stdio.h>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <cmath>
-#include <vector>
 
 using namespace std;
 

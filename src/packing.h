@@ -1,13 +1,16 @@
 #ifndef PACKING_H
 #define PACKING_H
 
-#include <iostream>
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 #include <Eigen/Eigenvalues>
-#include <cmath>
+#include <stdio.h>
+#include <iostream>
+#include <iomanip>
 #include <fstream>
+#include <stdlib.h>
 #include <string>
+#include <cmath>
 #include <vector>
 
 /// This is the packing base class. The rigidbody class inherits from it.
@@ -88,7 +91,7 @@ public:
 	void initialize_NC() {NC = (N * (N - 1)) / 2;}
 	void initialize_box(double val);
 	void initialize_particles();
-	void initialize_particles(int seed, double alpha, double rad);
+	void initialize_particles(double alpha, double rad);
 	void initialize_nlcl();
 	void nlcl_null();
 	void setup_nlcl();
@@ -193,7 +196,7 @@ public:
 	double hs(double sij, double xij);
 	void hs_force();
 	void hs_force_nn();
-	void vel_update();
+	void vel_update(bool = false);
 	int rmv_rattlers(int& krcrs);
 	void catch_nans(int t);
 
@@ -236,12 +239,16 @@ public:
 
 	// measurements
 	void fire_umin(int NTmax, double Ktol);	
-	void dynamical_matrix(std::string& dmstr, double h0);
+	void dynamical_matrix(std::ofstream& dmobj, double h0);
+	void all_mode_perturbation(std::ofstream& dmobj, int NT, int vsave, double T0);
+	void single_mode_perturbation(std::ofstream& dmobj, int mode, int NT, int vsave, double T0);
+	void compute_numerical_hessian(Eigen::MatrixXd& hessian, Eigen::MatrixXd& massMatrix, double h);
 	void compute_analytical_hessian(Eigen::MatrixXd& hessian);
+	void compute_mass_matrix(Eigen::MatrixXd& massMatrix);
 	void perturbed_force(int i, int d, double h);
 
-	void calc_vacf(int NT, int vsave, double T0, std::ofstream& obj);
-	void get_vacf(int t, int vsave, std::vector<double>& numer, double& denom);
+	void calc_vacf(int NT, int NTeq, int vsave, int vinit, double T0, std::ofstream& obj);
+	void get_vacf(int tcurrent, std::vector<double>& numer, double& denom);
 	void finish_vacf(int NT, int vsave, std::vector<double>& numer, double& denom, std::vector<double>& vacf);
 	void print_vacf(int NT, int vsave, std::vector<double>& vacf, std::ofstream& obj);
 

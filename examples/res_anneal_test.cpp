@@ -1,11 +1,6 @@
 // test for reading in info to rigid body class
 
 #include "rigidbody.h"
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cstdlib>
-#include <sstream>
 
 using namespace std;
 
@@ -43,17 +38,17 @@ int main(int argc, char *argv[]) {
 
 	ep = 1.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
-	dt = 0.01;			// time step (units of md time)	
+	dt = 0.02;			// time step (units of md time)	
 	plotskip = 500;	// # of steps to skip plotting
 	phi0 = 0.01;			// initial packing fraction
 	dphi = 0.001;		// initial packing fraction step
-	Utol = N * 1e-16;
-	Ktol = N * 1e-30;	
+	Utol = N * 1e-8;
+	Ktol = N * 1e-20;	
 
 	// ANNEALING PARAMETERS
-	tmp0 = 1e-16;		// initial temperature (and 10*kick temperature)
-	fskip = 20;			// number of steps between fire minimizations
-	phimin = 0.3;		// minimum packing fraction to try to anneal
+	tmp0 = 1e-1;		// initial temperature (and 10*kick temperature)
+	fskip = 2000;			// number of steps between fire minimizations
+	phimin = 0.35;		// minimum packing fraction to try to anneal
 
 	// scale particles
 	respack.rb_scale(phi0);

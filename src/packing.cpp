@@ -8,14 +8,6 @@
 */
 
 #include "packing.h"
-#include <stdio.h>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <cmath>
-#include <vector>
 
 using namespace std;
 
@@ -112,7 +104,7 @@ packing::packing(string &str, int ndim, int s){
 		aold[i] = new double[NDIM];
 		pc[i] = 0;
 		for (d=0; d<NDIM; d++){
-			v[i][d] = drand48();
+			v[i][d] = 0.0;
 			F[i][d] = 0.0;
 			aold[i][d] = 0.0;
 		}
@@ -168,7 +160,7 @@ packing::packing(string &str, int ndim, int s){
 }
 
 // N particles using neighbor list
-packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, int seed){
+packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, int s){
 	// set initial seed
 	srand48(seed);
 
@@ -181,6 +173,7 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	N = n;
 	NDIM = ndim;
 	DOF = NDIM;
+	seed = s;
 	NCL = nc;
 	NCELLS = pow(nc,NDIM);
 	nnupdate = nnu;
@@ -211,7 +204,7 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 
 	// random initial positions & velocities, set force to 0, r to phi0 val
 	cout << "initializing particles..." << endl;
-	this->initialize_particles(seed,rad,alpha);	
+	this->initialize_particles(rad,alpha);	
 
 	// initialize rcut
 	cout << "initializing rcut..." << endl;
@@ -253,17 +246,7 @@ packing::packing(int n, int ndim, double alpha, double phi0, int nc, int nnu, in
 	cout << "dphi = " << dphi << endl;
 	this->scale_sys(dphi);
 
-	// initialize measurement info
-	// vlist = new vector<double>*[N];
-	// cout << "Printing memory locations in double array of vectors vlist..." << endl;
-	// for (i=0; i<N; i++){
-	// 	vlist[i] = new vector<double>[NDIM];
-	// 	for (d=0; d<NDIM; d++){
-	// 		cout << setw(10) << &vlist[i][d] << ":    ";			
-	// 	}
-	// 	cout << endl;
-	// }
-	// cout << "vlist initialized!" << endl;
+	// initially point vlist to null, only initialize if running vacf calc
 	vlist = nullptr;
 }
 
@@ -289,7 +272,6 @@ packing::~packing(){
 	delete [] x;
 	delete [] v;
 	delete [] F;
-	delete [] vlist;
 
 	// delete cell list/neighbor list variables
 	if (NCL > -1){
@@ -312,26 +294,11 @@ packing::~packing(){
 	if (!vlist)
 		cout << "vlist pointing at null, so nothing to free..." << endl;
 	else{
-		// print out memory contents
 		for (int i=0; i<N; i++){
-			for (int d=0; d<NDIM; d++){
-				cout << setw(10) << "  size = " << vlist[i][d].size();
-				cout << setw(30) << &vlist[i][d];
-			}
-			cout << endl;
-		}
-
-		for (int i=N-1; i>=0; i--){
-			for (int d=0; d<NDIM; d++){	
-				if (vlist[i][d].size() > 0){
-					vlist[i][d].clear();
-					vlist[i][d].resize(0);
-				}
-			}
+			for (int d=0; d<NDIM; d++)
+				vlist[i][d].clear();
 			delete [] vlist[i];
-			cout << "vlist[" << i << "] = " << &vlist[i] << endl;
 		}
-
 		delete [] vlist;
 	}
 
@@ -447,6 +414,9 @@ void packing::initialize_particles(){
 	// local variables
 	int i,d;
 
+	// set initial random seed
+	srand48(seed);
+
 	// random initial positions & velocities, set force to 0, r to phi0 val
 	x = new double*[N];
 	v = new double*[N];
@@ -477,7 +447,7 @@ void packing::initialize_particles(){
 		c[i] = 0;
 }
 
-void packing::initialize_particles(int seed, double rad, double alpha){
+void packing::initialize_particles(double rad, double alpha){
 	// set seed for positions
 	srand48(seed);
 

@@ -93,7 +93,7 @@ public:
 
 	// MD components
 	void verlet_first();
-	void verlet_second();	
+	void verlet_second(bool = false);	
 	void force_update();
 	int rmv_rattlers(int& krcrs);
 	int id_rattlers();	
@@ -114,10 +114,12 @@ public:
 	void rb_dynamical_matrix(string& dmstr, double h0);
 	void rb_perturbation(int i, int d, double h);
 	void rb_fire_umin(int NTmax, double Ktol);
-	void rb_analytical_dm(string& dmstr);
+	void compute_rb_analytical_hessian(Eigen::MatrixXd& hessian);
 	void populate_Pmatrix(Eigen::MatrixXd& P, int mu, int i);
 	void calculate_vec_mat_cp(Eigen::MatrixXd& outMat, vec3& rightVec, vec3& leftMat);
 	void calculate_mass_matrix(Eigen::MatrixXd& massMatrix);
+	void rb_md_velocity(double T0, int NT, int tsave, std::ofstream& obj);
+	void output_velocities(std::ofstream& obj);
 
 	// Printing
 	void print_stat();

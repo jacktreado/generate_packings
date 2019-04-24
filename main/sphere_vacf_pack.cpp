@@ -23,35 +23,44 @@ int main(int argc, char *argv[]){
 	string dphi_str = argv[4];		// delta phi (for growth)
 	string alpha_str = argv[5];		// bidispersity ratio (alpha = 1 -> monodisperse)
 	string dphiDM_str = argv[6];	// increases system size by dphi to calc DM
-	string seed_str = argv[7];		// seed
-	string config_str = argv[8];	// file to save stats
-	string stat_str = argv[9];		// file to save cluster list
-	string dm_str = argv[10];		// file to save dynamical matrix
+	string vacfNT_str = argv[7];	// vacf NT run limit
+	string vacfT0_str = argv[8];	// vacf T0 run
+	string seed_str = argv[9];		// seed
+	string config_str = argv[10];	// file to save stats
+	string stat_str = argv[11];		// file to save cluster list
+	string vacf_str = argv[12];		// file to save dynamical matrix	
 
 	// get numerical values for input variables
-	int N,NDIM,seed;
-	double dphi,phi0,alpha,dphiDM;
+	int N,NDIM,seed,vacfNT;
+	double dphi,phi0,alpha,dphiDM,vacfT0,vacfNT_tmp;
 
+	// get string stream objects
 	stringstream Nss(N_str);
-	Nss >> N;
-
 	stringstream NDIMss(NDIM_str);
-	NDIMss >> NDIM;
-
 	stringstream phi0ss(phi0_str);
-	phi0ss >> phi0;
-
 	stringstream dphiss(dphi_str);
-	dphiss >> dphi;
-
 	stringstream alphass(alpha_str);
-	alphass >> alpha;
-
 	stringstream dphiDMss(dphiDM_str);
-	dphiDMss >> dphiDM;
-
+	stringstream vacfNTss(vacfNT_str);
+	stringstream vacfT0ss(vacfT0_str);
 	stringstream s1ss(seed_str);
+
+	// put string stream values into variables
+	Nss >> N;	
+	NDIMss >> NDIM;
+	phi0ss >> phi0;
+	dphiss >> dphi;
+	alphass >> alpha;
+	dphiDMss >> dphiDM;
+	vacfNTss >> vacfNT_tmp;
+	vacfT0ss >> vacfT0;
 	s1ss >> seed;
+
+	// cast vacfNT and nsamp to ints
+	vacfNT = (int)vacfNT_tmp;
+
+	cout << "vacfNT_tmp = " << vacfNT_tmp << endl;
+	cout << "vacfNT = " << vacfNT << endl;
 
 	// jamming variables
 	int plotskip,NT,vsave;
@@ -93,10 +102,10 @@ int main(int argc, char *argv[]){
 	// print config, dynamical matrix
 	int isjammed = 0;
 	isjammed = pack.get_isjammed();
-	double h = 1e-8;	
+	double h = 1e-8;
 
 	// open output object
-	ofstream dmobj(dm_str.c_str());
+	ofstream dmobj(vacf_str.c_str());
 	if (!dmobj.is_open()){
 		cout << "file string " << vacf_str << " is not a valid file name, ending" << endl;
 		return 1;
@@ -123,15 +132,15 @@ int main(int argc, char *argv[]){
 
 		cout << "starting to calculate the dynamical matrix..." << endl;
 		pack.dynamical_matrix(dmobj,h);
-		cout << "calc complete! printed to " << dm_str << ". " << endl;
+		cout << "calc complete! printed to " << vacf_str << ". " << endl;
 
 		// // output also the velocity autocorrelation function
-		// NT = 163840;
-		// T0 = 1e-20;
-		// vsave = NT/32768;	// make sure a power of 2 for FFT
-		// cout << "Calculating VACF for comparison..." << endl;	
-		// pack.calc_vacf(NT,vsave,T0,vacf_obj);
-		// cout << "VACF calculation complete!" << endl;
+		vsave = 64;
+		cout << "Calculating VACF for comparison..." << endl;
+		cout << "vacfNT = " << vacfNT << endl;
+		cout << "vsave = " << vsave << endl;
+		pack.calc_vacf(vacfNT,vsave,1,vacfT0,dmobj);
+		cout << "VACF calculation complete!" << endl;
 	}	
 
 

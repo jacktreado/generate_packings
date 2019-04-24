@@ -7,18 +7,7 @@
 
 */
 
-#include "Quaternion.h"
 #include "rigidbody.h"
-#include "packing.h"
-#include "vec3.h"
-#include <stdio.h>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <cmath>
-#include <vector>
 
 using namespace std;
 
@@ -1301,11 +1290,18 @@ void rigidbody::verlet_first() {
 	}
 }
 
-void rigidbody::verlet_second() {
+void rigidbody::verlet_second(bool neglect_rattlers) {
 	int i, d;
 	double vel, anew;
 
 	for (i = 0; i < N; i++) {
+
+		// if input exists and is true, then do not update rattler velocities
+		if (neglect_rattlers){
+			if (pc[i] == 0)
+				continue;
+		}
+
 		for (d = 0; d < NDIM; d++) {
 			// update angular momentum
 			LW[i][d] = LWhalf[i][d] + 0.5 * dt * TqW[i][d];

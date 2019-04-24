@@ -9,18 +9,6 @@
 */
 
 #include "rigidbody.h"
-#include "vec3.h"
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
-#include <stdio.h>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <cmath>
-#include <vector>
 
 using namespace Eigen;
 using namespace std;
@@ -121,19 +109,12 @@ void rigidbody::calculate_mass_matrix(Eigen::MatrixXd& massMatrix){
 }
 
 // Analytical form of the rigidbody dynamical matrix
-void rigidbody::rb_analytical_dm(string& dmstr){
+void rigidbody::compute_rb_analytical_hessian(Eigen::MatrixXd& hessian){
 	// local variables
 	int mu,nu,alpha,fd,qd;
 	int i,j,k,l,kreal,lreal,k2real,l2real;
 	double Rij,Sij,rij,sij,kij,hij;
 	double aij[NDIM];
-
-	// open dynamical matrix file
-	ofstream obj(dmstr.c_str());
-	if (!obj.is_open()){
-		cout << "could not open file " << dmstr << endl;
-		throw;
-	}
 
 	// matrices
 	Eigen::MatrixXd M_translation_force(NDIM,NDIM);  		// matrix of derivatives of force wrt translations
@@ -146,10 +127,6 @@ void rigidbody::rb_analytical_dm(string& dmstr){
 	Eigen::MatrixXd cP_mu_i(NDIM,NDIM);						// matrix of rel pos of atom(mu,i) crossed into columns of P(mu,i) matrix
 	Eigen::MatrixXd cP_nu_j(NDIM,NDIM);						// matrix of rel pos of atom(mu,i) crossed into columns of P(nu,j) matrix
 	Eigen::MatrixXd cP_mu_ij(NDIM,NDIM);					// matrix of columns of P matrix crossed into rij connection vector 
-
-	// dynamical matrix
-	Eigen::MatrixXd dynMatrix(DOF*N,DOF*N);					// The Big Cheese Herself, the full dynamical matrix
-	Eigen::MatrixXd massMatrix(DOF*N,DOF*N);				// The Big Cheese's little sister, the mass matrix
 
 	// vec3 objects
 	vec3 rij_uvec; 											// vector between atom (mu,i) and (nu,j)
@@ -267,80 +244,59 @@ void rigidbody::rb_analytical_dm(string& dmstr){
 							// translation-force
 							if (l < NDIM){
 								// off diagonal (= D_mu_nu)
-								dynMatrix(kreal,lreal) = M_translation_force(k,l);
+								hessian(kreal,lreal) = M_translation_force(k,l);
 
 								// add to diagonal D_mu_mu
-								dynMatrix(kreal,k2real) -= M_translation_force(k,l);
+								hessian(kreal,k2real) -= M_translation_force(k,l);
 
 								// add TRANSPOSE to diagonal D_nu_nu
-								dynMatrix(lreal,l2real) -= M_translation_force(k,l);
+								hessian(lreal,l2real) -= M_translation_force(k,l);
 							}
 							// rotation-force
 							else{
 								// off diagonal (= D_mu_nu)
-								dynMatrix(kreal,lreal) = M_rotation_force(k,l-NDIM);
+								hessian(kreal,lreal) = M_rotation_force(k,l-NDIM);
 
 								// add to diagonal D_mu_mu
-								dynMatrix(kreal,k2real) -= M_rotation_force(k,l-NDIM);
+								hessian(kreal,k2real) -= M_rotation_force(k,l-NDIM);
 
 								// add TRANSPOSE of translation-torque to diagonal D_nu_nu
-								dynMatrix(lreal,l2real) -= M_translation_torque(k,l-NDIM);
+								hessian(lreal,l2real) -= M_translation_torque(k,l-NDIM);
 							}
 						}
 						else{
 							// translation-torque
 							if (l < NDIM){
 								// off diagonal (= D_mu_nu)
-								dynMatrix(kreal,lreal) = M_translation_torque(k-NDIM,l);
+								hessian(kreal,lreal) = M_translation_torque(k-NDIM,l);
 
 								// add to diagonal D_mu_mu
-								dynMatrix(kreal,k2real) -= M_translation_torque(k-NDIM,l);
+								hessian(kreal,k2real) -= M_translation_torque(k-NDIM,l);
 
 								// add TRANSPOSE of rotation-force to diagonal D_nu_nu
-								dynMatrix(lreal,l2real) -= M_rotation_force(k-NDIM,l);
+								hessian(lreal,l2real) -= M_rotation_force(k-NDIM,l);
 							}
 							// rotation-torque
 							else{
 								// off diagonal (= D_mu_nu)
-								dynMatrix(kreal,lreal) = M_rotation_torque(k-NDIM,l-NDIM);
+								hessian(kreal,lreal) = M_rotation_torque(k-NDIM,l-NDIM);
 
 								// add to diagonal D_mu_mu (slightly different than off-diag matrix)
-								dynMatrix(kreal,k2real) -= M_rotation_torque_diag(k-NDIM,l-NDIM);
+								hessian(kreal,k2real) -= M_rotation_torque_diag(k-NDIM,l-NDIM);
 
 								// add TRANSPOSE to diagonal D_nu_nu (slightly different than off-diag matrix)
-								dynMatrix(lreal,l2real) -= M_rotation_torque_diag(k-NDIM,l-NDIM);
+								hessian(lreal,l2real) -= M_rotation_torque_diag(k-NDIM,l-NDIM);
 							}
 						}
 
 						// make sure matrix is symmetric
-						dynMatrix(lreal,kreal) = dynMatrix(kreal,lreal);
+						hessian(lreal,kreal) = hessian(kreal,lreal);
 					}
 				}				
 
 			}
 		}
-	}
-
-	// calculate mass matrix
-	cout << "calculating mass matrix..." << endl;
-	this->calculate_mass_matrix(massMatrix);
-
-	// solve generalized eigenvalue equation
-	cout << "doing eigenvalue decomposition" << endl;
-	Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> es(dynMatrix, massMatrix);
-    cout << "Generalized eigenvalues (verify):\n" << es.eigenvalues() << endl;
-
-    // print eigenvalues of dynamical matrix info to file
-    obj << N << endl;
-	obj << DOF << endl;
-	obj << nr << endl;
-	obj << ((N-nr)*DOF + NDIM - 1) - this->get_c_sum() << endl;
-	obj << dynMatrix << endl;
-	obj << massMatrix << endl;
-    obj << es.eigenvalues() << endl;
-
-    // close object
-    obj.close();
+	}	
 }
 
 
@@ -370,7 +326,8 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 	Eigen::MatrixXd Pminus(DOF*N,DOF*N);			// matrix of all perturbed force (-h)
 
 	// matrices to do eigenvalue decomposition in c++
-	Eigen::MatrixXd dynMatrix(DOF*N,DOF*N);
+	Eigen::MatrixXd numHessian(DOF*N,DOF*N);
+	Eigen::MatrixXd anHessian(DOF*N,DOF*N);
 	Eigen::MatrixXd massMatrix(DOF*N,DOF*N);	
 
 	// output all forces to check
@@ -454,99 +411,51 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 
 
 	// loop over particles, get forces as a function of particle perturbations
-	// definition from: https://v8doc.sas.com/sashtml/ormp/chap5/sect28.htm
+	// definition from: https://v8doc.sas.com/sashtml/ormp/chap5/sect28.htm	
 
-	// print dynamical matrix to file
+	// calculate numerical matrix elements
+	for (k=0; k<DOF*N; k++){
+		for (l=k; l<DOF*N; l++){
+			// calculate single matrix entry
+			// Mkl = (Fk.at(k) - P(k,l) + Fk.at(l) - P(l,k))/(2*h);
+			Mkl = (Pminus(k,l) - Pplus(k,l) + Pminus(l,k) - Pplus(l,k))/(4.0*h);
+			numHessian(k,l) = Mkl;
+			numHessian(l,k) = Mkl;
+		}
+	}
+
+	// calculate mass matrix
+	cout << "calculating mass matrix..." << endl;
+	this->calculate_mass_matrix(massMatrix);
+
+	// solve generalized eigenvalue equation
+	cout << "doing eigenvalue decomposition on numerical Hessian" << endl;
+	Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> numEigs(numHessian, massMatrix);
+    cout << "Generalized numerical eigenvalues (verify):\n" << numEigs.eigenvalues() << endl;
+
+    // get analytical hessian    
+    cout << "computing elements of analytical hessian matrix..." << endl;
+    this->compute_rb_analytical_hessian(anHessian);
+
+    cout << "doing eigenvalue decomposition on analytical Hessian" << endl;
+    Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> anEigs(anHessian, massMatrix);
+
+    // print dynamical matrix to file
 	ofstream obj(dmstr.c_str());
 	if (!obj.is_open()){
 		cout << "could not open file " << dmstr << endl;
 		throw;
 	}
 
-	// print out matrix
-	obj << N << endl;
+    // print eigenvalues of dynamical matrix info to file
+    obj << N << endl;
 	obj << DOF << endl;
 	obj << nr << endl;
-	obj << ((N-nr)*DOF + NDIM - 1) - this->get_c_sum() << endl;
-	for (k=0; k<DOF*N; k++){
-		for (l=k; l<DOF*N; l++){
-			// get matrix entry
-			e = (N*DOF)*k + l - (((k+1)*k)/2);
+    obj << numEigs.eigenvalues() << endl;
+    obj << anEigs.eigenvalues() << endl;
 
-			// calculate single matrix entry
-			// Mkl = (Fk.at(k) - P(k,l) + Fk.at(l) - P(l,k))/(2*h);
-			Mkl = (Pminus(k,l) - Pplus(k,l) + Pminus(l,k) - Pplus(l,k))/(4.0*h);
-			dynMatrix(k,l) = Mkl;
-			dynMatrix(l,k) = Mkl;
-
-			// print matrix
-			obj << setw(8) << k << setw(8) << l << setw(30) << setprecision(20) << Mkl << endl;
-		}
-	}
-
-	// NOW print out mass matrix	
-	for (i=0; i<N; i++){
-
-		// first print out mass of residue
-		obj << m[i] << endl;
-
-		// counter
-		k = DOF*i;
-
-		// get first block in mass matrix
-		for (d1=0; d1<NDIM; d1++){
-			massMatrix(k+d1,k+d1) = m[i];
-		}
-
-		// now print out upper triangle of moment of inertia tensor IN WORLD FRAME
-		for (d1=0; d1<NDIM; d1++){
-			for (d2=d1; d2<NDIM; d2++){
-				Iij = 0;
-				if (d1==d2){
-					// get diagonal element
-					for (j=0; j<Na[i]; j++){
-						// atomic mass
-						am = (4.0/3.0) * PI * pow(ar[i][j],3);
-
-						// lever arm length
-						dnorm = sqrt(xW[i][j][0]*xW[i][j][0] + xW[i][j][1]*xW[i][j][1] + xW[i][j][2]*xW[i][j][2]);
-
-						// MoI for sphere rotating around its own axis
-						Sij = (2.0/5.0)*am*pow(ar[i][j],2);
-
-						// Iij element from parallel axis theorem: https://en.wikipedia.org/wiki/Parallel_axis_theorem
-						Iij += Sij + am*(dnorm - xW[i][j][d1]*xW[i][j][d1]);
-					}
-				}
-				else{
-					for (j=0; j<Na[i]; j++){
-						// atomic mass
-						am = (4.0/3.0) * PI * pow(ar[i][j],3);
-
-						// Iij element from parallel axis theorem: https://en.wikipedia.org/wiki/Parallel_axis_theorem
-						Iij -= am*xW[i][j][d1]*xW[i][j][d2];
-
-					}
-				}
-
-				// print out Iij entry
-				obj << Iij << endl;
-
-				// save to massMatrix
-				massMatrix(k+NDIM+d1,k+NDIM+d2) = Iij;
-				massMatrix(k+NDIM+d2,k+NDIM+d1) = Iij;
-			}
-		}		
-	}
-
-	// do eigenvalue decomposition in c++
-	cout << "doing eigenvalue decomposition" << endl;
-
-	Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> es(dynMatrix, massMatrix);
-    cout << "Generalized eigenvalues (verify):\n" << es.eigenvalues() << endl;
-    // cout << "Generalized eigenvectors (verify):\n" << es.eigenvectors().rightCols(N*DOF).topRows(N*DOF) << endl;
-
-	obj.close();
+    // close object
+    obj.close();
 }
 
 
@@ -597,7 +506,6 @@ void rigidbody::rb_perturbation(int i, int d, double h){
 
 
 // PE minimizer
-
 void rigidbody::rb_fire_umin(int NTmax, double Ktol){
 	// local variables
 	int t,kr;	
@@ -624,20 +532,20 @@ void rigidbody::rb_fire_umin(int NTmax, double Ktol){
 		// update nearest neighbor lists if applicable
 		if (t % nnupdate == 0 && NCL > -1){
 			cout << "^ ";
-			this->update_nlcl(t);
+			update_nlcl(t);
 		}
 
 		// advance quaternions, positions
-		this->verlet_first();
+		verlet_first();
 
 		// update forces
-		this->force_update();
+		force_update();
 
 		// include fire relaxation
-		this->rb_fire();
+		rb_fire();
 
 		// advance angular momentum
-		this->verlet_second();	
+		verlet_second();	
 
 		// check for rattlers
 		kr = 0;
@@ -658,8 +566,8 @@ void rigidbody::rb_fire_umin(int NTmax, double Ktol){
 
 		// output information
 		if (t % plotskip == 0) {
-			this->monitor_header(t);
-			this->rigidbody_md_monitor();
+			monitor_header(t);
+			rigidbody_md_monitor();
 			cout << "** ROOT SEARCH: " << endl;
 			cout << "phi = " << phi << endl;
 			cout << "epconst = " << epconst << endl;
@@ -680,12 +588,125 @@ void rigidbody::rb_fire_umin(int NTmax, double Ktol){
 
 
 
+// out velocities for res VACF trajectory
+void rigidbody::rb_md_velocity(double T0, int NT, int tsave, ofstream& obj){
+	// local variables
+	int i,t,NTeq,kr,nr;
+	double rmin;
+	bool neglect_rattlers = true;
+
+	// rescale system to H atom = 1.0 A, unit energy scale
+	ep = 1.0;
+	rmin = 1e6;
+	for (i=0; i<Na[0]; i++){
+		if (ar[0][i] < rmin)
+			rmin = ar[0][i];
+	}
+	rb_rescale(rmin);
+	set_md_time(0.01);
+	set_dtmax(10.0);
 
 
+	// remove any rattlers
+	kr = 0; 
+	nr = this->rmv_rattlers(kr);
+	cout << "Before velocity run: There are nr = " << nr << " rattlers" << endl;
 
+	// randomly assign velocities
+	rand_vel_init(T0);
 
+	// output header values to object
+	obj << N << endl;			// number of residues
+	obj << T0 << endl;			// constant temperature
+	obj << NT << endl;			// number of time steps	
+	obj << tsave << endl;		// time between samples
+	obj << dt << endl;			// MD time scale in particle units
 
+	// loop over over equilibration time (always 1 quarter of NT)
+	NTeq = NT/4;
 
+	for (t=0; t<NTeq; t++){
+		// update nearest neighbor lists if applicable
+		if (t % nnupdate == 0 && NCL > -1){
+			cout << "^ ";
+			update_nlcl(t);
+		}
+
+		// advance quaternions, positions
+		verlet_first();
+
+		// update forces
+		force_update();
+
+		// advance angular momentum
+		verlet_second(neglect_rattlers);
+
+		if (t % (5*plotskip) == 0){
+			cout << " EQUILIBRATION " << endl;
+			monitor_header(t);
+			rigidbody_md_monitor();			
+			cout << endl;
+			cout << endl;
+		}
+
+		// rescale velocities to maintain temperature
+		rescale_velocities(T0);
+	}
+
+	// loop over time, output variables every vsave
+	for (t=0; t<NT; t++){
+		// update nearest neighbor lists if applicable
+		if (t % nnupdate == 0 && NCL > -1){
+			cout << "^ ";
+			update_nlcl(t);
+		}
+
+		// advance quaternions, positions
+		verlet_first();
+
+		// update forces
+		force_update();
+
+		// advance angular momentum
+		verlet_second(neglect_rattlers);
+
+		// output trajectory every vsave steps
+		if (t % tsave == 0)
+			output_velocities(obj);
+
+		if (t % plotskip == 0){
+			cout << " PRODUCTION " << endl;
+			monitor_header(t);
+			rigidbody_md_monitor();
+			cout << endl;
+			cout << endl;
+		}
+	}
+}
+
+// output velocitie and angular velocities for every particle
+void rigidbody::output_velocities(ofstream& obj){
+	// local variables
+	int i,d,w,p;
+
+	// width and precision of output
+	w = 35;
+	p = 16;
+
+	// output particle velocities and angular velocities
+	for (i=0; i<N; i++){
+		// velocities
+		for (d=0; d<NDIM; d++)
+			obj << setw(w) << setprecision(p) << v[i][d];		
+
+		// angular velocities
+		for (d=0; d<NDIM; d++)
+			obj << setw(w) << setprecision(p) << wM[i][d];
+
+		// line break for next particle
+		obj << endl;
+	}
+}
 
 
 
@@ -722,15 +743,3 @@ void rigidbody::single_fire(int t){
 	this->verlet_second();
 }
 
-
-
-
-
-// FUNCTION to read in positions from config file,
-//
-//
-//
-
-// rigidbody::contact_break(int NT, double tmp0){
-
-// }
