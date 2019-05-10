@@ -74,6 +74,7 @@ public:
 	void initialize_quaternions();
 	void update_quaternions();
 	void rand_vel_init(double T1);
+	void scramble();
 
 	// quaternions
 	void q_step();

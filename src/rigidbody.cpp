@@ -466,6 +466,35 @@ void rigidbody::rand_vel_init(double T1) {
     this->rescale_velocities(T1);
 }
 
+// scramble particle positions and orientations
+void rigidbody::scramble(){
+
+	// local variables
+	int i,j,d;
+
+	// seed random number generator
+	srand48(seed);
+
+	// scramble particles
+	for (i=0; i<N; i++){
+		// scramble particle centers of mass
+		for (d=0; d<NDIM; d++)
+			x[i][d] = L[d]*drand48();
+
+		// scramble orientations
+		q[i].set_s(drand48());
+		q[i].set_x(drand48());
+		q[i].set_y(drand48());
+		q[i].set_z(drand48());
+
+		// normalize each quaternion
+		q[i].normalize();
+	}
+
+	// update xM based on quaternions and xW
+	pos_frot();
+}
+
 
 /*
 ==================================
@@ -551,7 +580,7 @@ void rigidbody::update_quaternions() {
 	}
 
 	// update xW based on quaternions and xM
-	this->pos_frot();
+	pos_frot();
 }
 
 int rigidbody::get_ac_sum() {
