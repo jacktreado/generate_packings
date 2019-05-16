@@ -23,6 +23,70 @@ const double PI = 3.1415926;
 ================================== 
 */
 
+void packing::print_data(){
+	// throw error if file not opened
+	if (!configobj.is_open()){
+		cout << "ERROR: config file not opened!" << endl;		
+		exit(1);
+	}
+
+	// local variables
+	int w,p,i,d;
+	w = 10;
+	p = 6;	
+
+	// print stat info
+	configobj << setw(w) << "isjammed: " << isjammed << endl;
+	configobj << setw(w) << "N: " << N << endl;
+	configobj << setw(w) << "L: ";
+	for (d=0; d<NDIM; d++)
+		configobj << setw(w) << L[d];
+	configobj << endl;
+	configobj << setw(w) << "phi: " << phi << endl;
+	configobj << setw(w) << "U: " << U << endl;
+	configobj << setw(w) << "K: " << K << endl;
+	configobj << setw(w) << "csum: " << this->get_c_sum() << endl;
+	configobj << setw(w) << "nr: " << nr << endl;
+	configobj << setw(w) << "niso: " << DOF*(N-nr)-NDIM+1 << endl;
+	configobj << setw(w) << "niso max: " << DOF*N-NDIM+1 << endl;
+	configobj << setw(w) << "pc: ";
+	this->print_pc(configobj,w);
+	configobj << setw(w) << "contact matrix: " << endl;
+	this->print_c_mat(configobj);
+	configobj << setw(w) << "configuration: " << endl;
+
+	// print configuration
+	w = 25;
+	p = 14;	
+
+	// print header
+	configobj << right << setw(w) << "id";
+	configobj << right << setw(w) << "r";
+	for (d=0; d<NDIM; d++){
+		if (d == 0)
+			configobj << right << setw(w) << "x";
+		else if (d == 1)
+			configobj << right << setw(w) << "y";
+		else if (d == 2)
+			configobj << right << setw(w) << "z";
+		else
+			configobj << right << setw(w) << "w" << d;
+	}
+	configobj << endl;
+	for (i=0; i<w*(NDIM+2); i++)
+		configobj << "=";
+	configobj << endl;
+
+	// print data
+	for (i=0; i<N; i++){
+		configobj << setw(w) << i;
+		configobj << setw(w) << setprecision(p) << r[i];
+		for (d=0; d<NDIM; d++)
+			configobj << setw(w) << setprecision(p) << x[i][d];
+		configobj << endl;
+	}	
+}
+
 void packing::print_config(){
 	// throw error if file not opened
 	if (!configobj.is_open()){
@@ -164,17 +228,25 @@ void packing::print_xyz(){
 	// print .xyz header
 	xyzobj << N << endl;
 	xyzobj << "Lattice=\"";
-	for (d=0; d<NDIM; d++){
-		for(dd=0; dd<NDIM; dd++){
-			if (dd==d)
-				xyzobj << L[d];
-			else
-				xyzobj << " 0.0 ";
+	if (NDIM == 3){
+		for (d=0; d<NDIM; d++){
+			for(dd=0; dd<NDIM; dd++){
+				if (dd==d)
+					xyzobj << L[d];
+				else
+					xyzobj << "0.0";
+
+				if (d<NDIM-1 || dd<NDIM-1)
+					xyzobj << " ";
+			}
 		}
 	}
+	else if (NDIM == 2)
+		xyzobj << L[0] << " 0.0 0.0 0.0 " << L[1] << " 0.0 0.0 0.0 1.0";
+
 	xyzobj << "\" ";
 	xyzobj << '\t';
-	xyzobj << "Properties=species:S:1:pos:R:" <<  NDIM << ":radius:R:1" << endl;
+	xyzobj << "Properties=species:S:1:pos:R:" << NDIM << ":radius:R:1" << endl;
 
 	for (i=0; i<N; i++){
 		if (pc[i] == 0)

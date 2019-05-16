@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <cstdlib>
 #include <stdlib.h>
 #include <string>
 #include <cmath>
@@ -266,6 +267,7 @@ public:
 	void print_c_data(std::ofstream &obj);
 	void print_pc(std::ofstream &obj, int w);
 	void print_vars();
+	void print_data();
 	void print_config();
 	void print_stat();
 	void monitor_header(int t);

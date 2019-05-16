@@ -479,7 +479,16 @@ void packing::initialize_particles(double rad, double alpha){
 			r[i] = rad;	
 		else
 			r[i] = alpha*rad;
-		m[i] = (4.0/3.0)*PI*pow(r[i],3);
+
+		// get particle volumes
+		if (NDIM == 3)
+			m[i] = (4.0/3.0)*PI*pow(r[i],3);
+		else if (NDIM == 2)
+			m[i] = PI*pow(r[i],2);
+		else{
+			cout << "in initialize_particles: NDIM = " << NDIM << " not yet supported, don't know how to calculate particle volumes..." << endl;
+			exit(1);
+		}
 
 		cout << "r[" << i << "] = " << r[i] << ", m[" << i << "] = " << m[i] << endl;
 	}
