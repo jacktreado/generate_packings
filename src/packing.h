@@ -206,6 +206,8 @@ public:
 	void jamming_finder(int NT, double dphi, double Utol, double Ktol);
 	void jamming_finder_nn(double tend, double dphi, double Utol, double Ktol);
 	void fire();
+	void anneal(double tmp0, int NT, int fskip, double phimin, double dphi, double Utol, double Ktol);
+	void rescale_velocities(double T1);
 	void root_search(double& phiH, double& phiL, int& check_ratterls, int epconst,
 	                 int nr, double dphi0, double Ktol, double Utol, int t);
 

@@ -555,6 +555,173 @@ void packing::jamming_finder(int NT, double dphi, double Utol, double Ktol) {
 	}
 }
 
+void packing::anneal(double tmp0, int NT, int fskip, double phimin, double dphi, double Utol, double Ktol){
+// local variables
+	int t, kr, check_rattlers, kskip, anneal, checkphi;
+	double dphi0, phiL, phiH;
+
+	// initialize variables
+	kr = 0;
+	dphi0 = dphi;
+	phiL = -1;
+	phiH = -1;
+	check_rattlers = 0;
+
+	// constant energy checking
+	double Uold, dU, dUtol;
+	int epc, epcN, epconst;
+	epconst = 0;
+	Uold = 0;
+	dU = 0;
+	dUtol = 1e-12;
+	epc = 0;
+	epcN = 5e3;
+
+	// annealing procedure: skip fire/growth after fskip annealing steps
+	kskip = 0;
+	anneal = 0;
+	checkphi = 1;
+
+	// initialize velocities
+	rand_vel_init(tmp0);
+
+	// setup dtmax for FIRE
+	set_dtmax(10.0);
+
+	cout << "===== BEGINNING TIME LOOP ======" << endl;
+	cout << "NT = " << NT << endl;
+	cout << "dt = " << dt << endl;
+	cout << "================================" << endl << endl;
+
+	for (t = 0; t < NT; t++) {
+		// update nearest neighbor lists if applicable
+		if (t % nnupdate == 0 && NCL > -1){
+			cout << "^ ";
+			update_nlcl(t);
+		}
+
+		// only begin annealing after phi > phimin
+		if (phi > phimin && checkphi == 1){
+			anneal = 1;
+			checkphi = 0;
+		}
+
+		// first md time step
+		pos_update();
+
+		// force update
+		hs_force();
+
+		// include fire relaxation (if not annealing)
+		if (anneal == 0)
+			fire();
+		else
+			rescale_velocities(tmp0);
+			
+
+		// advance angular momentum
+		vel_update();		
+
+		// check for rattlers
+		if (check_rattlers) {
+			kr = 0;
+			nr = rmv_rattlers(kr);
+		}
+		else
+			nr = 0;
+
+		// check for constant potential energy
+		dU = abs(Uold - U);
+		if (dU < dUtol) {
+			epc++;
+			if (epc > epcN)
+				epconst = 1;
+		}
+		else {
+			epconst = 0;
+			epc = 0;
+		}
+		Uold = U;
+
+		if (epconst == 1)
+			check_rattlers = 1;
+
+		// run root search routine (if not annealing)
+		if (anneal == 0){
+			root_search(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t);
+
+			// if still growing, and energy relaxed, go back to annealing
+			if (phiH < 0 && U < Utol && checkphi ==  0){
+				anneal = 1;
+
+				// give random velocity kick
+				rand_vel_init(tmp0);
+			}
+		}
+		else{
+			kskip++;
+			if (kskip == fskip){
+				anneal = 0;
+				kskip = 0;
+			}
+		}
+
+		// output information
+		if (t % plotskip == 0) {
+			md_monitor(t,nr,-1,-1);
+			cout << "** ROOT SEARCH: " << endl;
+			cout << "phi = " << phi << endl;
+			cout << "phiL = " << phiL << endl;
+			cout << "phiH = " << phiH << endl;
+			cout << "epconst = " << epconst << endl;
+			cout << "check_rattlers = " << check_rattlers << endl;
+			cout << "nr = " << nr << endl;
+			cout << endl;
+			cout << endl;
+
+			if (xyzobj.is_open()){				
+				if (NCL > -1)
+					print_nl_xyz();
+				else
+					print_xyz();				
+			}
+			if (enobj.is_open())
+				print_en(t);
+		}
+
+		// break if jamming found
+		if (isjammed == 1)
+			break;
+		else if (isjammed == -1){
+			cout << "isjammed was found to be -1, ending..." << endl;
+			break;
+		}
+	}
+}
+
+
+void packing::rescale_velocities(double T1){
+	// local variables
+	int i,d;
+	double T0,tmpScale;
+
+	// get current kinetic energy
+	T0 = 0.0;
+	for (i=0; i<N; i++){
+		for (d=0; d<NDIM; d++)
+			T0 += 0.5*m[i]*v[i][d]*v[i][d];
+	}
+
+	// get scale for new kinetic energy
+	tmpScale = sqrt(T1/T0);
+
+	// rescale velocities and angular momenta
+	for (i=0; i<N; i++){
+		for (d=0; d<NDIM; d++)
+			v[i][d] *= tmpScale;	
+	}
+}
+
 
 void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int epconst, int nr, double dphi0, double Ktol, double Utol, int t){
 	/* 

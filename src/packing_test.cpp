@@ -218,6 +218,7 @@ void packing::monitor_scale(double dphi, double phiH, double phiL) {
 
 void packing::print_xyz(){
 	int i,d,dd,w;
+	double radSplit = 0.0;
 	w = 20;	
 
 	if (!xyzobj.is_open()){
@@ -248,15 +249,19 @@ void packing::print_xyz(){
 	xyzobj << '\t';
 	xyzobj << "Properties=species:S:1:pos:R:" << NDIM << ":radius:R:1" << endl;
 
-	for (i=0; i<N; i++){
-		if (pc[i] == 0)
-			xyzobj << setw(w) << "O";	
-		else	
-			xyzobj << setw(w) << "C";
+	// determine if multiple species or not
+	if (abs(alpha-1) > 1e-8)
+		radSplit = 1.1*r[0];
 
-		for (d=0; d<NDIM; d++){
+	for (i=0; i<N; i++){
+		if (r[i] > radSplit)
+			xyzobj << setw(w) << 'X';
+		else
+			xyzobj << setw(w) << 'Y';
+
+		for (d=0; d<NDIM; d++)
 			xyzobj << setw(w) << x[i][d];
-		}
+
 		xyzobj << setw(w) << r[i];
 		xyzobj << endl;
 	}
