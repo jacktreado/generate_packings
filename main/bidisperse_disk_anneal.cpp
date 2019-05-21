@@ -25,8 +25,8 @@ int main(int argc, char *argv[]){
 	string fskip_str 	= argv[5];		// number of annealing steps
 	string phimin_str 	= argv[6];		// minimum packing fraction for annealing
 	string tmp0_str 	= argv[7];		// annealing temperature
-	string seed_str 	= argv[5];		// seed
-	string config_str 	= argv[6];		// file to save stats and configuration
+	string seed_str 	= argv[8];		// seed
+	string config_str 	= argv[9];		// file to save stats and configuration
 
 	// get numerical values for input variables
 	int N,seed,fskip;
