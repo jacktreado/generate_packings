@@ -74,7 +74,7 @@ int main(int argc, char *argv[]){
 
 	// set parameters
 	ep = 1.0;			// energy scale (units of kbt)
-	NT = 5e7;			// total amount of time (units of sim time)
+	NT = 5e6;			// total amount of time (units of sim time)
 	dt = 0.01;			// time step (units of md time)
 	plotskip = 5e3;		// # of steps to skip plotting
 	Utol = N*1e-16;		// potential energy tolerance

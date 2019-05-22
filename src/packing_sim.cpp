@@ -756,7 +756,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 	if (phiH < 0){
 		if (gr){
 			check_rattlers = 0;
-			this->scale_sys(dphi);
+			scale_sys(dphi);
 		}
 		else if (oc){				
 			phiH = phi;
@@ -781,17 +781,20 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 			if (oc){				
 				phiH = phi;
 				dphi = -drand48() * dphi0;
+				scale_sys(dphi);
 			}
 
 			// if undercompressed, set phiL, root search
 			if (uc){
 				phiL = phi;
 				dphi = 0.5*(phiH + phiL) - phi;
+				scale_sys(dphi);
 			}
 
 			if (jammed){
 				phiL = 0.99*phi;
 				dphi = 0.5*(phiH + phiL) - phi;
+				scale_sys(dphi);
 			}
 
 		}
@@ -800,13 +803,15 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 			// if overcompressed, root search down
 			if (oc){
 				phiH = phi;
-				dphi = 0.5*(phiH + phiL) - phi;			
+				dphi = 0.5*(phiH + phiL) - phi;	
+				scale_sys(dphi);		
 			} 
 
 			// if undercompressed, root search up
 			if (uc){
 				phiL = phi;
-				dphi = 0.5*(phiH + phiL) - phi;			
+				dphi = 0.5*(phiH + phiL) - phi;
+				scale_sys(dphi);			
 			} 
 
 			// if jammed, end!
@@ -852,7 +857,7 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 		}
 	}
 
-	// // test for stalled growth
+	// test for stalled growth
 	// if (abs(dphi) < 1e-14){
 	// 	phiL = -1;
 	// 	phiH = -1;
