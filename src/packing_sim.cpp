@@ -781,35 +781,17 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 			if (oc){				
 				phiH = phi;
 				dphi = -drand48() * dphi0;
-
-				cout << endl;
-				cout << "still overcompressed..." << endl;
-				cout << "phiH set at nt = " << t << endl;
-				this->monitor_scale(dphi,phiH,phiL);				
-				cout << "continuing root search..." << endl;
 			}
 
 			// if undercompressed, set phiL, root search
 			if (uc){
 				phiL = phi;
 				dphi = 0.5*(phiH + phiL) - phi;
-
-				cout << endl;
-				cout << "relaxation found!" << endl;
-				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(dphi,phiH,phiL);
-				cout << "root search interval found, growing..." << endl;
 			}
 
 			if (jammed){
 				phiL = 0.99*phi;
 				dphi = 0.5*(phiH + phiL) - phi;
-
-				cout << endl;
-				cout << "almost jammed found!" << endl;
-				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(dphi,phiH,phiL);
-				cout << "root search interval found, growing..." << endl;
 			}
 
 		}
@@ -818,25 +800,13 @@ void packing::root_search(double& phiH, double& phiL, int& check_rattlers, int e
 			// if overcompressed, root search down
 			if (oc){
 				phiH = phi;
-				dphi = 0.5*(phiH + phiL) - phi;
-
-				cout << endl;
-				cout << "overcompressed state found!" << endl;
-				cout << "phiH set at nt = " << t << endl;
-				this->monitor_scale(dphi,phiH,phiL);
-				cout << "decreasing root search guess..." << endl;					
+				dphi = 0.5*(phiH + phiL) - phi;			
 			} 
 
 			// if undercompressed, root search up
 			if (uc){
 				phiL = phi;
-				dphi = 0.5*(phiH + phiL) - phi;
-
-				cout << endl;
-				cout << "relaxed state found!" << endl;
-				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(dphi,phiH,phiL);
-				cout << "increasing root search guess..." << endl;					
+				dphi = 0.5*(phiH + phiL) - phi;			
 			} 
 
 			// if jammed, end!
@@ -982,7 +952,6 @@ void packing::fire(){
 		np++;
 	}		
 	else if (P < 0){
-		cout << "* ";
 		// reset K to measure based on new info
 		K = 0;
 

@@ -20,12 +20,12 @@ int main(){
 	string config_str, xyz_str;
 
 	// parameters
-	N 		= 32;
+	N 		= 6;
 	NDIM 	= 2;
 	phi0 	= 0.01;
 	dphi 	= 1e-3;
 	alpha 	= 1.4;
-	seed 	= 14234123;
+	seed 	= 1;
 
 	// strings
 	config_str = "disk_cfg.test";

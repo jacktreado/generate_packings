@@ -16,19 +16,26 @@
 
 using namespace std;
 
-int main(){
+int main(int argc, char *argv[]){
 	// get numerical values for input variables
 	int N,seed,fskip;
 	double dphi,phi0,alpha,phimin,tmp0;
 
-	N = 6;
+	string N_str 		= argv[1];		// number of particles
+	string seed_str 	= argv[2];		// seed
+
+	stringstream Nss(N_str);
+	Nss >> N;
+
+	stringstream s1ss(seed_str);
+	s1ss >> seed;
+
 	phi0 = 0.01;
 	dphi = 0.001;
 	alpha = 1.4;
 	fskip = 1000;
-	tmp0 = 1e-2;
+	tmp0 = 1e-1;
 	phimin = 0.5;
-	seed = 1;
 
 	// strings
 	string config_str = "disk_cfg.test";
@@ -52,9 +59,9 @@ int main(){
 
 	// set parameters
 	ep = 1.0;			// energy scale (units of kbt)
-	NT = 5e8;			// total amount of time (units of sim time)
+	NT = 2e7;			// total amount of time (units of sim time)
 	dt = 0.01;			// time step (units of md time)
-	plotskip = 1e2;		// # of steps to skip plotting
+	plotskip = 5e4;		// # of steps to skip plotting
 	Utol = N*1e-16;		// potential energy tolerance
 	Ktol = N*1e-30;		// kinetic energy tolerance
 
