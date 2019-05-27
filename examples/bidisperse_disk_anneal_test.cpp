@@ -2,7 +2,7 @@
 
 	Jam N bidisperse disks in 2 dimensions
 
-	USING ATHERMAL COMPRESSION
+	USING ANNEALING
 
 	BY Jack Treado
 	05/16/2019

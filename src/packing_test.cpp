@@ -42,7 +42,7 @@ void packing::print_data(){
 	for (d=0; d<NDIM; d++)
 		configobj << setw(w) << L[d];
 	configobj << endl;
-	configobj << setw(w) << "phi: " << phi << endl;
+	configobj << setw(16) << "phi: " << phi << endl;
 	configobj << setw(w) << "U: " << U << endl;
 	configobj << setw(w) << "K: " << K << endl;
 	configobj << setw(w) << "csum: " << this->get_c_sum() << endl;
