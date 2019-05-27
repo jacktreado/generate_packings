@@ -20,8 +20,8 @@ int main(){
 	string config_str, xyz_str;
 
 	// parameters
-	N 		= 128;
-	NDIM 	= 3;
+	N 		= 6;
+	NDIM 	= 2;
 	phi0 	= 0.01;
 	dphi 	= 1e-3;
 	alpha 	= 1.4;
