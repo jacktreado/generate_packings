@@ -22,6 +22,7 @@ const double PI = atan(1)*4;
 */
 
 
+
 // constructor for residues to be read in
 rigidbody::rigidbody(string &rbstr, int n, int dof, int nc, int s) : packing(n, dof, nc, s) {
 	cout << "Entering rigidbody constructor..." << endl;
@@ -2541,6 +2542,90 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 */
 
 // PRINT methods
+void rigidbody::print_data() {
+	// throw error if file not opened
+	if (!configobj.is_open()) {
+		cout << "ERROR: config file not opened!" << endl;
+		throw "ERROR: config file not opened!";
+	}
+
+	// local variables
+	int w, p, i, j, d;
+	w = 14;
+	p = 6;
+
+	// print stat info
+	configobj << setw(w) << "isjammed: " << isjammed << endl;
+	configobj << setw(w) << "N: " << N << endl;
+	configobj << setw(w) << "L: ";
+	for (d = 0; d < NDIM; d++)
+		configobj << setw(w) << L[d];
+	configobj << endl;
+	configobj << setw(w) << setprecision(16) << "phi: " << phi << endl;
+	configobj << setw(w) << "U: " << U << endl;
+	configobj << setw(w) << "K: " << K << endl;
+	configobj << setw(w) << "pc sum: " << this->get_c_sum() << endl;
+	configobj << setw(w) << "ac sum: " << 0.5 * (this->get_ac_sum()) << endl;
+	configobj << setw(w) << "nr: " << nr << endl;
+	configobj << setw(w) << "niso: " << DOF*(N - nr) - NDIM + 1 << endl;
+	configobj << setw(w) << "niso max: " << DOF*N - NDIM + 1 << endl;
+	configobj << setw(w) << "pc: ";
+	this->print_pc(configobj, round(w / 2));
+	configobj << setw(w) << "ac: ";
+	this->print_ac(configobj, round(w / 2));
+	configobj << "contact matrix: ";
+	this->print_c_data(configobj);
+	configobj << setw(w) << "configuration: " << endl;
+
+	// update euler angles, given quaternions
+	this->update_euler();
+
+	// update print width
+	w = 30;
+	p = 16;
+
+	// print header
+	configobj << setw(w) << "id";
+	configobj << setw(w) << "arad";
+	for (d = 0; d < NDIM; d++)
+		configobj << setw(w) << "ax" << d << "";
+	configobj << setw(w) << "prad";
+	for (d = 0; d < NDIM; d++)
+		configobj << setw(w) << "px" << d << "";
+	for (d = 0; d < NDIM; d++)
+		configobj << setw(w) << "Inn" << d << "";
+	configobj << setw(w) << "phi";
+	configobj << setw(w) << "theta";
+	configobj << setw(w) << "psi";
+	configobj << setw(w) << "m";
+	configobj << setw(w) << "Na";
+	configobj << endl;
+	for (i = 0; i < w * (3 * NDIM + 8); i++)
+		configobj << "=";
+	configobj << endl;
+
+	// print data
+	for (i = 0; i < N; i++) {
+		for (j = 0; j < Na[i]; j++) {
+			configobj << setw(w) << i;
+			configobj << setw(w) << setprecision(p) << ar[i][j];
+			for (d = 0; d < NDIM; d++)
+				configobj << setw(w) << setprecision(p) << xW[i][j][d]+x[i][d];
+			configobj << setw(w) << setprecision(p) << r[i];
+			for (d = 0; d < NDIM; d++)
+				configobj << setw(w) << setprecision(p) << x[i][d];
+			for (d = 0; d < NDIM; d++)
+				configobj << setw(w) << setprecision(p) << Inn[i][d];
+			configobj << setw(w) << setprecision(p) << eulang1[i];
+			configobj << setw(w) << setprecision(p)	<< eulang2[i];
+			configobj << setw(w) << setprecision(p) << eulang3[i];
+			configobj << setw(w) << setprecision(p) << m[i];
+			configobj << setw(w) << setprecision(p) << Na[i];
+			configobj << endl;
+		}
+	}
+}
+
 void rigidbody::print_stat() {
 	// throw error if file not opened
 	if (!statobj.is_open()) {

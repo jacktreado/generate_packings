@@ -123,6 +123,7 @@ public:
 	void output_velocities(std::ofstream& obj);
 
 	// Printing
+	void print_data();
 	void print_stat();
 	void print_ac(std::ofstream& obj, int w);
 	void print_config();

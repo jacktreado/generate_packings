@@ -30,7 +30,6 @@ int main(int argc, char *argv[]){
 	string seed_str = argv[8];		// seed
 	string input_str = argv[9];		// file with initial atomic coordinates
 	string config_str = argv[10];	// file to save stats
-	string stat_str = argv[11];		// file to save cluster list
 
 	// get numerical values for input variables
 	int N,NDIM,seed,fskip;
@@ -121,11 +120,9 @@ int main(int argc, char *argv[]){
 	isjammed = rp.get_isjammed();
 	if (isjammed == 1){
 		rp.open_config(config_str.c_str());
-		rp.open_stat(stat_str.c_str());	
 
 		// print output to files
-		rp.print_stat();
-		rp.print_config();
+		rp.print_data();
 	}
 	else{
 		cout << "isjammed = 0, packing did not find jammed state!" << endl;
