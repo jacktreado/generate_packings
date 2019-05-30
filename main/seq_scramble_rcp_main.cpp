@@ -47,6 +47,14 @@ int main(int argc, char *argv[]){
 	stringstream s1ss(seed_str);
 	s1ss >> seed;
 
+	// print something to console
+	cout << endl << endl << endl << endl;
+	cout << "===================================" << endl << endl << endl;
+	cout << " RUNNING N = " << N << " BIDISPERSE DISKS" << endl;
+	cout << " WITH SEED = " << seed << endl << endl << endl;
+	cout << "===================================" << endl << endl << endl;
+	cout << endl << endl << endl << endl;
+
 	// jamming variables
 	int plotskip,nc,dof,NT;
 	double ep,dt,Utol,Ktol,tmp0;	
@@ -54,10 +62,10 @@ int main(int argc, char *argv[]){
 	// set parameters
 	dof = 6;			// number of degrees of freedom per particle
 	ep = 1.0;			// energy scale (units of kbt)
-	NT = 1e8;			// total amount of time (units of sim time)
+	NT = 5e6;			// total amount of time (units of sim time)
 	tmp0 = 0.001;		// initial temperature
 	dt = 0.025;			// time step (units of md time)
-	plotskip = 1e3;		// # of steps to skip plotting
+	plotskip = 5e4;		// # of steps to skip plotting
 	Utol = N*1e-16;		// potential energy tolerance
 	Ktol = N*1e-30;		// kinetic energy tolerance
 

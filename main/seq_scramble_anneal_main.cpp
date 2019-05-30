@@ -59,18 +59,17 @@ int main(int argc, char *argv[]){
 	stringstream s1ss(seed_str);
 	s1ss >> seed;
 
-	// output input parameters
-	cout << endl;
-	cout << "@@ INPUT PARAMETERS:" << endl;
-	cout << "N = " << N << endl;
-	cout << "NDIM = " << NDIM << endl;
-	cout << "phi0 = " << phi0 << endl;
-	cout << "dphi = " << dphi << endl;
-	cout << "fskip = " << fskip << endl;
-	cout << "tmp0 = " << tmp0 << endl;
-	cout << "phimin = " << phimin << endl;
-	cout << "seed = " << seed << endl;
-	cout << "@@" << endl << endl;
+	// print something to console
+	cout << endl << endl << endl << endl;
+	cout << "===================================" << endl << endl << endl;
+	cout << " RUNNING N = " << N << " RESIDUES" << endl;
+	cout << " WITH SEED = " << seed << endl;
+	cout << " AND ANNEALING PARAMS: " << endl;
+	cout << " 		fskip 	= " << fskip << endl;
+	cout << " 		phimin 	= " << phimin << endl;
+	cout << " 		tmp0 	= " << tmp0 << endl;
+	cout << "===================================" << endl << endl << endl;
+	cout << endl << endl << endl << endl;
 
 	// jamming variables
 	int plotskip,nc,dof,NT;
@@ -78,10 +77,10 @@ int main(int argc, char *argv[]){
 
 	// set parameters
 	dof = 6;			// number of degrees of freedom per particle
-	ep = 10.0;			// energy scale (units of kbt)
-	NT = 1e8;			// total amount of time (units of sim time)
-	dt = 0.05;			// time step (units of md time)
-	plotskip = 1e3;		// # of steps to skip plotting
+	ep = 1.0;			// energy scale (units of kbt)
+	NT = 1e7;			// total amount of time (units of sim time)
+	dt = 0.025;			// time step (units of md time)
+	plotskip = 5e4;		// # of steps to skip plotting
 	Utol = N*1e-16;		// potential energy tolerance
 	Ktol = N*1e-30;		// kinetic energy tolerance
 

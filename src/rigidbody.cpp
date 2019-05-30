@@ -2202,7 +2202,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 	if (phiH < 0) {
 		if (gr) {
 			check_rattlers = 0;
-			this->rb_scale(phi + dphi);
+			this->rb_scale(phi+dphi);
 		}
 		else if (oc && epconst == 1) {
 			Utol = N * 1e-16;
@@ -2212,7 +2212,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 
 			cout << endl;
 			cout << "phiH 1st set at nt = " << t << endl;
-			this->monitor_scale(phi + dphi, phiL, phiH);
+			this->rb_scale(phi+dphi);
 
 			// if NLCL, change update check (particles don't move, don't need to check as often)
 			if (NCL > -1)
@@ -2226,31 +2226,20 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			if (oc && epconst == 1) {
 				phiH = phi;
 				dphi = -0.5*dphi0;				
-				cout << endl;
-				cout << "still overcompressed..." << endl;
-				cout << "phiH set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
+				this->rb_scale(phi+dphi);
 			}
 
 			// if undercompressed, set phiL, root search
 			if (uc) {
 				phiL = phi;
 				dphi = 0.5 * (phiH + phiL) - phi;
-
-				cout << endl;
-				cout << "relaxation found!" << endl;
-				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
+				this->rb_scale(phi+dphi);
 			}
 
 			if (jammed) {
 				phiL = 0.99 * phi;
 				dphi = 0.5 * (phiH + phiL) - phi;
-
-				cout << endl;
-				cout << "almost jammed found!" << endl;
-				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
+				this->rb_scale(phi+dphi);
 			}
 
 		}
@@ -2260,22 +2249,14 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			if (oc) {
 				phiH = phi;
 				dphi = 0.5 * (phiH + phiL) - phi;
-
-				cout << endl;
-				cout << "overcompressed state found!" << endl;
-				cout << "phiH set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
+				this->rb_scale(phi+dphi);
 			}
 
 			// if undercompressed, root search up
 			if (uc) {
 				phiL = phi;
 				dphi = 0.5 * (phiH + phiL) - phi;
-
-				cout << endl;
-				cout << "relaxed state found!" << endl;
-				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
+				this->rb_scale(phi+dphi);
 			}
 
 			// if jammed, end!
