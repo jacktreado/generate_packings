@@ -144,7 +144,7 @@ void rigidbody::compute_rb_analytical_hessian(Eigen::MatrixXd& hessian){
 		for (nu=mu+1; nu<N; nu++){
 
 			// check if in contact
-			Rij = this->get_distance(mu,nu);
+			Rij = get_distance(mu,nu);
 
 			// contact distance
 			Sij = r[mu] + r[nu];
@@ -166,7 +166,7 @@ void rigidbody::compute_rb_analytical_hessian(Eigen::MatrixXd& hessian){
 				for (i=0; i<Na[mu]; i++){
 					for (j=0; j<Na[nu]; j++){
 						// distance between atoms
-						rij = this->get_atomic_distance(mu,nu,i,j,aij);
+						rij = get_atomic_distance(mu,nu,i,j,aij);
 
 						// contact distance
 						sij = ar[mu][i] + ar[nu][j];						
@@ -304,7 +304,7 @@ void rigidbody::compute_rb_analytical_hessian(Eigen::MatrixXd& hessian){
 void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 	// local variables
 	int i,j,d,k,l,e,d1,d2,nr,kr;
-	double Mkl,h,Sij,Iij,am,dnorm,rmin;	
+	double Mkl,dMk,dMl,h,Sij,Iij,am,dnorm,rmin;	
 
 	// rescale system to H atom = 1.0 A, unit energy scale
 	rmin = 1e6;
@@ -312,13 +312,13 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 		if (ar[0][i] < rmin)
 			rmin = ar[0][i];
 	}
-	this->rb_rescale(rmin);
-	this->set_ep(10.0);
+	rb_rescale(rmin);
+	set_ep(1.0);
 	h = h0*L[0];
 
 	// remove any rattlers
 	kr = 0; 
-	nr = this->rmv_rattlers(kr);
+	nr = rmv_rattlers(kr);
 	cout << "there are nr = " << nr << " rattlers" << endl;
 
 	int Nentries = (DOF*N*((DOF*N)+1))/2; 			// number of unique entries in dynamical matrix
@@ -338,7 +338,7 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 			TqW[i][d] = 0.0;
 		}
 	}
-	this->force_update();
+	force_update();
 	cout << "total potential energy U = " << U << endl;
 	for (i=0; i<N; i++){		
 		cout << "Force/Torque on particle i = " << i << ": ";
@@ -352,13 +352,20 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 	}
 
 	// ouput squared forces
-
 	for (i=0; i<N; i++){		
-		cout << "Squaed Force/Torque on particle i = " << i << ": ";
-		cout << setw(30) << setprecision(10) << F[i][0]*F[i][0] + F[i][1]*F[i][1] + F[i][2]*F[i][2];	
-		cout << setw(30) << setprecision(10) << TqW[i][0]*TqW[i][0] + TqW[i][1]*TqW[i][1] + TqW[i][2]*TqW[i][2];			
+		cout << "Magnitude of Force/Torque on particle i = " << i << ": ";
+		cout << setw(30) << setprecision(10) << sqrt(F[i][0]*F[i][0] + F[i][1]*F[i][1] + F[i][2]*F[i][2]);	
+		cout << setw(30) << setprecision(10) << sqrt(TqW[i][0]*TqW[i][0] + TqW[i][1]*TqW[i][1] + TqW[i][2]*TqW[i][2]);			
 		cout << endl;
 	}
+
+	// calculate arc rad, i.e. mean residue length scale
+	double arcrad = 0.0;
+	for (i=0; i<N; i++)
+		arcrad += r[i];
+	arcrad /= N;
+
+	// ONLY PERTURB FORCES THAT ARE PART OF THE ORIGINAL CONTACT MATRIX
 
 	// get all perturbed forces
 	for (j=0; j<N; j++){
@@ -370,7 +377,7 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 			l = DOF*j+d2;
 
 			// perturb particle j in d2 (+h) direction, get updated forces
-			this->rb_perturbation(j,d2,h);
+			rb_perturbation(j,d2,h,arcrad);
 
 			// loop over to extract forces to perturb
 			for (i=0; i<N; i++){
@@ -384,12 +391,26 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 					if (d1 < NDIM)
 						Pplus(k,l) = F[i][d1];
 					else
-						Pplus(k,l) = TqW[i][d1];
+						Pplus(k,l) = TqW[i][d1-NDIM];
+				}
+			}
+
+			if (d2 == 0 || d2 == 3){
+				cout << endl << "New force and torque for j pert = "  << j << ", and d2 = " << d2 << endl;
+				for (i=0; i<N; i++){		
+					cout << "Force/Torque on particle i = " << i << ": ";
+					for (d=0; d<NDIM; d++){
+						cout << setw(20) << setprecision(6) << F[i][d];
+					}
+					for (d=0; d<NDIM; d++){
+						cout << setw(20) << setprecision(6) << TqW[i][d];
+					}
+					cout << endl;
 				}
 			}
 
 			// perturb particle j in d2 (-h) direction, get updated forces
-			this->rb_perturbation(j,d2,-h);
+			rb_perturbation(j,d2,-h,arcrad);
 
 			// loop over to extract forces to perturb
 			for (i=0; i<N; i++){
@@ -403,7 +424,7 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 					if (d1 < NDIM)
 						Pminus(k,l) = F[i][d1];
 					else
-						Pminus(k,l) = TqW[i][d1];
+						Pminus(k,l) = TqW[i][d1-NDIM];
 				}
 			}
 		}
@@ -414,6 +435,36 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 	// definition from: https://v8doc.sas.com/sashtml/ormp/chap5/sect28.htm	
 
 	// calculate numerical matrix elements
+	// for (i=0; i<N; i++){
+	// 	for (j=i; j<N; j++){
+	// 		for (d1=0; d1<DOF; d1++){
+	// 			for (d2=d1; d2<DOF; d2++){
+	// 				// get matrix indices
+	// 				k = DOF*i + d1;
+	// 				l = DOF*j + d2;
+
+	// 				// calculate different deriatives depending upon whether or not force or torque
+	// 				if (d1 < NDIM)
+	// 					dMk = (Pminus(k,l) - Pplus(k,l))/(4.0*h);
+	// 				else
+	// 					dMk = (Pminus(k,l) - Pplus(k,l))/(4.0*h);
+
+	// 				if (d2 < NDIM)
+	// 					dMl = (Pminus(l,k) - Pplus(l,k))/(4.0*h);
+	// 				else
+	// 					dMl = (Pminus(l,k) - Pplus(l,k))/(4.0*h);
+
+	// 				// calc matrix element
+	// 				Mkl = dMk + dMl;
+
+	// 				// store in matrix, enfore symmetry
+	// 				numHessian(k,l) = Mkl;
+	// 				numHessian(l,k) = Mkl;
+	// 			}
+	// 		}
+	// 	}
+	// }
+
 	for (k=0; k<DOF*N; k++){
 		for (l=k; l<DOF*N; l++){
 			// calculate single matrix entry
@@ -426,19 +477,19 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 
 	// calculate mass matrix
 	cout << "calculating mass matrix..." << endl;
-	this->calculate_mass_matrix(massMatrix);
+	calculate_mass_matrix(massMatrix);
 
 	// solve generalized eigenvalue equation
 	cout << "doing eigenvalue decomposition on numerical Hessian" << endl;
 	Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> numEigs(numHessian, massMatrix);
     cout << "Generalized numerical eigenvalues (verify):\n" << numEigs.eigenvalues() << endl;
 
-    // get analytical hessian    
-    cout << "computing elements of analytical hessian matrix..." << endl;
-    this->compute_rb_analytical_hessian(anHessian);
+    // // get analytical hessian    
+    // cout << "computing elements of analytical hessian matrix..." << endl;
+    // compute_rb_analytical_hessian(anHessian);
 
-    cout << "doing eigenvalue decomposition on analytical Hessian" << endl;
-    Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> anEigs(anHessian, massMatrix);
+    // cout << "doing eigenvalue decomposition on analytical Hessian" << endl;
+    // Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> anEigs(anHessian, massMatrix);
 
     // print dynamical matrix to file
 	ofstream obj(dmstr.c_str());
@@ -452,18 +503,218 @@ void rigidbody::rb_dynamical_matrix(string& dmstr, double h0){
 	obj << DOF << endl;
 	obj << nr << endl;
     obj << numEigs.eigenvalues() << endl;
-    obj << anEigs.eigenvalues() << endl;
+
+    // loop over modes, print eigenvectors
+    for (k=0; k<DOF*N; k++)
+    	obj << numEigs.eigenvectors().col(k) << endl;
+
+    // close object
+    obj.close();
+}
+
+void rigidbody::dimer_dynamical_matrix(string& dmstr, double h0){
+	// local variables
+	int i,j,d,k,l,e,d1,d2,nr,kr;
+	double Mkl,dMk,dMl,h,Sij,Iij,am,dnorm,rmin;	
+
+	// rescale system to H atom = 1.0 A, unit energy scale
+	rmin = 1e6;
+	for (i=0; i<Na[0]; i++){
+		if (ar[0][i] < rmin)
+			rmin = ar[0][i];
+	}
+	rb_rescale(rmin);
+	set_ep(1.0);
+	h = h0*L[0];
+
+	// remove any rattlers
+	kr = 0; 
+	nr = rmv_rattlers(kr);
+	cout << "there are nr = " << nr << " rattlers" << endl;
+
+	int Nentries = (DOF*N*((DOF*N)+1))/2; 			// number of unique entries in dynamical matrix
+	Eigen::MatrixXd Pplus(DOF*N,DOF*N);				// matrix of all perturbed force (+h)
+	Eigen::MatrixXd Pminus(DOF*N,DOF*N);			// matrix of all perturbed force (-h)
+
+	// matrices to do eigenvalue decomposition in c++
+	Eigen::MatrixXd numHessian(DOF*N,DOF*N);
+	Eigen::MatrixXd massMatrix(DOF*N,DOF*N);
+
+	// output all forces to check
+	cout << "outputting forces..." << endl;
+	for (i=0; i<N; i++){
+		for (d=0; d<NDIM; d++){
+			F[i][d] = 0.0;
+			TqW[i][d] = 0.0;
+		}
+	}
+	force_update();
+	cout << "total potential energy U = " << U << endl;
+	for (i=0; i<N; i++){		
+		cout << "Force/Torque on particle i = " << i << ": ";
+		for (d=0; d<NDIM; d++){
+			cout << setw(20) << setprecision(6) << F[i][d];
+		}
+		for (d=0; d<NDIM; d++){
+			cout << setw(20) << setprecision(6) << TqW[i][d];
+		}
+		cout << endl;
+	}
+
+	// ouput squared forces
+	for (i=0; i<N; i++){		
+		cout << "Magnitude of Force/Torque on particle i = " << i << ": ";
+		cout << setw(30) << setprecision(10) << sqrt(F[i][0]*F[i][0] + F[i][1]*F[i][1] + F[i][2]*F[i][2]);	
+		cout << setw(30) << setprecision(10) << sqrt(TqW[i][0]*TqW[i][0] + TqW[i][1]*TqW[i][1] + TqW[i][2]*TqW[i][2]);			
+		cout << endl;
+	}
+
+	// calculate arc rad, i.e. mean residue length scale
+	double arcrad = 0.0;
+	for (i=0; i<N; i++)
+		arcrad += r[i];
+	arcrad /= N;
+
+	// ONLY PERTURB FORCES THAT ARE PART OF THE ORIGINAL CONTACT MATRIX
+
+	// get all perturbed forces
+	for (j=0; j<N; j++){
+
+		// loop over perturbation directions
+		for (d2=0; d2<DOF; d2++){
+
+			// get linear index
+			l = DOF*j+d2;
+
+			// perturb particle j in d2 (+h) direction, get updated forces
+			dimer_perturbation(j,d2,h,arcrad);
+
+			// loop over to extract forces to perturb
+			for (i=0; i<N; i++){
+
+				// perturb in DOF dimensions
+				for (d1=0; d1<DOF; d1++){
+					// get linear index
+					k = DOF*i+d1;
+
+					// add forces/torqu to matrix
+					if (d1 < NDIM)
+						Pplus(k,l) = F[i][d1];
+					else
+						Pplus(k,l) = TqW[i][d1-NDIM];
+				}
+			}
+
+			if (d2 == 0 || d2 == 3){
+				cout << endl << "New force and torque for j pert = "  << j << ", and d2 = " << d2 << endl;
+				for (i=0; i<N; i++){		
+					cout << "Force/Torque on particle i = " << i << ": ";
+					for (d=0; d<NDIM; d++){
+						cout << setw(20) << setprecision(6) << F[i][d];
+					}
+					for (d=0; d<NDIM; d++){
+						cout << setw(20) << setprecision(6) << TqW[i][d];
+					}
+					cout << endl;
+				}
+			}
+
+			// perturb particle j in d2 (-h) direction, get updated forces
+			dimer_perturbation(j,d2,-h,arcrad);
+
+			// loop over to extract forces to perturb
+			for (i=0; i<N; i++){
+
+				// perturb in DOF dimensions
+				for (d1=0; d1<DOF; d1++){
+					// get linear index
+					k = DOF*i+d1;
+
+					// add forces/torques to matrix
+					if (d1 < NDIM)
+						Pminus(k,l) = F[i][d1];
+					else
+						Pminus(k,l) = TqW[i][d1-NDIM];
+				}
+			}
+		}
+	}
+
+
+	// loop over particles, get forces as a function of particle perturbations
+	// definition from: https://v8doc.sas.com/sashtml/ormp/chap5/sect28.htm	
+
+	// calculate numerical matrix elements
+	for (i=0; i<N; i++){
+		for (j=i; j<N; j++){
+			for (d1=0; d1<DOF; d1++){
+				for (d2=d1; d2<DOF; d2++){
+					// get matrix indices
+					k = DOF*i + d1;
+					l = DOF*j + d2;
+
+					// calculate different deriatives depending upon whether or not force or torque
+					if (d1 < NDIM)
+						dMk = (Pminus(k,l) - Pplus(k,l))/(4.0*h);
+					else
+						dMk = (Pminus(k,l) - Pplus(k,l))/(4.0*h);
+
+					if (d2 < NDIM)
+						dMl = (Pminus(l,k) - Pplus(l,k))/(4.0*h);
+					else
+						dMl = (Pminus(l,k) - Pplus(l,k))/(4.0*h);
+
+					// calc matrix element
+					Mkl = dMk + dMl;
+
+					// store in matrix, enfore symmetry
+					numHessian(k,l) = Mkl;
+					numHessian(l,k) = Mkl;
+
+					// also enter values into mass matrix
+					if (d1 == d2){
+						if (d1 < NDIM)
+							massMatrix(k,l) = m[i];
+						else
+							massMatrix(k,l) = Inn[i][d1 - NDIM];
+					}
+					else{
+						massMatrix(k,l) = 0.0;
+						massMatrix(l,k) = 0.0;
+					}
+				}
+			}
+		}
+	}
+
+	// solve generalized eigenvalue equation
+	cout << "doing eigenvalue decomposition on numerical Hessian" << endl;
+	Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> numEigs(numHessian, massMatrix);
+    cout << "Generalized numerical eigenvalues (verify):\n" << numEigs.eigenvalues() << endl;
+
+    // print dynamical matrix to file
+	ofstream obj(dmstr.c_str());
+	if (!obj.is_open()){
+		cout << "could not open file " << dmstr << endl;
+		exit(1);
+	}
+
+    // print eigenvalues of dynamical matrix info to file
+    obj << N << endl;
+	obj << DOF << endl;
+	obj << nr << endl;
+    obj << numEigs.eigenvalues() << endl;
 
     // close object
     obj.close();
 }
 
 
-// perturbation function
-void rigidbody::rb_perturbation(int i, int d, double h){
+// perturbation functions
+void rigidbody::rb_perturbation(int i, int d, double h, double arcrad){
 	// local variables
-	int i0,d0;
-	double x0,theta0,dtheta;
+	int i0,a0,d0;
+	double x0,theta0,dtheta,radtmp;
 
 	// reset force and torque
 	for (i0=0; i0<N; i0++){
@@ -471,7 +722,6 @@ void rigidbody::rb_perturbation(int i, int d, double h){
 			F[i0][d0] = 0.0;
 			TqW[i0][d0] = 0.0;
 		}
-
 	}
 
 	// perturb either translation or rotation
@@ -480,43 +730,205 @@ void rigidbody::rb_perturbation(int i, int d, double h){
 		x0 = x[i][d];
 		x[i][d] += h;
 
-		// calc new force
-		this->force_update();
+		// calc new force ONLY FOR CURRENT CONTACT MATRIX
+		contact_forces();
 
 		// reverse perturbation
 		x[i][d] = x0;
 	}
-	else{		
+	else{
+		// store initial positions
+		vector< vector<double> > x0;
+		vector<double> xtmp(NDIM,0.0);
+		for (a0=0; a0<Na[i]; a0++){
+			for (d0=0; d0<NDIM; d0++)
+				xtmp.at(d0) = xW[i][a0][d0];
+			x0.push_back(xtmp);
+		}
 
 		// get angle (path length of rotation/radius of rotater)
-		dtheta = h/(0.77*r[i]);
+		// dtheta = h/arcrad;
+		dtheta = h;
 
 		// rotate forward to test energy (d=3 => eulang1, d=4 => eulang2, etc)
-		this->rotate_single_particle_xyz(i,d-3,dtheta);
-		// this->rotate_single_particle(i,d-2,dtheta);
+		rotate_single_particle_xyz(i,d-3,dtheta);
+		// rotate_single_particle(i,d-2,dtheta);
 
-		// update forces based on new angle
-		this->force_update();
+		// calc new force ONLY FOR CURRENT CONTACT MATRIX
+		contact_forces();
 
-		// rotate back to original location to reverse pertubation
-		this->rotate_single_particle_xyz(i,d-3,-dtheta);
-		// this->rotate_single_particle(i,d-2,-dtheta);
+		// // rotate back to original location to reverse pertubation
+		// rotate_single_particle_xyz(i,d-3,-dtheta);
+		for (a0=0; a0<Na[i]; a0++){
+			for (d0=0; d0<NDIM; d0++)
+				xW[i][a0][d0] = x0.at(a0).at(d0);
+		}
 	}
 }
+
+void rigidbody::dimer_perturbation(int i, int d, double h, double arcrad){
+	// local variables
+	int i0,a0,d0;
+	double x0,theta0,dtheta,radtmp;
+
+	// reset force and torque
+	for (i0=0; i0<N; i0++){
+		for (d0=0; d0<NDIM; d0++){
+			F[i0][d0] = 0.0;
+			TqW[i0][d0] = 0.0;
+		}
+	}
+
+	// perturb either translation or rotation
+	if (d < NDIM){
+		// translate particle i
+		x0 = x[i][d];
+		x[i][d] += h;
+
+		// calc new force ONLY FOR CURRENT CONTACT MATRIX
+		contact_forces();
+
+		// reverse perturbation
+		x[i][d] = x0;
+	}
+	else{
+		// store initial positions
+		vector< vector<double> > x0;
+		vector<double> xtmp(NDIM,0.0);
+		for (a0=0; a0<Na[i]; a0++){
+			for (d0=0; d0<NDIM; d0++)
+				xtmp.at(d0) = xW[i][a0][d0];
+			x0.push_back(xtmp);
+		}
+
+		// get angle (path length of rotation/radius of rotater)
+		dtheta = h/arcrad;
+
+		// rotate forward to test energy
+		rigidbody_xyz();
+		if (d == NDIM)
+			rotate_single_particle_xyz(i,1,dtheta);
+		else if (d == NDIM + 1)
+			rotate_single_particle_xyz(i,2,dtheta);
+		else{
+			cout << "	** ERROR: in dimer_perturbation(), cannot pass d=" << d << " to dimer pertubation, can only be NDIM or NDIM+1. Ending" << endl;
+			exit(1);
+		}
+		rigidbody_xyz();
+
+		// calc new force ONLY FOR CURRENT CONTACT MATRIX
+		contact_forces();
+
+		// // rotate back to original location to reverse pertubation
+		// for (a0=0; a0<Na[i]; a0++){
+		// 	for (d0=0; d0<NDIM; d0++)
+		// 		xW[i][a0][d0] = x0.at(a0).at(d0);
+		// }
+		// // rigidbody_xyz();
+		rotate_single_particle(i,d-2,-dtheta);
+		rigidbody_xyz();
+	}
+}
+
+
+// update forces solely based on contact network
+void rigidbody::contact_forces(){
+	// local variables
+	int i, j, cj, ai, aj, d;
+	double sij, rij, dx, da;
+	double qix, qiy, qiz, qjx, qjy, qjz;
+	double tix, tiy, tiz, tjx, tjy, tjz;
+	double aij[NDIM];
+	double fij[NDIM];
+
+	// loop over contact matrix, calculate all forces based on contact network
+	for (i=0; i<N; i++){
+
+		// skip particles with no contacts
+		if (pc[i] == 0)
+			continue;
+
+		for (j=i+1; j<N; j++){
+
+			// reset torque counters
+			tix = 0; tiy = 0; tiz = 0;
+			tjx = 0; tjy = 0; tjz = 0;
+
+			// skip particles with no contacts
+			if (pc[i] == 0)
+				continue;
+
+			// mapping from matrix space to sub matrix space
+			cj = N * i + j - ((i + 1) * (i + 2)) / 2;	
+
+			// if in contact, calculate forces
+			if (c[cj] == 1){
+				for (ai = 0; ai < Na[i]; ai++) {
+					for (aj = 0; aj < Na[j]; aj++) {
+						// contact distance
+						rij = ar[i][ai] + ar[j][aj];
+
+						// get distance between atoms
+						da = get_atomic_distance(i, j, ai, aj, aij);
+
+						// if true, atoms are overlapping, so calc force and torquez
+						if (da < rij) {
+							// update contact forces
+							for (d = 0; d < NDIM; d++) {
+								fij[d] = hs(rij, da) * aij[d];
+								F[i][d] += fij[d];
+								F[j][d] -= fij[d];
+							}
+
+							// branch vectors to atoms
+							qix = xW[i][ai][0];
+							qiy = xW[i][ai][1];
+							qiz = xW[i][ai][2];
+
+							qjx = xW[j][aj][0];
+							qjy = xW[j][aj][1];
+							qjz = xW[j][aj][2];
+
+							// update torques
+							tix += qiy * fij[2] - qiz * fij[1];
+							tiy += -qix * fij[2] + qiz * fij[0];
+							tiz += qix * fij[1] - qiy * fij[0];
+
+							tjx += -qjy * fij[2] + qjz * fij[1];
+							tjy += qjx * fij[2] - qjz * fij[0];
+							tjz += -qjx * fij[1] + qjy * fij[0];
+						}
+					}
+				}
+
+				// update torque on i & j
+				TqW[i][0] += tix;
+				TqW[i][1] += tiy;
+				TqW[i][2] += tiz;
+
+				TqW[j][0] += tjx;
+				TqW[j][1] += tjy;
+				TqW[j][2] += tjz;
+			}
+		}
+	}
+}
+
+
 
 
 // PE minimizer
 void rigidbody::rb_fire_umin(int NTmax, double Ktol){
 	// local variables
-	int t,kr;	
+	int i,d,t,kr,acsum,pcsum;	
 
 	// constant energy checking
-	double Uold, dU, dUtol;
+	double Uold, dU, dUtol, Fmag;
 	int epc, epcN, epconst;
 	epconst = 0;
 	Uold = 0;
 	dU = 0;
-	dUtol = 1e-12;
+	dUtol = 1e-8;
 	epc = 0;
 	epcN = 5e3;
 
@@ -549,10 +961,10 @@ void rigidbody::rb_fire_umin(int NTmax, double Ktol){
 
 		// check for rattlers
 		kr = 0;
-		nr = this->rmv_rattlers(kr);
+		nr = rmv_rattlers(kr);
 
 		// check for constant potential energy
-		dU = abs(Uold - U);
+		dU = abs((Uold - U)/Uold);
 		if (dU < dUtol) {
 			epc++;
 			if (epc > epcN)
@@ -573,6 +985,18 @@ void rigidbody::rb_fire_umin(int NTmax, double Ktol){
 			cout << "epconst = " << epconst << endl;
 			cout << "nr = " << nr << endl;
 			cout << "alpha = " << alpha << endl;
+			cout << "dU = " << dU << endl;
+
+			Fmag = 0.0;
+			for (i=0; i<N; i++){
+				for (d=0; d<NDIM; d++){
+					Fmag += F[i][d]*F[i][d];
+					Fmag += TqW[i][d]*TqW[i][d];
+				}
+			}
+			Fmag = sqrt(Fmag);
+			cout << "Fmag = " << Fmag << endl;
+
 			cout << endl;
 			cout << endl;
 		}
@@ -583,6 +1007,41 @@ void rigidbody::rb_fire_umin(int NTmax, double Ktol){
 	if (t == NTmax){
 		cout << "** COULD NOT FIND ENERGY MINIMUM IN NTmax TIME, ENDING WITH ERROR..." << endl;
 		throw;
+	}
+	else{
+		acsum = 0.5*get_ac_sum();
+		pcsum = get_c_sum();
+
+		cout << "Energy minization completed!" << endl;
+		cout << "Final U = " << U << endl;
+		cout << "Final K = " << K << endl;
+		cout << "Final phi = " << setprecision(6) << phi << endl;
+		cout << "Final pcsum = " << pcsum << endl;
+		cout << "Final acsum = " << acsum << endl;
+		cout << "Final niso = " << (N-nr)*DOF - NDIM + 1 << endl;
+		cout << "Final niso max = " << DOF*N - NDIM + 1 << endl;
+		cout << "Final rattler # = " << nr << endl;
+		cout << "Final contacts:" << endl;
+		cout << "pc:" << endl;
+		for (int i = 1; i < N + 1; i++) {
+			cout << setw(6) << pc[i - 1];
+			if (i % 10 == 0)
+				cout << endl;
+		}
+		cout << endl;
+		cout << "ac:" << endl;
+		for (int i = 1; i < N + 1; i++) {
+			cout << setw(6) << ac[i - 1];
+			if (i % 10 == 0)
+				cout << endl;
+		}
+		cout << endl;
+		if (N < 40) {
+			cout << "Contact Matrix:" << endl;
+			print_c_mat();
+		}
+		if (xyzobj.is_open())
+			rigidbody_xyz();
 	}
 }
 
@@ -609,7 +1068,7 @@ void rigidbody::rb_md_velocity(double T0, int NT, int tsave, ofstream& obj){
 
 	// remove any rattlers
 	kr = 0; 
-	nr = this->rmv_rattlers(kr);
+	nr = rmv_rattlers(kr);
 	cout << "Before velocity run: There are nr = " << nr << " rattlers" << endl;
 
 	// randomly assign velocities
@@ -713,33 +1172,33 @@ void rigidbody::output_velocities(ofstream& obj){
 void rigidbody::single_md(int t){
 	// update nearest neighbor lists if applicable
 	if (t % nnupdate == 0 && NCL > -1)
-		this->update_nlcl(t);
+		update_nlcl(t);
 
 	// advance quaternions, positions
-	this->verlet_first();
+	verlet_first();
 
 	// update forces
-	this->force_update();
+	force_update();
 
 	// advance angular momentum
-	this->verlet_second();
+	verlet_second();
 }
 
 void rigidbody::single_fire(int t){
 	// update nearest neighbor lists if applicable
 	if (t % nnupdate == 0 && NCL > -1)
-		this->update_nlcl(t);
+		update_nlcl(t);
 
 	// advance quaternions, positions
-	this->verlet_first();
+	verlet_first();
 
 	// update forces
-	this->force_update();
+	force_update();
 
 	// include fire relaxation
-	this->rb_fire();
+	rb_fire();
 
 	// advance angular momentum
-	this->verlet_second();
+	verlet_second();
 }
 

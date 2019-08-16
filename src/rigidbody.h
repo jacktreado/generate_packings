@@ -113,7 +113,8 @@ public:
 
 	// VDOS
 	void rb_dynamical_matrix(string& dmstr, double h0);
-	void rb_perturbation(int i, int d, double h);
+	void rb_perturbation(int i, int d, double h, double arcrad);
+	void contact_forces();
 	void rb_fire_umin(int NTmax, double Ktol);
 	void compute_rb_analytical_hessian(Eigen::MatrixXd& hessian);
 	void populate_Pmatrix(Eigen::MatrixXd& P, int mu, int i);
@@ -121,6 +122,8 @@ public:
 	void calculate_mass_matrix(Eigen::MatrixXd& massMatrix);
 	void rb_md_velocity(double T0, int NT, int tsave, std::ofstream& obj);
 	void output_velocities(std::ofstream& obj);
+	void dimer_dynamical_matrix(string& dmstr, double h0);
+	void dimer_perturbation(int i, int d, double h, double arcrad);
 
 	// Printing
 	void print_data();

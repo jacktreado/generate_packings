@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 	string dphi_str = argv[4];
 
 	// dynamical matrix variables
-	string dm_str = "/Users/JackTreado/_pv/vdos/mixed/res_analytical_dm.dat"; 		// dynamical matrix file
+	string dm_str = "/Users/JackTreado/_pv/vdos/mixed/dimer_dm.dat";
 
 	// get int for number of particles
 	stringstream Nss(N_str);
@@ -35,11 +35,11 @@ int main(int argc, char *argv[]) {
 	dphiss >> dphiDM;
 
 	// local variables for packing
-	string cfgstr = "residue_cfg.test";
-	string statstr = "residue_stat.test";
-	string enstr = "residue_Energy.test";
-	string xyzstr = "residue_test.xyz";
-	int dof = 6;
+	string cfgstr = "dimer_cfg.test";
+	string statstr = "dimer_stat.test";
+	string enstr = "dimer_Energy.test";
+	string xyzstr = "dimer_test.xyz";
+	int dof = 5;
 	int nc = -1;
 	if (N >= 64)
 		nc = 3;
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 	double ep, dt, tmp0, phi0, dphi, Utol, Ktol;
 	int plotskip, NT;
 
-	ep = 1.0;			// energy scale (units of kbt)
+	ep = 10.0;			// energy scale (units of kbt)
 	NT = 5e8;			// total amount of time (units of sim time)
 	dt = 0.025;			// time step (units of md time)
 	tmp0 = 0.01;		// initial temperature
@@ -75,16 +75,6 @@ int main(int argc, char *argv[]) {
 
 	// setup energy & viz output
 	respack.open_en(enstr.c_str());
-	respack.open_xyz(xyzstr.c_str());
-
-	// output initial W frame positions
-	respack.rigidbody_xyz();
-
-	// update xW based on xM
-	respack.pos_frot();
-
-	// output final W frame positions, check if same
-	respack.rigidbody_xyz();
 
 	// run md
 	respack.rb_jamming_finder(tmp0, NT, dphi, Utol, Ktol);
@@ -114,13 +104,13 @@ int main(int argc, char *argv[]) {
 		cout << "energy minimization complete!" << endl;
 
 		cout << "starting to calculate the dynamical matrix..." << endl;
-		respack.rb_dynamical_matrix(dm_str,h);
-		// respack.rb_analytical_dm(dm_str);
+		respack.open_xyz(xyzstr.c_str());
+		respack.dimer_dynamical_matrix(dm_str,h);
 		cout << "calc complete! printed to " << dm_str << ". " << endl;	
 	}
 
 
 
-	cout << "@@ Leaving main for residue packing!" << endl;
+	cout << "@@ Leaving main for dimer packing VDOS calc!" << endl;
 	return 0;
 }

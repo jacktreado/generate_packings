@@ -10,8 +10,8 @@ int main(){
 	// system variables
 	int N = 8;
 	int DOF = 6;
-	string input_str = "/Users/JackTreado/_pv/cluster/rigidbody/io/res_input_N8_seed1.dat";
-	string xyzstr = "residue_rotate_test.xyz";
+	string input_str = "/Users/JackTreado/_pv/cluster/rigidbody/io/dimer_input_N3_seed1.dat";
+	string xyzstr = "dimer_rotate_test.xyz";
 
 	// load system with object
 	rigidbody testpack(input_str,N,DOF,-1,1);
@@ -19,41 +19,32 @@ int main(){
 	// open xyz file
 	testpack.open_xyz(xyzstr.c_str());
 
-	// output initial W frame positions
-	testpack.rigidbody_xyz();
-
 	// update xW based on xM
 	testpack.pos_frot();
 
-	// output final W frame positions, check if same
-	testpack.rigidbody_xyz();
-
 	// // rotate particle 0 around the horn
-	double dtheta = 0.1;
-	
-	// rotate forward
-	testpack.rotate_single_particle_xyz(0,0,dtheta);
-	testpack.rotate_single_particle_xyz(1,1,dtheta);
-	testpack.rotate_single_particle_xyz(2,2,dtheta);
+	double dtheta = 0.3;
+
+	// plot original
+	testpack.rigidbody_xyz();
+	testpack.rotate_single_particle(0,1,dtheta);
+	testpack.rigidbody_xyz();
+	testpack.rotate_single_particle(0,1,-dtheta);
 	testpack.rigidbody_xyz();
 
-	// rotate forward
-	testpack.rotate_single_particle_xyz(0,0,dtheta);
-	testpack.rotate_single_particle_xyz(1,1,dtheta);
-	testpack.rotate_single_particle_xyz(2,2,dtheta);
-	testpack.rigidbody_xyz();
-
-	// rotate back
-	testpack.rotate_single_particle_xyz(0,0,-dtheta);
-	testpack.rotate_single_particle_xyz(1,1,-dtheta);
-	testpack.rotate_single_particle_xyz(2,2,-dtheta);
-	testpack.rigidbody_xyz();
-
-	// rotate back
-	testpack.rotate_single_particle_xyz(0,0,-dtheta);
-	testpack.rotate_single_particle_xyz(1,1,-dtheta);
-	testpack.rotate_single_particle_xyz(2,2,-dtheta);
-	testpack.rigidbody_xyz();
+	// rotate multiple times
+	for (int i=0; i<40; i++){
+		testpack.rotate_single_particle(0,1,dtheta);
+		testpack.rigidbody_xyz();
+	}
+	for (int i=0; i<40; i++){
+		testpack.rotate_single_particle(1,2,dtheta);
+		testpack.rigidbody_xyz();
+	}
+	for (int i=0; i<40; i++){
+		testpack.rotate_single_particle(2,3,dtheta);
+		testpack.rigidbody_xyz();
+	}
 
 
 	return 0;

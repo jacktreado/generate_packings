@@ -35,32 +35,32 @@ rigidbody::rigidbody(string &rbstr, int n, int dof, int nc, int s) : packing(n, 
 
 	// read in particle information
 	cout << "getting info from file header" << endl;
-	this->get_file_header(rbstr);
+	get_file_header(rbstr);
 
 	// initialize particle info
 	cout << "initializing particle variables" << endl;
-	this->initialize_particles();
+	initialize_particles();
 
 	// initialize dynamics
 	cout << "initializing dynamics" << endl;
-	this->initialize_dynamics();
+	initialize_dynamics();
 
 	// read in rigid body info
 	cout << "reading in data from " << rbstr << endl;
-	this->read_in_info(rbstr);
+	read_in_info(rbstr);
 
 	// get initial packing fraction	
-	this->update_phi();
+	update_phi();
 	cout << "Original phi = " << phi << endl;
 
 	// initialize quaternions
 	cout << "initializing quaternions" << endl;
-	this->initialize_quaternions();
+	initialize_quaternions();
 
 	// setup neighbor & cell list if nc is positive
 	if (nc > -1){
 		cout << "initializing nlcl" << endl;
-		this->initialize_nlcl();
+		initialize_nlcl();
 	}
 	else
 		cout << "nc = -1, no nlcl for this simulation" << endl;
@@ -409,8 +409,8 @@ void rigidbody::read_in_info(string &rbstr) {
 
 	// if large enough box, update cell grid length
 	if (NCL > 0) {
-		this->init_rcut();
-		this->update_cell_g();
+		init_rcut();
+		update_cell_g();
 	}
 }
 
@@ -436,7 +436,7 @@ void rigidbody::initialize_quaternions() {
 	}
 
 	// update xM based on quaternions and xW
-	this->pos_brot();
+	pos_brot();
 }
 
 void rigidbody::rand_vel_init(double T1) {
@@ -464,7 +464,7 @@ void rigidbody::rand_vel_init(double T1) {
     }
 
     // rescale velocities
-    this->rescale_velocities(T1);
+    rescale_velocities(T1);
 }
 
 // scramble particle positions and orientations
@@ -580,7 +580,7 @@ void rigidbody::update_quaternions() {
 		q[i].normalize();
 	}
 
-	// update xW based on quaternions and xM
+	// update xW based on quaternions and xM and quaternions
 	pos_frot();
 }
 
@@ -672,10 +672,10 @@ void rigidbody::free_fire(double tmp0, double Utol, double tend, int nnu) {
 	int t;
 
 	// initialize velocities
-	this->rand_vel_init(tmp0);
+	rand_vel_init(tmp0);
 
 	// setup dtmax for FIRE
-	this->set_dtmax(10.0);
+	set_dtmax(10.0);
 
 	// get number of time steps
 	int NT;
@@ -696,29 +696,29 @@ void rigidbody::free_fire(double tmp0, double Utol, double tend, int nnu) {
 	for (t = 0; t < NT; t++) {
 		// if NLCL, update
 		if (NCL > 0 && t % nnupdate == 0) {
-			this->update_cell();
-			this->update_neighborlist();
+			update_cell();
+			update_neighborlist();
 		}
 
 		// advance quaternions, positions
-		this->verlet_first();
+		verlet_first();
 
 		// update forces
-		this->force_update();
+		force_update();
 
 		if (U < Utol)
 			break;
 
 		// include fire relaxation
-		this->rb_fire();
+		rb_fire();
 
 		// advance angular momentum
-		this->verlet_second();
+		verlet_second();
 
 		// output information
 		if (t % plotskip == 0) {
-			this->monitor_header(t);
-			this->rigidbody_md_monitor();
+			monitor_header(t);
+			rigidbody_md_monitor();
 		}
 	}
 }
@@ -749,10 +749,10 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 	nnupdate = 20;
 
 	// initialize velocities
-	this->rand_vel_init(tmp0);
+	rand_vel_init(tmp0);
 
 	// setup dtmax for FIRE
-	this->set_dtmax(10.0);
+	set_dtmax(10.0);
 
 	cout << "===== BEGINNING TIME LOOP ======" << endl;
 	cout << "NT = " << NT << endl;
@@ -763,25 +763,25 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 		// update nearest neighbor lists if applicable
 		if (t % nnupdate == 0 && NCL > -1){
 			cout << "^ ";
-			this->update_nlcl(t);
+			update_nlcl(t);
 		}
 
 		// advance quaternions, positions
-		this->verlet_first();
+		verlet_first();
 
 		// update forces
-		this->force_update();
+		force_update();
 
 		// include fire relaxation
-		this->rb_fire();
+		rb_fire();
 
 		// advance angular momentum
-		this->verlet_second();
+		verlet_second();
 
 		// check for rattlers
 		if (check_rattlers) {
 			kr = 0;
-			nr = this->rmv_rattlers(kr);
+			nr = rmv_rattlers(kr);
 		}
 		else
 			nr = 0;
@@ -803,12 +803,12 @@ void rigidbody::rb_jamming_finder(double tmp0, int NT, double dphi, double Utol,
 			check_rattlers = 1;
 
 		// run root search routine
-		this->rb_root_search(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t);
+		rb_root_search(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t);
 
 		// output information
 		if (t % plotskip == 0) {
-			this->monitor_header(t);
-			this->rigidbody_md_monitor();
+			monitor_header(t);
+			rigidbody_md_monitor();
 			cout << "** ROOT SEARCH: " << endl;
 			cout << "phi = " << phi << endl;
 			cout << "phiL = " << phiL << endl;
@@ -858,10 +858,10 @@ void rigidbody::rb_anneal(double tmp0, int NT, int fskip, double phimin, double 
 	checkphi = 1;
 
 	// initialize velocities
-	this->rand_vel_init(tmp0);
+	rand_vel_init(tmp0);
 
 	// setup dtmax for FIRE
-	this->set_dtmax(10.0);
+	set_dtmax(10.0);
 
 	cout << "===== BEGINNING TIME LOOP ======" << endl;
 	cout << "NT = " << NT << endl;
@@ -872,7 +872,7 @@ void rigidbody::rb_anneal(double tmp0, int NT, int fskip, double phimin, double 
 		// update nearest neighbor lists if applicable
 		if (t % nnupdate == 0 && NCL > -1){
 			cout << "^ ";
-			this->update_nlcl(t);
+			update_nlcl(t);
 		}
 
 		// only begin annealing after phi > phimin
@@ -882,25 +882,25 @@ void rigidbody::rb_anneal(double tmp0, int NT, int fskip, double phimin, double 
 		}
 
 		// advance quaternions, positions
-		this->verlet_first();
+		verlet_first();
 
 		// update forces
-		this->force_update();
+		force_update();
 
 		// include fire relaxation (if not annealing)
 		if (anneal == 0)
-			this->rb_fire();
+			rb_fire();
 		else
-			this->rescale_velocities(tmp0);
+			rescale_velocities(tmp0);
 			
 
 		// advance angular momentum
-		this->verlet_second();		
+		verlet_second();		
 
 		// check for rattlers
 		if (check_rattlers) {
 			kr = 0;
-			nr = this->rmv_rattlers(kr);
+			nr = rmv_rattlers(kr);
 		}
 		else
 			nr = 0;
@@ -923,14 +923,14 @@ void rigidbody::rb_anneal(double tmp0, int NT, int fskip, double phimin, double 
 
 		// run root search routine (if not annealing)
 		if (anneal == 0){
-			this->rb_root_search(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t);
+			rb_root_search(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t);
 
 			// if still growing, and energy relaxed, go back to annealing
 			if (phiH < 0 && U < Utol && checkphi ==  0){
 				anneal = 1;
 
 				// give random velocity kick
-				this->rand_vel_init(tmp0);
+				rand_vel_init(tmp0);
 			}
 		}
 		else{
@@ -943,8 +943,8 @@ void rigidbody::rb_anneal(double tmp0, int NT, int fskip, double phimin, double 
 
 		// output information
 		if (t % plotskip == 0) {
-			this->monitor_header(t);
-			this->rigidbody_md_monitor();
+			monitor_header(t);
+			rigidbody_md_monitor();
 			cout << "** ROOT SEARCH: " << endl;
 			cout << "phi = " << phi << endl;
 			cout << "phiL = " << phiL << endl;
@@ -984,24 +984,24 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 	double y = pow(10,-1.0/10.0);
 
 	// initialize velocities
-	this->rand_vel_init(tmp0);
+	rand_vel_init(tmp0);
 
 	// initialize variables
 	nr = 0;
 	phiold = 2*tphiold;
 
 	// get initial U
-	this->get_U(Ktol,nr);
+	get_U(Ktol,nr);
 	Uold = U;
 
 	// update phinew
 	phinew = tphiold + (phiold-tphiold)*y;	
 
 	// update system
-	this->rb_scale(phinew);
+	rb_scale(phinew);
 
 	// get final U
-	this->get_U(Ktol,nr);
+	get_U(Ktol,nr);
 	Unew = U;
 
 	// make nnupdate larger
@@ -1024,10 +1024,10 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 		phinew = tphiold + (phiold-tphiold)*y;			
 
 		// update system
-		this->rb_scale(phinew);
+		rb_scale(phinew);
 
 		// get updated U
-		this->get_U(Ktol,nr);
+		get_U(Ktol,nr);
 		Unew = U;
 
 		// output to energy file if open
@@ -1053,8 +1053,8 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 		cout << "## new U = " << setw(12) << Unew << "; Uold = " << setw(12) << Uold << endl;
 		cout << "## nr = " << nr << endl;
 		cout << "## niso = " << DOF*(N-nr) - NDIM + 1 << endl;
-		cout << "## acsum = " << 0.5*this->get_ac_sum() << endl;
-		cout << "## pcsum = " << this->get_c_sum() << endl;				
+		cout << "## acsum = " << 0.5*get_ac_sum() << endl;
+		cout << "## pcsum = " << get_c_sum() << endl;				
 		cout << "###################" << endl;
 		cout << endl << endl;
 
@@ -1069,8 +1069,8 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 			cout << "Final U = " << U << endl;
 			cout << "Final K = " << K << endl;
 			cout << "Final phi = " << setprecision(6) << phi << endl;
-			cout << "Final acsum = " << 0.5*this->get_ac_sum() << endl;
-			cout << "Final pcsum = " << this->get_c_sum() << endl;
+			cout << "Final acsum = " << 0.5*get_ac_sum() << endl;
+			cout << "Final pcsum = " << get_c_sum() << endl;
 			cout << "Final niso max = " << DOF*N - NDIM + 1 << endl;
 			cout << "Final contacts:" << endl;
 			cout << "pc:" << endl;
@@ -1089,10 +1089,10 @@ void rigidbody::rb_jamming_precise(double tphiold, double tmp0, int NT, double U
 			cout << endl;
 			if (N < 40) {
 				cout << "Contact Matrix:" << endl;
-				this->print_c_mat();
+				print_c_mat();
 			}
 			if (xyzobj.is_open())
-				this->rigidbody_xyz();
+				rigidbody_xyz();
 
 			cout << endl;
 			cout << endl;
@@ -1137,10 +1137,10 @@ void rigidbody::rb_jamming_easy(double tmp0, int NT, double dphi, double Utol, d
 	nnupdate = 20;
 
 	// initialize velocities
-	this->rand_vel_init(tmp0);
+	rand_vel_init(tmp0);
 
 	// setup dtmax for FIRE
-	this->set_dtmax(10.0);
+	set_dtmax(10.0);
 
 	cout << "===== BEGINNING TIME LOOP ======" << endl;
 	cout << "NT = " << NT << endl;
@@ -1151,25 +1151,25 @@ void rigidbody::rb_jamming_easy(double tmp0, int NT, double dphi, double Utol, d
 		// update nearest neighbor lists if applicable
 		if (t % nnupdate == 0 && NCL > -1){
 			cout << "^ ";
-			this->update_nlcl(t);
+			update_nlcl(t);
 		}
 
 		// advance quaternions, positions
-		this->verlet_first();
+		verlet_first();
 
 		// update forces
-		this->force_update();
+		force_update();
 
 		// include fire relaxation
-		this->rb_fire();
+		rb_fire();
 
 		// advance angular momentum
-		this->verlet_second();
+		verlet_second();
 
 		// check for rattlers
 		if (check_rattlers) {
 			kr = 0;
-			nr = this->rmv_rattlers(kr);
+			nr = rmv_rattlers(kr);
 		}
 		else
 			nr = 0;
@@ -1191,12 +1191,12 @@ void rigidbody::rb_jamming_easy(double tmp0, int NT, double dphi, double Utol, d
 			check_rattlers = 1;
 
 		// run root search routine
-		this->rb_easy(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t, min);
+		rb_easy(phiH, phiL, check_rattlers, epconst, nr, dphi0, Ktol, Utol, t, min);
 
 		// output information
 		if (t % plotskip == 0) {
-			this->monitor_header(t);
-			this->rigidbody_md_monitor();
+			monitor_header(t);
+			rigidbody_md_monitor();
 			cout << "** ROOT SEARCH: " << endl;
 			cout << "phi = " << phi << endl;
 			cout << "phiL = " << phiL << endl;
@@ -1235,24 +1235,24 @@ void rigidbody::get_U(double Ktol, int& nr){
 		// update nearest neighbor lists if applicable
 		if (t % nnupdate == 0 && NCL > -1){
 			cout << "^ ";
-			this->update_nlcl(t);
+			update_nlcl(t);
 		}
 
 		// advance quaternions, positions
-		this->verlet_first();
+		verlet_first();
 
 		// update forces
-		this->force_update();
+		force_update();
 
 		// include fire relaxation
-		this->rb_fire();
+		rb_fire();
 
 		// advance angular momentum
-		this->verlet_second();
+		verlet_second();
 
 		// check for rattlers
 		kr = 0;
-		nr = this->rmv_rattlers(kr);
+		nr = rmv_rattlers(kr);
 
 		// check for constant potential energy
 		dU = abs(Uold - U);
@@ -1269,8 +1269,8 @@ void rigidbody::get_U(double Ktol, int& nr){
 
 		// output information
 		if (t % plotskip == 0) {
-			this->monitor_header(t);
-			this->rigidbody_md_monitor();
+			monitor_header(t);
+			rigidbody_md_monitor();
 			cout << "U = " << U << endl;
 			cout << "Uold = " << Uold << endl;
 			cout << "dU = " << dU << endl;
@@ -1303,10 +1303,10 @@ void rigidbody::get_U(double Ktol, int& nr){
 
 void rigidbody::verlet_first() {
 	// update translational pos first, to get kinetic energy rolling
-	this->pos_update();
+	pos_update();
 
 	// update quaternions second, and include Krot update in euler_q
-	this->q_step();
+	q_step();
 
 	// reset rotational variables
 	int i, d;
@@ -1349,13 +1349,13 @@ void rigidbody::verlet_second(bool neglect_rattlers) {
 // quaternion-MD Step
 void rigidbody::q_step() {
 	// 1. Rotate W to M frame
-	this->rotation_W2M();
+	rotation_W2M();
 
 	// 2. Euler step for quaternions
-	this->euler_q();
+	euler_q();
 
 	// 3. Update atomic positions in World frame
-	this->pos_frot();
+	pos_frot();
 }
 
 void rigidbody::rotation_W2M() {
@@ -1564,7 +1564,7 @@ void rigidbody::pos_brot() {
 void rigidbody::rotate_single_particle(int i, int angle, double dtheta){
 
 	// first make sure euler angles are up to date
-	this->update_euler();
+	update_euler();
 
 	// rotate given angle by dtheta
 	if (angle == 1)
@@ -1575,30 +1575,50 @@ void rigidbody::rotate_single_particle(int i, int angle, double dtheta){
 		eulang3[i] += dtheta;
 	else{
 		cout << "not applicable angle = " << angle << "..." << endl;
-		throw;
+		exit(1);
 	}
 
 	// update quaternions accordingly
-	this->update_quaternions();
+	update_quaternions();
 }
 
 void rigidbody::rotate_single_particle_xyz(int i, int axis, double dtheta){
 	// local variables
 	double ci,si; 	// cosines of angle
+	double vj, vk; 	// rotated angles
 	int j,k,a;		// other directions
 
+	double vnorm1, vnorm2;
+
+	// cosines and sines
 	ci = cos(dtheta);
 	si = sin(dtheta);
+	cout << "dtheta = " << dtheta << endl;
+	cout << "ci = " << ci << endl;
+	cout << "si = " << si << endl;
 
-	// get other indices
-	j = (axis+1) % NDIM;
-	k = (axis+2) % NDIM;
-
-	// calculate new positions
-	for (a=0; a<Na[i]; a++){
-		xW[i][a][j] = ci*xW[i][a][j] - si*xW[i][a][k];
-		xW[i][a][k] = ci*xW[i][a][k] + si*xW[i][a][j];
+	// test axis
+	if (axis > 2 || axis < 0){
+		cout << "	** ERROR: incorrect axis passed as argument (" << axis << "), which is out of bounds. Ending." << endl;
+		exit(1);
 	}
+
+	// perform rotation
+	j = (axis + 1) % NDIM;
+	k = (axis + 2) % NDIM;
+
+	// get updated vectors
+	for (a=0; a<Na[i]; a++){
+		// get new components
+		vj = ci*xW[i][a][j] - si*xW[i][a][k];
+		vk = si*xW[i][a][j] + ci*xW[i][a][k];
+
+		// update positions
+		xW[i][a][j] = vj;
+		xW[i][a][k] = vk;
+	}
+
+	
 }
 
 void rigidbody::force_update() {
@@ -1614,8 +1634,8 @@ void rigidbody::force_update() {
 	// reset U, LCON
 	U = 0;
 	LCON = 0;
-	this->reset_c();
-	this->reset_cm();
+	reset_c();
+	reset_cm();
 
 	// implement NLCL if there are positive number of cells
 	if (NCL > 0) {
@@ -1639,7 +1659,7 @@ void rigidbody::force_update() {
 				sij = r[j] + r[i];
 
 				// get distance between particles
-				dx = this->get_distance(i, j);
+				dx = get_distance(i, j);
 
 				if (dx < sij) {
 					for (ai = 0; ai < Na[i]; ai++) {
@@ -1648,13 +1668,13 @@ void rigidbody::force_update() {
 							rij = ar[i][ai] + ar[j][aj];
 
 							// get distance between atoms
-							da = this->get_atomic_distance(i, j, ai, aj, aij);
+							da = get_atomic_distance(i, j, ai, aj, aij);
 
 							// if true, atoms are overlapping, so calc force and torquez
 							if (da < rij) {
 								// update contact forces
 								for (d = 0; d < NDIM; d++) {
-									fij[d] = (this->hs(rij, da)) * aij[d];
+									fij[d] = (hs(rij, da)) * aij[d];
 									F[i][d] += fij[d];
 									F[j][d] -= fij[d];
 								}
@@ -1738,7 +1758,7 @@ void rigidbody::force_update() {
 				sij = r[j] + r[i];
 
 				// get distance between particles
-				dx = this->get_distance(i, j);
+				dx = get_distance(i, j);
 
 				// if true, residues close by, check atomic overlaps
 				if (dx < sij) {
@@ -1748,13 +1768,13 @@ void rigidbody::force_update() {
 							rij = ar[i][ai] + ar[j][aj];
 
 							// get distance between atoms
-							da = this->get_atomic_distance(i, j, ai, aj, aij);
+							da = get_atomic_distance(i, j, ai, aj, aij);
 
 							// if true, atoms are overlapping, so calc force and torquez
 							if (da < rij) {
 								// update contact forces
 								for (d = 0; d < NDIM; d++) {
-									fij[d] = (this->hs(rij, da)) * aij[d];
+									fij[d] = (hs(rij, da)) * aij[d];
 									F[i][d] += fij[d];
 									F[j][d] -= fij[d];
 								}								
@@ -1951,15 +1971,15 @@ void rigidbody::rb_scale(double phinew) {
 	ep *= pow(s, 2);
 	dt *= pow(s, 0.5 * (NDIM-2));
 	dtmax *= pow(s, 0.5 * (NDIM-2));
-	this->update_phi();
+	update_phi();
 
 	// if NLCL engaged, scale rcut
 	if (NCL > -1) {
-		this->scale_rcut(s);
+		scale_rcut(s);
 		if (NCL > 3)
-			this->update_cell();
+			update_cell();
 
-		this->update_neighborlist();
+		update_neighborlist();
 	}
 }
 
@@ -2000,11 +2020,11 @@ void rigidbody::rb_rescale(double len) {
 
 	// if NLCL engaged, scale rcut
 	if (NCL > -1) {
-		this->scale_rcut(1.0/len);
+		scale_rcut(1.0/len);
 		if (NCL > 3)
-			this->update_cell();
+			update_cell();
 
-		this->update_neighborlist();
+		update_neighborlist();
 	}
 }
 
@@ -2190,8 +2210,8 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 
 	nbb = N - nr;
 	niso = DOF * nbb - NDIM + 1;
-	acsum = 0.5*this->get_ac_sum();
-	pcsum = this->get_c_sum();
+	acsum = 0.5*get_ac_sum();
+	pcsum = get_c_sum();
 
 	gr = (U < Utol);
 	oc = (U > 2 * Utol && K < Ktol && epconst == 1 && acsum > 0);
@@ -2202,7 +2222,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 	if (phiH < 0) {
 		if (gr) {
 			check_rattlers = 0;
-			this->rb_scale(phi+dphi);
+			rb_scale(phi+dphi);
 		}
 		else if (oc && epconst == 1) {
 			Utol = N * 1e-16;
@@ -2212,7 +2232,7 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 
 			cout << endl;
 			cout << "phiH 1st set at nt = " << t << endl;
-			this->rb_scale(phi+dphi);
+			rb_scale(phi+dphi);
 
 			// if NLCL, change update check (particles don't move, don't need to check as often)
 			if (NCL > -1)
@@ -2226,20 +2246,20 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			if (oc && epconst == 1) {
 				phiH = phi;
 				dphi = -0.5*dphi0;				
-				this->rb_scale(phi+dphi);
+				rb_scale(phi+dphi);
 			}
 
 			// if undercompressed, set phiL, root search
 			if (uc) {
 				phiL = phi;
 				dphi = 0.5 * (phiH + phiL) - phi;
-				this->rb_scale(phi+dphi);
+				rb_scale(phi+dphi);
 			}
 
 			if (jammed) {
 				phiL = 0.99 * phi;
 				dphi = 0.5 * (phiH + phiL) - phi;
-				this->rb_scale(phi+dphi);
+				rb_scale(phi+dphi);
 			}
 
 		}
@@ -2249,14 +2269,14 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			if (oc) {
 				phiH = phi;
 				dphi = 0.5 * (phiH + phiL) - phi;
-				this->rb_scale(phi+dphi);
+				rb_scale(phi+dphi);
 			}
 
 			// if undercompressed, root search up
 			if (uc) {
 				phiL = phi;
 				dphi = 0.5 * (phiH + phiL) - phi;
-				this->rb_scale(phi+dphi);
+				rb_scale(phi+dphi);
 			}
 
 			// if jammed, end!
@@ -2291,10 +2311,10 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 				cout << endl;
 				if (N < 40) {
 					cout << "Contact Matrix:" << endl;
-					this->print_c_mat();
+					print_c_mat();
 				}
 				if (xyzobj.is_open())
-					this->rigidbody_xyz();
+					rigidbody_xyz();
 
 				cout << endl;
 				cout << endl;
@@ -2325,8 +2345,8 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 	// get number of contacts
 	nbb = N - nr;
 	niso = DOF * nbb - NDIM + 1;
-	acsum = 0.5*this->get_ac_sum();
-	pcsum = this->get_c_sum();
+	acsum = 0.5*get_ac_sum();
+	pcsum = get_c_sum();
 
 	// check bool conditions
 	gr = (U < Utol);
@@ -2338,7 +2358,7 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 	if (phiH < 0) {
 		if (gr) {
 			check_rattlers = 0;
-			this->rb_scale(phi + dphi);
+			rb_scale(phi + dphi);
 		}
 		else if (oc && epconst == 1) {
 			// phiH = phi;
@@ -2347,7 +2367,7 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 
 			// cout << endl;
 			// cout << "phiH 1st set at nt = " << t << endl;
-			// this->monitor_scale(phi + dphi, phiL, phiH);
+			// monitor_scale(phi + dphi, phiL, phiH);
 
 			// if NLCL, change update check (particles don't move, don't need to check as often)
 			// if (NCL > -1)
@@ -2389,10 +2409,10 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 			cout << endl;
 			if (N < 40) {
 				cout << "Contact Matrix:" << endl;
-				this->print_c_mat();
+				print_c_mat();
 			}
 			if (xyzobj.is_open())
-				this->rigidbody_xyz();
+				rigidbody_xyz();
 
 			cout << endl;
 			cout << endl;
@@ -2409,7 +2429,7 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 				cout << endl;
 				cout << "still overcompressed..." << endl;
 				cout << "phiH set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
+				monitor_scale(phi + dphi, phiL, phiH);
 			}
 
 			// if undercompressed, increase packing fraction, done!
@@ -2420,7 +2440,7 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 				cout << endl;
 				cout << "relaxation found!" << endl;
 				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
+				monitor_scale(phi + dphi, phiL, phiH);
 			}
 
 		}
@@ -2434,7 +2454,7 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 				cout << endl;
 				cout << "relaxed state found!" << endl;
 				cout << "phiL set at nt = " << t << endl;
-				this->monitor_scale(phi + dphi, phiL, phiH);
+				monitor_scale(phi + dphi, phiL, phiH);
 			}
 
 			// if overcompressed, minimize and get out of there
@@ -2483,10 +2503,10 @@ void rigidbody::rb_easy(double& phiH, double& phiL, int& check_rattlers, int &ep
 			// 	cout << endl;
 			// 	if (N < 40) {
 			// 		cout << "Contact Matrix:" << endl;
-			// 		this->print_c_mat();
+			// 		print_c_mat();
 			// 	}
 			// 	if (xyzobj.is_open())
-			// 		this->rigidbody_xyz();
+			// 		rigidbody_xyz();
 
 			// 	cout << endl;
 			// 	cout << endl;
@@ -2545,21 +2565,21 @@ void rigidbody::print_data() {
 	configobj << setw(w) << setprecision(16) << "phi: " << phi << endl;
 	configobj << setw(w) << "U: " << U << endl;
 	configobj << setw(w) << "K: " << K << endl;
-	configobj << setw(w) << "pc sum: " << this->get_c_sum() << endl;
-	configobj << setw(w) << "ac sum: " << 0.5 * (this->get_ac_sum()) << endl;
+	configobj << setw(w) << "pc sum: " << get_c_sum() << endl;
+	configobj << setw(w) << "ac sum: " << 0.5 * (get_ac_sum()) << endl;
 	configobj << setw(w) << "nr: " << nr << endl;
 	configobj << setw(w) << "niso: " << DOF*(N - nr) - NDIM + 1 << endl;
 	configobj << setw(w) << "niso max: " << DOF*N - NDIM + 1 << endl;
 	configobj << setw(w) << "pc: ";
-	this->print_pc(configobj, round(w / 2));
+	print_pc(configobj, round(w / 2));
 	configobj << setw(w) << "ac: ";
-	this->print_ac(configobj, round(w / 2));
+	print_ac(configobj, round(w / 2));
 	configobj << "contact matrix: ";
-	this->print_c_data(configobj);
+	print_c_data(configobj);
 	configobj << setw(w) << "configuration: " << endl;
 
 	// update euler angles, given quaternions
-	this->update_euler();
+	update_euler();
 
 	// update print width
 	w = 30;
@@ -2629,17 +2649,17 @@ void rigidbody::print_stat() {
 	statobj << setw(w) << "phi: " << phi << endl;
 	statobj << setw(w) << "U: " << U << endl;
 	statobj << setw(w) << "K: " << K << endl;
-	statobj << setw(w) << "pc sum: " << this->get_c_sum() << endl;
-	statobj << setw(w) << "ac sum: " << 0.5 * (this->get_ac_sum()) << endl;
+	statobj << setw(w) << "pc sum: " << get_c_sum() << endl;
+	statobj << setw(w) << "ac sum: " << 0.5 * (get_ac_sum()) << endl;
 	statobj << setw(w) << "nr: " << nr << endl;
 	statobj << setw(w) << "niso: " << DOF*(N - nr) - NDIM + 1 << endl;
 	statobj << setw(w) << "niso max: " << DOF*N - NDIM + 1 << endl;
 	statobj << setw(w) << "pc: ";
-	this->print_pc(statobj, round(w / 2));
+	print_pc(statobj, round(w / 2));
 	statobj << setw(w) << "ac: ";
-	this->print_ac(statobj, round(w / 2));
+	print_ac(statobj, round(w / 2));
 	statobj << "contact matrix: ";
-	this->print_c_data(statobj);
+	print_c_data(statobj);
 	statobj << endl;
 }
 
@@ -2663,7 +2683,7 @@ void rigidbody::print_config() {
 	p = 16;
 
 	// update euler angles, given quaternions
-	this->update_euler();
+	update_euler();
 
 	// print basic info
 	configobj << setw(w) << N << endl;
@@ -2727,8 +2747,8 @@ void rigidbody::rigidbody_md_monitor() {
 	cout << "E = " << U/N + K/N << endl;
 	cout << endl;
 	cout << "** Contacts:" << endl;
-	cout << "sum c = " << this->get_c_sum() << endl;
-	cout << "sum ac = " << 0.5 * (this->get_ac_sum()) << endl;
+	cout << "sum c = " << get_c_sum() << endl;
+	cout << "sum ac = " << 0.5 * (get_ac_sum()) << endl;
 	cout << "niso max = " << DOF*N - NDIM + 1 << endl;
 	cout << endl;
 	cout << "** FIRE:" << endl;
@@ -2751,7 +2771,7 @@ void rigidbody::rigidbody_md_monitor() {
 	// output to xyz file if open
 	if (xyzobj.is_open()) {
 		cout << "Printing XYZ" << endl;
-		this->rigidbody_xyz();
+		rigidbody_xyz();
 		cout << endl;
 	}
 }
@@ -2761,11 +2781,11 @@ void rigidbody::monitor_scale(double phinew, double phiL, double phiH) {
 	cout << "phiL = " << phiL << endl;
 	cout << "dphi = " << phinew - phi << endl;
 	cout << "old phi = " << phi << endl;
-	this->rb_scale(phinew);
+	rb_scale(phinew);
 	cout << "new phi = " << phi << endl;
 	cout << "U = " << U/N << endl;
 	cout << "K = " << K/N << endl;
-	cout << "c = " << 0.5*this->get_ac_sum() << endl;
+	cout << "c = " << 0.5*get_ac_sum() << endl;
 	cout << "conitinuing root search..." << endl;
 	cout << endl;
 }
@@ -2783,7 +2803,7 @@ void rigidbody::rigidbody_xyz() {
 	}
 
 	// print xyz header
-	xyzobj << this->get_Natot() << endl;
+	xyzobj << get_Natot() << endl;
 	xyzobj << "Lattice=\"";
 	for (d = 0; d < NDIM; d++) {
 		for (dd = 0; dd < NDIM; dd++) {
@@ -2893,7 +2913,7 @@ void rigidbody::rigidbody_xyz(int p1, int p2) {
 	}
 
 	// print xyz header
-	xyzobj << this->get_Natot() << endl;
+	xyzobj << get_Natot() << endl;
 	xyzobj << "Lattice=\"";
 	for (d = 0; d < NDIM; d++) {
 		for (dd = 0; dd < NDIM; dd++) {
@@ -2952,7 +2972,7 @@ void rigidbody::rigidbody_print_vars() {
 	int i, j, d;
 
 	cout << "** Printing packing vars:" << endl;
-	this->print_vars();
+	print_vars();
 
 	cout << endl << "** rigid body arrays:" << endl << endl;
 	cout << "xW: " << endl;
