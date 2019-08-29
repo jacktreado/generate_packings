@@ -2225,7 +2225,6 @@ void rigidbody::rb_root_search(double& phiH, double& phiL, int& check_rattlers, 
 			rb_scale(phi+dphi);
 		}
 		else if (oc && epconst == 1) {
-			Utol = N * 1e-16;
 			phiH = phi;
 			dphi = -dphi0;
 			check_rattlers = 1;
